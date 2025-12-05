@@ -67,25 +67,32 @@ public abstract class AbstractLoginStrategy implements LoginStrategy {
     }
 
     /**
-     * 通知旧设备被踢下线
+     * 踢出旧设备
      * <p>
-     * 服务端只负责发送MUTALOGIN通知消息，不主动关闭连接
-     * 由旧设备客户端收到通知后，自行决定如何处理：
-     * 1. 显示"你已在其他设备登录"提示
-     * 2. 保存未完成的工作（草稿、缓存等）
-     * 3. 清理本地状态
-     * 4. 主动发送LOGOUT命令
-     * 5. 断开连接
+     * 采用服务端主导的设计（与微信、QQ等主流IM一致）：
+     * 1. 服务端发送MUTALOGIN通知消息（尽力而为，用于UX优化）
+     * 2. 服务端立即删除Session并关闭连接（确保策略一定生效）
      * <p>
-     * 如果客户端没有响应，依靠心跳超时机制自动离线
+     * 客户端收到MUTALOGIN后的处理（可选，用于优化体验）：
+     * - 显示"你已在其他设备登录"提示
+     * - 清理本地缓存和草稿
+     * - 跳转到登录页面
+     * <p>
+     * 设计理由：
+     * - 可靠性：不依赖客户端响应，网络抖动不影响策略执行
+     * - 一致性：策略一定被执行，不会出现多设备同时在线的情况
+     * - 安全性：防止恶意客户端拒绝退出
      *
      * @param oldChannel 旧设备的 channel
      * @param oldLogin   旧设备信息
      * @param newLogin   新设备信息
      */
     protected void kickOut(Channel oldChannel, UserClientDto oldLogin, UserClientDto newLogin) {
-        // 只发送互踢通知消息，不关闭连接
-        // 让客户端自己决定如何退出
+        // 1. 发送通知消息（UX优化，尽力而为）
         LoginStrategyUtils.sendMutualLoginMsg(oldChannel, oldLogin.getClientType(), oldLogin.getImei(), newLogin);
+
+        // 2. 服务端立即处理（业务逻辑，必须执行）
+        // 删除Session并关闭连接，确保登录策略一定生效
+        UserChannelRepository.logout(oldChannel);
     }
 }

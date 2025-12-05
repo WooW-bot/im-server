@@ -99,6 +99,14 @@ public class Constants {
 
     }
 
+    public static class ZKConstants {
+        public static final String ImCoreZkRoot = "/im-coreRoot";
+
+        public static final String ImCoreZkRootTcp = "/tcp";
+
+        public static final String ImCoreZkRootWeb = "/web";
+    }
+
     public static class MsgPackConstants {
         public static final String FROM_ID = "fromId";
 

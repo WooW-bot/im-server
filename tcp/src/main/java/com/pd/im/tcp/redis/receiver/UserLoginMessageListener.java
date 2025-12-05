@@ -1,4 +1,4 @@
-package com.pd.im.tcp.receiver;
+package com.pd.im.tcp.redis.receiver;
 
 import com.alibaba.fastjson.JSONObject;
 import com.pd.im.common.constant.Constants;

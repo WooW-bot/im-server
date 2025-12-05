@@ -132,13 +132,23 @@ public class UserChannelRepository {
      * <p>
      * 使用场景：
      * - 用户主动点击"退出登录"
-     * - 客户端收到MUTALOGIN消息后主动登出
+     * - 多设备冲突时服务端踢出旧设备
      * - 账号被封禁等安全原因
      *
      * @param channel 需要登出的Channel
      */
     public static void logout(Channel channel) {
         doCleanup(channel, "用户登出", true);
+    }
+
+    public static Channel getUserChannel(Integer appId, String userId, Integer clientType, String imei) {
+        UserClientDto userClientDto = UserClientDto.builder()
+                .userId(userId)
+                .appId(appId)
+                .clientType(clientType)
+                .imei(imei)
+                .build();
+        return getChannel(userClientDto);
     }
 
     /**
