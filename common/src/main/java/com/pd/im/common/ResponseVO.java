@@ -31,7 +31,7 @@ public class ResponseVO<T> {
     }
 
     public static ResponseVO errorResponse() {
-        return new ResponseVO(500, "系统内部异常");
+        return new ResponseVO(500, "系统繁忙，请稍后重试");
     }
 
     public static ResponseVO errorResponse(int code, String msg) {

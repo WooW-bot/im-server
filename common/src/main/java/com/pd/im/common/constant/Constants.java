@@ -99,12 +99,42 @@ public class Constants {
 
     }
 
+    public static class CallbackCommand {
+        public static final String ModifyUserAfter = "user.modify.after";
+        public static final String CreateGroupAfter = "group.create.after";
+        public static final String UpdateGroupAfter = "group.update.after";
+        public static final String DestroyGroupAfter = "group.destroy.after";
+        public static final String TransferGroupAfter = "group.transfer.after";
+        public static final String GroupMemberAddBefore = "group.member.add.before";
+        public static final String GroupMemberAddAfter = "group.member.add.after";
+        public static final String GroupMemberDeleteAfter = "group.member.delete.after";
+        public static final String AddFriendBefore = "friend.add.before";
+        public static final String AddFriendAfter = "friend.add.after";
+        public static final String UpdateFriendBefore = "friend.update.before";
+        public static final String UpdateFriendAfter = "friend.update.after";
+        public static final String DeleteFriendAfter = "friend.delete.after";
+        public static final String AddBlackAfter = "black.add.after";
+        public static final String DeleteBlack = "black.delete";
+        public static final String SendGroupMessageAfter = "group.message.send.after";
+        public static final String SendGroupMessageBefore = "group.message.send.before";
+        public static final String SendMessageAfter = "message.send.after";
+        public static final String SendMessageBefore = "message.send.before";
+    }
+
     public static class ZKConstants {
         public static final String ImCoreZkRoot = "/im-coreRoot";
 
         public static final String ImCoreZkRootTcp = "/tcp";
 
         public static final String ImCoreZkRootWeb = "/web";
+    }
+
+    public static class SeqConstants {
+        // 保证消息有序性 Key
+        /** 单聊消息有序 */
+        public static final String MessageSeq = ":messageSeq:";
+        /** 群聊消息有序 */
+        public static final String GroupMessageSeq = ":groupMessageSeq:";
     }
 
     public static class MsgPackConstants {

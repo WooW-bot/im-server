@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cat:*)",
+      "Bash(for file in P2PMessageHandler MessageReceiveAckHandler MessageReadHandler MessageRecallHandler)",
+      "Bash(do cat /Users/by/2026/im-server/service/src/main/java/com/pd/im/service/message/p2p/mq/handler/$file.java)",
+      "Bash(tree:*)",
+      "Bash(mvn clean compile:*)",
+      "Bash(mvn compile:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
