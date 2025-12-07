@@ -6,7 +6,9 @@
       "Bash(do cat /Users/by/2026/im-server/service/src/main/java/com/pd/im/service/message/p2p/mq/handler/$file.java)",
       "Bash(tree:*)",
       "Bash(mvn clean compile:*)",
-      "Bash(mvn compile:*)"
+      "Bash(mvn compile:*)",
+      "Bash(rm:*)",
+      "Bash(mvn clean install:*)"
     ],
     "deny": [],
     "ask": []

@@ -2,7 +2,7 @@ package com.pd.im.message.mq;
 
 import com.alibaba.fastjson.JSON;
 import com.pd.im.common.constant.Constants;
-import com.pd.im.common.model.message.DoStoreP2PMessageDto;
+import com.pd.im.common.model.message.DoStoreGroupMessageDto;
 import com.pd.im.message.service.StoreMessageService;
 import com.rabbitmq.client.Channel;
 import lombok.RequiredArgsConstructor;
@@ -21,23 +21,21 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 /**
- * P2P消息存储MQ接收器
- * 接收发布者传递的异步持久化任务，具体的持久化在 {@link StoreMessageService}
+ * 群消息存储MQ接收器
  *
  * @author Parker
- * @date 12/5/25
+ * @date 12/6/25
  */
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class StoreP2PMessageReceiver {
-
+public class StoreGroupMessageReceiver {
     private final StoreMessageService storeMessageService;
 
     @RabbitListener(
             bindings = @QueueBinding(
-                    value = @Queue(value = Constants.RabbitmqConstants.StoreP2PMessage, durable = "true"),
-                    exchange = @Exchange(value = Constants.RabbitmqConstants.StoreP2PMessage, durable = "true")
+                    value = @Queue(value = Constants.RabbitmqConstants.StoreGroupMessage, durable = "true"),
+                    exchange = @Exchange(value = Constants.RabbitmqConstants.StoreGroupMessage, durable = "true")
             ),
             concurrency = "1"
     )
@@ -47,22 +45,23 @@ public class StoreP2PMessageReceiver {
         String messageBody = new String(message.getBody(), StandardCharsets.UTF_8);
         Long deliveryTag = (Long) headers.get(AmqpHeaders.DELIVERY_TAG);
 
-        log.debug("[P2P消息存储] 接收MQ消息: {}", messageBody);
+        log.debug("[群消息存储] 接收MQ消息: {}", messageBody);
 
         try {
             // 直接反序列化为 DTO
-            DoStoreP2PMessageDto dto = JSON.parseObject(messageBody, DoStoreP2PMessageDto.class);
+            DoStoreGroupMessageDto dto = JSON.parseObject(messageBody, DoStoreGroupMessageDto.class);
 
             // 执行持久化
-            storeMessageService.doStoreP2PMessage(dto);
+            storeMessageService.doStoreGroupMessage(dto);
 
             // 手动确认
             channel.basicAck(deliveryTag, false);
 
-            log.debug("[P2P消息存储] 消息处理成功: messageId={}",
-                    dto.getMessageContent().getMessageId());
+            log.debug("[群消息存储] 消息处理成功: messageId={}, groupId={}",
+                    dto.getMessageContent().getMessageId(),
+                    dto.getMessageContent().getGroupId());
         } catch (Exception e) {
-            log.error("[P2P消息存储] 消息处理失败, 消息体: {}", messageBody, e);
+            log.error("[群消息存储] 消息处理失败, 消息体: {}", messageBody, e);
             // 第一个false: 不批量拒绝，第二个false: 不重回队列
             channel.basicNack(deliveryTag, false, false);
         }
