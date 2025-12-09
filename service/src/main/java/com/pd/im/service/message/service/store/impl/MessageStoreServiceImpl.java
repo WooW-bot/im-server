@@ -6,7 +6,7 @@ import com.pd.im.common.constant.Constants;
 import com.pd.im.common.enums.DelFlagEnum;
 import com.pd.im.common.enums.conversation.ConversationTypeEnum;
 import com.pd.im.common.model.message.*;
-import com.pd.im.common.model.message.content.MessageBody;
+import com.pd.im.common.model.message.MessageBody;
 import com.pd.im.common.utils.SnowflakeIdWorker;
 import com.pd.im.service.conversation.service.ConversationService;
 import com.pd.im.service.message.service.store.MessageStoreService;

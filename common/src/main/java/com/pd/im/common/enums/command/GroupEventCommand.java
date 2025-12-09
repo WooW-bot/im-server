@@ -88,7 +88,7 @@ public enum GroupEventCommand implements Command {
 
     private Integer command;
 
-    GroupEventCommand(int command) {
+    GroupEventCommand(Integer command) {
         this.command = command;
     }
 

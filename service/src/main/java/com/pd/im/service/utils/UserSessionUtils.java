@@ -30,7 +30,7 @@ public class UserSessionUtils {
         for (Object o : values) {
             String str = (String) o;
             UserSession session = JSONObject.parseObject(str, UserSession.class);
-            if (session.getConnectState() == ConnectState.CONNECT_STATE_ONLINE.getCode()) {
+            if (session.getConnectState().equals(ConnectState.CONNECT_STATE_ONLINE.getCode())) {
                 list.add(session);
             }
         }

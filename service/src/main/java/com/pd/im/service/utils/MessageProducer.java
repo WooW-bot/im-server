@@ -116,6 +116,17 @@ public class MessageProducer {
         }
     }
 
+    public void sendToClients(String userId, Command command, Object data, Integer appId, Integer clientType, String imei) {
+        if (clientType != null && StringUtils.isNotBlank(imei)) {
+            // (app 调用)普通用户发起的消息，发送给出本端以外的所有端
+            ClientInfo clientInfo = new ClientInfo(appId, clientType, imei);
+            sendToOtherClients(userId, command, data, clientInfo);
+        } else {
+            // (后台调用)管理员发起的消息(管理员没有 imei 号)，发送给所有端
+            sendToAllClients(userId, command, data, appId);
+        }
+    }
+
     /**
      * 发送消息到用户的所有在线客户端
      * <p>

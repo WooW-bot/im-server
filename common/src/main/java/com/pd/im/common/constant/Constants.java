@@ -75,6 +75,14 @@ public class Constants {
          * 用户所有模块的偏序前缀
          */
         public static final String SeqPrefix = ":seq:";
+        /**
+         * 用户订阅列表，格式 ：appId + :subscribe: + userId。Hash结构，filed为订阅自己的人
+         */
+        public static final String Subscribe = ":subscribe:";
+        /**
+         * 用户自定义在线状态，格式 ：appId + :userCustomerStatus: + userId。set，value为用户id
+         */
+        public static final String UserCustomerStatus = ":userCustomerStatus:";
     }
 
     public static class RabbitmqConstants {
@@ -131,10 +139,28 @@ public class Constants {
 
     public static class SeqConstants {
         // 保证消息有序性 Key
-        /** 单聊消息有序 */
-        public static final String MessageSeq = ":messageSeq:";
-        /** 群聊消息有序 */
-        public static final String GroupMessageSeq = ":groupMessageSeq:";
+        /**
+         * 单聊消息有序
+         */
+        public static final String MessageSeq = "messageSeq";
+        /**
+         * 群聊消息有序
+         */
+        public static final String GroupMessageSeq = "groupMessageSeq";
+
+        /**
+         * 好友数量记录
+         */
+        public static final String Friendship = "friendshipSeq";
+
+        public static final String FriendshipRequest = "friendshipRequestSeq";
+
+        public static final String FriendshipGroup = "friendshipGroupSeq";
+        /**
+         * 会话消息有序
+         */
+        public static final String ConversationSeq = "conversationSeq";
+        public static final String GroupSeq = "groupSeq";
     }
 
     public static class MsgPackConstants {

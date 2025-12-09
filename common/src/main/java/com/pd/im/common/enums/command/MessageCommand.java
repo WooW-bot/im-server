@@ -33,9 +33,9 @@ public enum MessageCommand implements Command {
     MSG_RECALL_ACK(0x41B),
     ;
 
-    private int command;
+    private Integer command;
 
-    MessageCommand(int command) {
+    MessageCommand(Integer command) {
         this.command = command;
     }
 

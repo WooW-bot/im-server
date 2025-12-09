@@ -1,0 +1,40 @@
+package com.pd.im.service.user.controller;
+
+import com.pd.im.common.ResponseVO;
+import com.pd.im.service.user.model.req.GetUserInfoReq;
+import com.pd.im.service.user.model.req.ModifyUserInfoReq;
+import com.pd.im.service.user.model.req.UserId;
+import com.pd.im.service.user.service.ImUserService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+/**
+ * @author Parker
+ * @date 12/8/25
+ */
+@Slf4j
+@RestController
+@RequestMapping("v1/user/data")
+public class ImUserDataController {
+    @Autowired
+    ImUserService imUserService;
+
+    @RequestMapping("/getUserInfo")
+    public ResponseVO getUserInfo(@RequestBody GetUserInfoReq req) {
+        return imUserService.getUserInfo(req);
+    }
+
+    @RequestMapping("/getSingleUserInfo")
+    public ResponseVO getSingleUserInfo(@RequestBody @Validated UserId req) {
+        return imUserService.getSingleUserInfo(req.getUserId(), req.getAppId());
+    }
+
+    @RequestMapping("/modifyUserInfo")
+    public ResponseVO modifyUserInfo(@RequestBody @Validated ModifyUserInfoReq req, Integer appId) {
+        return imUserService.modifyUserInfo(req);
+    }
+}

@@ -12,9 +12,12 @@ import com.pd.im.common.model.ClientInfo;
 import com.pd.im.common.model.message.MessageContent;
 import com.pd.im.common.model.message.OfflineMessageContent;
 import com.pd.im.service.callback.CallbackService;
+import com.pd.im.service.message.model.req.SendMessageReq;
+import com.pd.im.service.message.model.resp.SendMessageResp;
+import com.pd.im.service.message.service.check.CheckSendMessageService;
 import com.pd.im.service.message.service.store.MessageStoreService;
 import com.pd.im.service.seq.RedisSequence;
-import com.pd.im.service.support.ids.ConversationIdGenerate;
+import com.pd.im.service.utils.ConversationIdGenerate;
 import com.pd.im.service.utils.MessageProducer;
 import com.pd.im.service.utils.ThreadPoolManager;
 import lombok.extern.slf4j.Slf4j;
@@ -44,6 +47,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 @Slf4j
 @Service
 public class P2PMessageService {
+    @Autowired
+    CheckSendMessageService checkSendMessageService;
 
     @Autowired
     private MessageProducer messageProducer;
@@ -277,9 +282,7 @@ public class P2PMessageService {
         String conversationId = ConversationIdGenerate.generateP2PId(
                 messageContent.getFromId(), messageContent.getToId());
 
-        String seqKey = messageContent.getAppId()
-                + Constants.SeqConstants.MessageSeq
-                + conversationId;
+        String seqKey = messageContent.getAppId() + ":" + Constants.SeqConstants.MessageSeq + ":" + conversationId;
 
         return redisSequence.doGetSeq(seqKey);
     }
@@ -392,4 +395,47 @@ public class P2PMessageService {
                 senderClient);
     }
 
+    /**
+     * 前置校验
+     * 1. 这个用户是否被禁言 是否被禁用
+     * 2. 发送方和接收方是否是好友
+     *
+     * @param fromId
+     * @param toId
+     * @param appId
+     * @return
+     */
+    public ResponseVO serverPermissionCheck(String fromId, String toId, Integer appId) {
+        ResponseVO responseVO = checkSendMessageService.checkSenderForbidAndMute(fromId, appId);
+        if (!responseVO.isOk()) {
+            return responseVO;
+        }
+        responseVO = checkSendMessageService.checkFriendShip(fromId, toId, appId);
+        return responseVO;
+    }
+
+    public SendMessageResp send(SendMessageReq req) {
+        SendMessageResp sendMessageResp = new SendMessageResp();
+
+        MessageContent message = new MessageContent();
+        message.setAppId(req.getAppId());
+        message.setClientType(req.getClientType());
+        message.setImei(req.getImei());
+        message.setMessageId(req.getMessageId());
+        message.setFromId(req.getFromId());
+        message.setToId(req.getToId());
+        message.setMessageBody(req.getMessageBody());
+        message.setMessageTime(req.getMessageTime());
+
+        //插入数据
+        messageStoreService.storeP2PMessage(message);
+        sendMessageResp.setMessageId(message.getMessageId());
+        sendMessageResp.setMessageTime(System.currentTimeMillis());
+
+        //2.发消息给同步在线端
+        syncToSender(message);
+        //3.发消息给对方在线端
+        dispatchToReceiver(message);
+        return sendMessageResp;
+    }
 }

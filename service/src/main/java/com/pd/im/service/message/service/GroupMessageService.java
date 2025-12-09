@@ -12,7 +12,10 @@ import com.pd.im.common.model.message.GroupChatMessageContent;
 import com.pd.im.common.model.message.MessageContent;
 import com.pd.im.common.model.message.OfflineMessageContent;
 import com.pd.im.service.callback.CallbackService;
+import com.pd.im.service.group.model.req.SendGroupMessageReq;
 import com.pd.im.service.group.service.ImGroupMemberService;
+import com.pd.im.service.message.model.resp.SendMessageResp;
+import com.pd.im.service.message.service.check.CheckSendMessageService;
 import com.pd.im.service.message.service.store.MessageStoreService;
 import com.pd.im.service.seq.RedisSequence;
 import com.pd.im.service.utils.MessageProducer;
@@ -44,6 +47,9 @@ import java.util.concurrent.ThreadPoolExecutor;
 @Slf4j
 @Service
 public class GroupMessageService {
+    @Autowired
+    CheckSendMessageService checkSendMessageService;
+
     @Autowired
     private MessageProducer messageProducer;
 
@@ -284,8 +290,7 @@ public class GroupMessageService {
     private long generateMessageSequence(GroupChatMessageContent messageContent) {
         // 定义群聊消息的 Sequence, 客户端根据 seq 进行排序
         // key: appId + Seq + (from + toId) / groupId
-        String seqKey = messageContent.getAppId()
-                + Constants.SeqConstants.GroupMessageSeq
+        String seqKey = messageContent.getAppId() + ":" + Constants.SeqConstants.GroupMessageSeq + ":"
                 + messageContent.getGroupId();
 
         return redisSequence.doGetSeq(seqKey);
@@ -353,5 +358,38 @@ public class GroupMessageService {
         } catch (Exception e) {
             log.error("后置回调执行异常: messageId={}", messageContent.getMessageId(), e);
         }
+    }
+
+    /**
+     * 前置校验
+     * 1. 这个用户是否被禁言 是否被禁用
+     * 2. 发送方是否在群组内
+     *
+     * @param fromId
+     * @param groupId
+     * @param appId
+     * @return
+     */
+    public ResponseVO serverPermissionCheck(String fromId, String groupId, Integer appId) {
+        return checkSendMessageService.checkGroupMessage(fromId, groupId, appId);
+    }
+
+    public SendMessageResp send(SendGroupMessageReq req) {
+
+        SendMessageResp sendMessageResp = new SendMessageResp();
+        GroupChatMessageContent message = new GroupChatMessageContent();
+        BeanUtils.copyProperties(req, message);
+
+        messageStoreService.storeGroupMessage(message);
+
+        sendMessageResp.setMessageId(message.getMessageId());
+        sendMessageResp.setMessageTime(System.currentTimeMillis());
+        //2.发消息给同步在线端
+        syncToSender(message);
+        //3.发消息给对方在线端
+        dispatchToReceiver(message);
+
+        return sendMessageResp;
+
     }
 }

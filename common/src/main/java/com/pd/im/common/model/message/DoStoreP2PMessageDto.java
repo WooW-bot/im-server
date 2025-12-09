@@ -1,6 +1,5 @@
 package com.pd.im.common.model.message;
 
-import com.pd.im.common.model.message.content.MessageBody;
 import lombok.Data;
 
 /**

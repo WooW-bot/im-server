@@ -4,7 +4,7 @@ import com.pd.im.common.model.message.DoStoreGroupMessageDto;
 import com.pd.im.common.model.message.DoStoreP2PMessageDto;
 import com.pd.im.common.model.message.GroupChatMessageContent;
 import com.pd.im.common.model.message.MessageContent;
-import com.pd.im.common.model.message.content.MessageBody;
+import com.pd.im.common.model.message.MessageBody;
 import com.pd.im.message.dao.ImGroupMessageHistoryEntity;
 import com.pd.im.message.dao.ImMessageBodyEntity;
 import com.pd.im.message.dao.ImMessageHistoryEntity;
