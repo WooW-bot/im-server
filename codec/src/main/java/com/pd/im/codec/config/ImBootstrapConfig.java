@@ -42,8 +42,6 @@ public class ImBootstrapConfig {
         private ZkConfig zkConfig;
         /** 应用ID */
         private Integer appId;
-        /** UserSign签名密钥 */
-        private String privateKey;
     }
 
     @Data
@@ -103,11 +101,5 @@ public class ImBootstrapConfig {
         private String zkAddr;
         /** zk 连接超时时间 */
         private Integer zkConnectTimeOut;
-        /** zk 会话超时时间 */
-        private Integer zkSessionTimeOut;
-        /** 重试等待时间 */
-        private Integer retryTimeMs;
-        /** 最大重试次数 */
-        private Integer maxRetries;
     }
 }

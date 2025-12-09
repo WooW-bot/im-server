@@ -171,7 +171,7 @@ public class P2PMessageService {
     private void handleNewMessage(MessageContent messageContent) {
         // 1. 前置回调校验
         ResponseVO callbackResponse = executeBeforeCallback(messageContent);
-        if (!callbackResponse.isOk()) {
+        if (!callbackResponse.isSuccess()) {
             // 回调失败，返回ACK告知发送方
             sendAck(messageContent, callbackResponse);
             return;
@@ -407,7 +407,7 @@ public class P2PMessageService {
      */
     public ResponseVO serverPermissionCheck(String fromId, String toId, Integer appId) {
         ResponseVO responseVO = checkSendMessageService.checkSenderForbidAndMute(fromId, appId);
-        if (!responseVO.isOk()) {
+        if (!responseVO.isSuccess()) {
             return responseVO;
         }
         responseVO = checkSendMessageService.checkFriendShip(fromId, toId, appId);

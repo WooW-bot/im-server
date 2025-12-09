@@ -1,7 +1,7 @@
 package com.pd.im.codec;
 
 import com.pd.im.codec.proto.Message;
-import com.pd.im.codec.utils.MessageCodecUtils;
+import com.pd.im.codec.util.MessageCodecUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;

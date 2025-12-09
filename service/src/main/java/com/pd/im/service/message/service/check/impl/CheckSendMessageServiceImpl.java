@@ -2,7 +2,7 @@ package com.pd.im.service.message.service.check.impl;
 
 import com.pd.im.common.ResponseVO;
 import com.pd.im.common.config.AppConfig;
-import com.pd.im.common.enums.friend.FriendShipErrorCode;
+import com.pd.im.common.enums.friend.FriendshipErrorCode;
 import com.pd.im.common.enums.friend.FriendshipStatus;
 import com.pd.im.common.enums.group.GroupErrorCode;
 import com.pd.im.common.enums.group.GroupMemberRole;
@@ -50,7 +50,7 @@ public class CheckSendMessageServiceImpl implements CheckSendMessageService {
     public ResponseVO checkSenderForbidAndMute(String fromId, Integer appId) {
         // 查询用户是否存在
         ResponseVO<ImUserDataEntity> singleUserInfo = userService.getSingleUserInfo(fromId, appId);
-        if (!singleUserInfo.isOk()) {
+        if (!singleUserInfo.isSuccess()) {
             return singleUserInfo;
         }
 
@@ -70,32 +70,32 @@ public class CheckSendMessageServiceImpl implements CheckSendMessageService {
         if (appConfig.isSendMessageCheckFriend()) {
             // 自己与对方的好友关系链是否正常【库表是否有这行记录: from2to】
             ResponseVO<ImFriendShipEntity> fromRelation = getRelation(fromId, toId, appId);
-            if (!fromRelation.isOk()) {
+            if (!fromRelation.isSuccess()) {
                 return fromRelation;
             }
             // 对方与自己的好友关系链是否正常【库表是否有这行记录: to2from】
             ResponseVO<ImFriendShipEntity> toRelation = getRelation(toId, fromId, appId);
-            if (!toRelation.isOk()) {
+            if (!toRelation.isSuccess()) {
                 return toRelation;
             }
 
             // 检查自己是否删除对方
             if (!FriendshipStatus.FRIEND_STATUS_NORMAL.getCode().equals(fromRelation.getData().getStatus())) {
-                return ResponseVO.errorResponse(FriendShipErrorCode.FRIEND_IS_DELETED);
+                return ResponseVO.errorResponse(FriendshipErrorCode.FRIEND_IS_DELETED);
             }
 
             // 检查对方是否删除己方
             if (!FriendshipStatus.FRIEND_STATUS_NORMAL.getCode().equals(toRelation.getData().getStatus())) {
-                return ResponseVO.errorResponse(FriendShipErrorCode.FRIEND_IS_DELETED);
+                return ResponseVO.errorResponse(FriendshipErrorCode.FRIEND_IS_DELETED);
             }
 
             if (appConfig.isSendMessageCheckBlack()) {
                 if (!FriendshipStatus.BLACK_STATUS_NORMAL.getCode().equals(fromRelation.getData().getBlack())) {
-                    return ResponseVO.errorResponse(FriendShipErrorCode.FRIEND_IS_BLACK);
+                    return ResponseVO.errorResponse(FriendshipErrorCode.FRIEND_IS_BLACK);
                 }
 
                 if (!Objects.equals(FriendshipStatus.BLACK_STATUS_NORMAL.getCode(), toRelation.getData().getBlack())) {
-                    return ResponseVO.errorResponse(FriendShipErrorCode.TARGET_IS_BLACK_YOU);
+                    return ResponseVO.errorResponse(FriendshipErrorCode.TARGET_IS_BLACK_YOU);
                 }
             }
         }
@@ -106,19 +106,19 @@ public class CheckSendMessageServiceImpl implements CheckSendMessageService {
     @Override
     public ResponseVO checkGroupMessage(String fromId, String groupId, Integer appId) {
         ResponseVO responseVO = checkSenderForbidAndMute(fromId, appId);
-        if (!responseVO.isOk()) {
+        if (!responseVO.isSuccess()) {
             return responseVO;
         }
 
         // 数据库查询是否有该群
         ResponseVO<ImGroupEntity> group = groupService.getGroup(groupId, appId);
-        if (!group.isOk()) {
+        if (!group.isSuccess()) {
             return group;
         }
 
         // 查询该成员是否在群，在群里为什么角色
         ResponseVO<GetRoleInGroupResp> roleInGroupOne = groupMemberService.getRoleInGroupOne(groupId, fromId, appId);
-        if (!roleInGroupOne.isOk()) {
+        if (!roleInGroupOne.isSuccess()) {
             return roleInGroupOne;
         }
         GetRoleInGroupResp data = roleInGroupOne.getData();

@@ -1,9 +1,6 @@
 package com.pd.im.service.utils;
 
 import com.alibaba.fastjson.JSONObject;
-import com.pd.im.codec.proto.group.AddGroupMemberPack;
-import com.pd.im.codec.proto.group.RemoveGroupMemberPack;
-import com.pd.im.codec.proto.group.UpdateGroupMemberPack;
 import com.pd.im.common.enums.command.Command;
 import com.pd.im.common.enums.command.GroupEventCommand;
 import com.pd.im.common.enums.device.ClientType;

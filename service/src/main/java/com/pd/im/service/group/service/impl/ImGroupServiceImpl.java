@@ -148,7 +148,7 @@ public class ImGroupServiceImpl implements ImGroupService {
             //不是后台调用需要检查权限
             ResponseVO<GetRoleInGroupResp> role = groupMemberService.getRoleInGroupOne(req.getGroupId(),
                     req.getOperator(), req.getAppId());
-            if (!role.isOk()) {
+            if (!role.isSuccess()) {
                 // 用户不在群内
                 return role;
             }
@@ -207,7 +207,7 @@ public class ImGroupServiceImpl implements ImGroupService {
     public ResponseVO getJoinedGroup(GetJoinedGroupReq req) {
         // 1. 获取用户加入所有群 ID
         ResponseVO<Collection<String>> memberJoinedGroup = groupMemberService.getMemberJoinedGroup(req);
-        if (memberJoinedGroup.isOk()) {
+        if (memberJoinedGroup.isSuccess()) {
             GetJoinedGroupResp resp = new GetJoinedGroupResp();
             if (CollectionUtils.isEmpty(memberJoinedGroup.getData())) {
                 resp.setTotalCount(0);
@@ -283,7 +283,7 @@ public class ImGroupServiceImpl implements ImGroupService {
     public ResponseVO transferGroup(TransferGroupReq req) {
         ResponseVO<GetRoleInGroupResp> roleInGroupOne = groupMemberService.getRoleInGroupOne(req.getGroupId(),
                 req.getOperator(), req.getAppId());
-        if (!roleInGroupOne.isOk()) {
+        if (!roleInGroupOne.isSuccess()) {
             return roleInGroupOne;
         }
         if (!Objects.equals(roleInGroupOne.getData().getRole(), GroupMemberRole.OWNER.getCode())) {
@@ -291,7 +291,7 @@ public class ImGroupServiceImpl implements ImGroupService {
         }
         ResponseVO<GetRoleInGroupResp> newOwnerRole = groupMemberService.getRoleInGroupOne(req.getGroupId(),
                 req.getOwnerId(), req.getAppId());
-        if (!newOwnerRole.isOk()) {
+        if (!newOwnerRole.isSuccess()) {
             return newOwnerRole;
         }
         LambdaQueryWrapper<ImGroupEntity> queryWrapper = new LambdaQueryWrapper<ImGroupEntity>()
@@ -341,7 +341,7 @@ public class ImGroupServiceImpl implements ImGroupService {
     @Override
     public ResponseVO getGroup(GetGroupReq req) {
         ResponseVO group = getGroup(req.getGroupId(), req.getAppId());
-        if (!group.isOk()) {
+        if (!group.isSuccess()) {
             return group;
         }
         GetGroupResp getGroupResp = new GetGroupResp();
@@ -349,7 +349,7 @@ public class ImGroupServiceImpl implements ImGroupService {
         try {
             ResponseVO<List<GroupMemberDto>> groupMember = groupMemberService.getGroupMembers(req.getGroupId(),
                     req.getAppId());
-            if (groupMember.isOk()) {
+            if (groupMember.isSuccess()) {
                 getGroupResp.setMemberList(groupMember.getData());
             }
         } catch (Exception e) {
@@ -361,7 +361,7 @@ public class ImGroupServiceImpl implements ImGroupService {
     @Override
     public ResponseVO muteGroup(MuteGroupReq req) {
         ResponseVO<ImGroupEntity> groupResp = getGroup(req.getGroupId(), req.getAppId());
-        if (!groupResp.isOk()) {
+        if (!groupResp.isSuccess()) {
             return groupResp;
         }
         if (groupResp.getData().getStatus() == GroupStatus.DESTROY.getCode()) {
@@ -372,7 +372,7 @@ public class ImGroupServiceImpl implements ImGroupService {
             //不是后台调用需要检查权限
             ResponseVO<GetRoleInGroupResp> role = groupMemberService
                     .getRoleInGroupOne(req.getGroupId(), req.getOperator(), req.getAppId());
-            if (!role.isOk()) {
+            if (!role.isSuccess()) {
                 return role;
             }
             GetRoleInGroupResp data = role.getData();
@@ -400,7 +400,7 @@ public class ImGroupServiceImpl implements ImGroupService {
         SyncResp<ImGroupEntity> resp = new SyncResp<>();
         ResponseVO<Collection<String>> memberJoinedGroup = groupMemberService
                 .syncMemberJoinedGroup(req.getOperator(), req.getAppId());
-        if (memberJoinedGroup.isOk()) {
+        if (memberJoinedGroup.isSuccess()) {
             Collection<String> data = memberJoinedGroup.getData();
 
             List<ImGroupEntity> list = imGroupMapper.selectList(
@@ -429,7 +429,7 @@ public class ImGroupServiceImpl implements ImGroupService {
     @Override
     public Long getUserGroupMaxSeq(String userId, Integer appId) {
         ResponseVO<Collection<String>> memberJoinedGroup = groupMemberService.syncMemberJoinedGroup(userId, appId);
-        if (!memberJoinedGroup.isOk()) {
+        if (!memberJoinedGroup.isSuccess()) {
             throw new ApplicationException(500, "");
         }
         Long maxSeq = imGroupMapper.getJoinGroupMaxSeq(memberJoinedGroup.getData(), appId);

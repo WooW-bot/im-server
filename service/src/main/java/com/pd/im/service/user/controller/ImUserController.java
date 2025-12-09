@@ -56,7 +56,7 @@ public class ImUserController {
     @RequestMapping("/login")
     public ResponseVO login(@RequestBody @Validated LoginReq req) {
         ResponseVO login = imUserService.login(req);
-        if (login.isOk()) {
+        if (login.isSuccess()) {
             // 从 Zk 获取 im 地址，返回给 sdk
             List<String> allNode;
             if (ClientType.WEB.getCode().equals(req.getClientType())) {

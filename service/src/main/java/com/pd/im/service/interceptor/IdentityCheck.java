@@ -111,7 +111,7 @@ public class IdentityCheck {
     public void setIsAdmin(String identifier, Integer appId) {
         //去DB或Redis中查找, 后面写
         ResponseVO<ImUserDataEntity> singleUserInfo = imUserService.getSingleUserInfo(identifier, appId);
-        if (singleUserInfo.isOk()) {
+        if (singleUserInfo.isSuccess()) {
             RequestHolder.set(singleUserInfo.getData().getUserType() == UserType.APP_ADMIN.getCode());
         } else {
             RequestHolder.set(false);

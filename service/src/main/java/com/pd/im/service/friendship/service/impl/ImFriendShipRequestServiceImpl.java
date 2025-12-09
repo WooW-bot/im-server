@@ -122,11 +122,11 @@ public class ImFriendShipRequestServiceImpl implements ImFriendShipRequestServic
             dto.setRemark(imFriendShipRequestEntity.getRemark());
             dto.setToId(imFriendShipRequestEntity.getToId());
             ResponseVO responseVO = imFriendShipService.doAddFriend(req, imFriendShipRequestEntity.getFromId(), dto, req.getAppId());
-//            if(!responseVO.isOk()){
+//            if(!responseVO.isSuccess()){
 ////                TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
 //                return responseVO;
 //            }
-            if (!responseVO.isOk() && responseVO.getCode() != FriendShipErrorCode.TO_IS_YOUR_FRIEND.getCode()) {
+            if (!responseVO.isSuccess() && responseVO.getCode() != FriendShipErrorCode.TO_IS_YOUR_FRIEND.getCode()) {
                 return responseVO;
             }
         }

@@ -222,7 +222,7 @@ public class GroupMessageService {
     private void handleNewMessage(GroupChatMessageContent messageContent) {
         // 1. 前置回调校验
         ResponseVO callbackResponse = executeBeforeCallback(messageContent);
-        if (!callbackResponse.isOk()) {
+        if (!callbackResponse.isSuccess()) {
             // 回调失败，返回ACK告知发送方
             sendAck(messageContent, callbackResponse);
             return;

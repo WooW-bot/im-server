@@ -9,7 +9,6 @@ import lombok.Data;
 @Data
 public class AddFriendPack {
     private String fromId;
-
     /**
      * 备注
      */
@@ -23,6 +22,5 @@ public class AddFriendPack {
      * 添加好友时的描述信息（用于打招呼）
      */
     private String addWording;
-
     private Long sequence;
 }

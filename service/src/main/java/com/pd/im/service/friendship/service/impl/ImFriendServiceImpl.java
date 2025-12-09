@@ -122,11 +122,11 @@ public class ImFriendServiceImpl implements ImFriendService {
     @Override
     public ResponseVO addFriend(AddFriendReq req) {
         ResponseVO<ImUserDataEntity> fromInfo = imUserService.getSingleUserInfo(req.getFromId(), req.getAppId());
-        if (!fromInfo.isOk()) {
+        if (!fromInfo.isSuccess()) {
             return fromInfo;
         }
         ResponseVO<ImUserDataEntity> toInfo = imUserService.getSingleUserInfo(req.getToItem().getToId(), req.getAppId());
-        if (!toInfo.isOk()) {
+        if (!toInfo.isSuccess()) {
             return toInfo;
         }
 
@@ -134,7 +134,7 @@ public class ImFriendServiceImpl implements ImFriendService {
         if (appConfig.isAddFriendBeforeCallback()) {
             ResponseVO callbackResp = callbackService.beforeCallback(req.getAppId(),
                     Constants.CallbackCommand.ADD_FRIEND_BEFORE, JSONObject.toJSONString(req));
-            if (!callbackResp.isOk()) {
+            if (!callbackResp.isSuccess()) {
                 // 如果回调不成功(状态码非 200), 错误需要返回给前端
                 // 注意: 这里的回调不成功是指响应失败，表明用户没有该权限。
                 // 回调机制抛出异常需要放行，正常处理，表名服务器后台故障，需要维修
@@ -157,7 +157,7 @@ public class ImFriendServiceImpl implements ImFriendService {
             if (fromItem == null || !fromItem.getStatus().equals(FriendshipStatus.FRIEND_STATUS_NORMAL.getCode())) {
                 //插入一条好友申请的数据
                 ResponseVO responseVO = imFriendShipRequestService.addFriendshipRequest(req.getFromId(), req.getToItem(), req.getAppId());
-                if (!responseVO.isOk()) {
+                if (!responseVO.isSuccess()) {
                     return responseVO;
                 }
             } else {
@@ -282,18 +282,18 @@ public class ImFriendServiceImpl implements ImFriendService {
     @Override
     public ResponseVO updateFriend(UpdateFriendReq req) {
         ResponseVO<ImUserDataEntity> fromInfo = imUserService.getSingleUserInfo(req.getFromId(), req.getAppId());
-        if (!fromInfo.isOk()) {
+        if (!fromInfo.isSuccess()) {
             return fromInfo;
         }
 
         ResponseVO<ImUserDataEntity> toInfo = imUserService.getSingleUserInfo(req.getToItem().getToId(), req.getAppId());
-        if (!toInfo.isOk()) {
+        if (!toInfo.isSuccess()) {
             return toInfo;
         }
 
         ResponseVO responseVO = this.doUpdate(req.getFromId(), req.getToItem(), req.getAppId());
 
-        if (responseVO.isOk()) {
+        if (responseVO.isSuccess()) {
             UpdateFriendPack updateFriendPack = new UpdateFriendPack();
             updateFriendPack.setRemark(req.getToItem().getRemark());
             updateFriendPack.setToId(req.getToItem().getToId());
@@ -457,11 +457,11 @@ public class ImFriendServiceImpl implements ImFriendService {
     @Override
     public ResponseVO addBlack(AddFriendShipBlackReq req) {
         ResponseVO<ImUserDataEntity> fromInfo = imUserService.getSingleUserInfo(req.getFromId(), req.getAppId());
-        if (!fromInfo.isOk()) {
+        if (!fromInfo.isSuccess()) {
             return fromInfo;
         }
         ResponseVO<ImUserDataEntity> toInfo = imUserService.getSingleUserInfo(req.getToId(), req.getAppId());
-        if (!toInfo.isOk()) {
+        if (!toInfo.isSuccess()) {
             return toInfo;
         }
         QueryWrapper<ImFriendShipEntity> query = new QueryWrapper<>();

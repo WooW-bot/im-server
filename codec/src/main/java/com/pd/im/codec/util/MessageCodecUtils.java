@@ -1,4 +1,4 @@
-package com.pd.im.codec.utils;
+package com.pd.im.codec.util;
 
 import com.alibaba.fastjson.JSONObject;
 import com.pd.im.codec.proto.Message;

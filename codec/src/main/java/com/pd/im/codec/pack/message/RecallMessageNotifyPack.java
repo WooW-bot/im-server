@@ -1,4 +1,4 @@
-package com.pd.im.codec.proto;
+package com.pd.im.codec.pack.message;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;

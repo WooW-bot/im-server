@@ -44,14 +44,14 @@ public class ImFriendShipGroupMemberServiceImpl implements ImFriendShipGroupMemb
 
         ResponseVO<ImFriendShipGroupEntity> group = imFriendShipGroupService
                 .getGroup(req.getFromId(), req.getGroupName(), req.getAppId());
-        if (!group.isOk()) {
+        if (!group.isSuccess()) {
             return group;
         }
 
         List<String> successId = new ArrayList<>();
         for (String toId : req.getToIds()) {
             ResponseVO<ImUserDataEntity> singleUserInfo = imUserService.getSingleUserInfo(toId, req.getAppId());
-            if (singleUserInfo.isOk()) {
+            if (singleUserInfo.isSuccess()) {
                 int i = doAddGroupMember(group.getData().getGroupId(), toId);
                 if (i == 1) {
                     successId.add(toId);
@@ -75,14 +75,14 @@ public class ImFriendShipGroupMemberServiceImpl implements ImFriendShipGroupMemb
     public ResponseVO delGroupMember(DeleteFriendShipGroupMemberReq req) {
         ResponseVO<ImFriendShipGroupEntity> group = imFriendShipGroupService
                 .getGroup(req.getFromId(), req.getGroupName(), req.getAppId());
-        if (!group.isOk()) {
+        if (!group.isSuccess()) {
             return group;
         }
 
         List<String> successId = new ArrayList<>();
         for (String toId : req.getToIds()) {
             ResponseVO<ImUserDataEntity> singleUserInfo = imUserService.getSingleUserInfo(toId, req.getAppId());
-            if (singleUserInfo.isOk()) {
+            if (singleUserInfo.isSuccess()) {
                 int i = deleteGroupMember(group.getData().getGroupId(), toId);
                 if (i == 1) {
                     successId.add(toId);

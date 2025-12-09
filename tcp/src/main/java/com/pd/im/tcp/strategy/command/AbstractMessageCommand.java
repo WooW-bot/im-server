@@ -49,7 +49,7 @@ public abstract class AbstractMessageCommand implements CommandStrategy {
         // 调用业务层校验接口
         ResponseVO responseVO = validateMessage(feignMessageService, req);
 
-        if (responseVO.isOk()) {
+        if (responseVO.isSuccess()) {
             // 校验通过，发送到MQ
             MqMessageProducer.sendMessage(msg, msg.getMessageHeader().getCommand());
         } else {
