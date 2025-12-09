@@ -1,12 +1,12 @@
 package com.pd.im.common.enums.device;
 
-import com.pd.im.common.enums.CodeAdapter;
+import com.pd.im.common.enums.CodeProvider;
 
 /**
  * @author Parker
  * @date 12/4/25
  */
-public enum ClientType implements CodeAdapter {
+public enum ClientType implements CodeProvider {
     WEBAPI(0, "webapi"),
     WEB(1, "web"),
     IOS(2, "ios"),

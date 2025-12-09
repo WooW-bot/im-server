@@ -1,6 +1,6 @@
-package com.pd.im.common.utils;
+package com.pd.im.common.util;
 
-import com.pd.im.common.BaseErrorCode;
+import com.pd.im.common.enums.BaseErrorCode;
 import com.pd.im.common.exception.ApplicationException;
 import com.pd.im.common.route.RouteInfo;
 
@@ -8,7 +8,7 @@ import com.pd.im.common.route.RouteInfo;
  * @author Parker
  * @date 12/8/25
  */
-public class RouteInfoParseUtil {
+public class RouteInfoParser {
     public static RouteInfo parse(String info) {
         try {
             String[] serverInfo = info.split(":");

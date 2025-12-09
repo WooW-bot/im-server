@@ -42,7 +42,7 @@ public class ResponseVO<T> {
         return new ResponseVO(enums.getCode(), enums.getError());
     }
 
-    public boolean isOk() {
+    public boolean isSuccess() {
         return this.code == 200;
     }
 

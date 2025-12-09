@@ -4,7 +4,7 @@ package com.pd.im.common.enums.route;
  * @author Parker
  * @date 12/8/25
  */
-public enum UrlRouteModelEnum {
+public enum UrlRouteMode {
     /**
      * 随机
      */
@@ -28,16 +28,16 @@ public enum UrlRouteModelEnum {
      * @param ordinal
      * @return
      */
-    public static UrlRouteModelEnum getHandler(int ordinal) {
-        for (int i = 0; i < UrlRouteModelEnum.values().length; i++) {
-            if (UrlRouteModelEnum.values()[i].getCode() == ordinal) {
-                return UrlRouteModelEnum.values()[i];
+    public static UrlRouteMode getHandler(int ordinal) {
+        for (int i = 0; i < UrlRouteMode.values().length; i++) {
+            if (UrlRouteMode.values()[i].getCode() == ordinal) {
+                return UrlRouteMode.values()[i];
             }
         }
         return null;
     }
 
-    UrlRouteModelEnum(int code, String clazz) {
+    UrlRouteMode(int code, String clazz) {
         this.code = code;
         this.clazz = clazz;
     }

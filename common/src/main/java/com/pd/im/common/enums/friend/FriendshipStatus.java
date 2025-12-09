@@ -4,7 +4,7 @@ package com.pd.im.common.enums.friend;
  * @author Parker
  * @date 12/7/25
  */
-public enum FriendShipStatusEnum {
+public enum FriendshipStatus {
     /**
      * 0未添加 1正常 2删除
      */
@@ -24,7 +24,7 @@ public enum FriendShipStatusEnum {
 
     private Integer code;
 
-    FriendShipStatusEnum(int code) {
+    FriendshipStatus(int code) {
         this.code = code;
     }
 

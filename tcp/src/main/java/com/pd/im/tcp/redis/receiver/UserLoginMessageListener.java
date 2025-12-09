@@ -30,7 +30,7 @@ public class UserLoginMessageListener {
 
     public void listenUserLogin() {
         // 监听者监听 UserLoginChannel 队列
-        RTopic topic = RedissonManager.getRedissonClient().getTopic(Constants.RedisConstants.UserLoginChannel);
+        RTopic topic = RedissonManager.getRedissonClient().getTopic(Constants.RedisConstants.USER_LOGIN_CHANNEL);
         topic.addListener(String.class, (CharSequence charSequence, String msg) -> {
             log.info("收到用户上线通知: {}", msg);
             UserClientDto dto = JSONObject.parseObject(msg, UserClientDto.class);

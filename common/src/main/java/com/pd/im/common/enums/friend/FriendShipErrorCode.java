@@ -6,7 +6,7 @@ import com.pd.im.common.exception.ApplicationExceptionEnum;
  * @author Parker
  * @date 12/7/25
  */
-public enum FriendShipErrorCode implements ApplicationExceptionEnum {
+public enum FriendshipErrorCode implements ApplicationExceptionEnum {
     IMPORT_SIZE_BEYOND(30000, "导入数量超出上限"),
 
     ADD_FRIEND_ERROR(30001, "添加好友失败"),
@@ -43,7 +43,7 @@ public enum FriendShipErrorCode implements ApplicationExceptionEnum {
     private int code;
     private String error;
 
-    FriendShipErrorCode(int code, String error) {
+    FriendshipErrorCode(int code, String error) {
         this.code = code;
         this.error = error;
     }

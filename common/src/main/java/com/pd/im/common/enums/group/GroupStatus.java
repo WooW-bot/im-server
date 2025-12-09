@@ -4,7 +4,7 @@ package com.pd.im.common.enums.group;
  * @author Parker
  * @date 12/8/25
  */
-public enum GroupStatusEnum {
+public enum GroupStatus {
     /**
      * 1正常 2解散 其他待定比如封禁...
      */
@@ -19,15 +19,15 @@ public enum GroupStatusEnum {
      * @param ordinal
      * @return
      */
-    public static GroupStatusEnum getEnum(Integer ordinal) {
+    public static GroupStatus getEnum(Integer ordinal) {
 
         if(ordinal == null){
             return null;
         }
 
-        for (int i = 0; i < GroupStatusEnum.values().length; i++) {
-            if (GroupStatusEnum.values()[i].getCode() == ordinal) {
-                return GroupStatusEnum.values()[i];
+        for (int i = 0; i < GroupStatus.values().length; i++) {
+            if (GroupStatus.values()[i].getCode() == ordinal) {
+                return GroupStatus.values()[i];
             }
         }
         return null;
@@ -35,7 +35,7 @@ public enum GroupStatusEnum {
 
     private int code;
 
-    GroupStatusEnum(int code){
+    GroupStatus(int code){
         this.code=code;
     }
 

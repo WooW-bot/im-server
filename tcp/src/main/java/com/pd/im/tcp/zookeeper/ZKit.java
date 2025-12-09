@@ -16,16 +16,16 @@ public class ZKit {
 
     //im-coreRoot/tcp/ip:port
     public void createRootNode() {
-        boolean exists = zkClient.exists(Constants.ZKConstants.ImCoreZkRoot);
+        boolean exists = zkClient.exists(Constants.ZKConstants.IM_CORE_ZK_ROOT);
         if (!exists) {
-            zkClient.createPersistent(Constants.ZKConstants.ImCoreZkRoot);
+            zkClient.createPersistent(Constants.ZKConstants.IM_CORE_ZK_ROOT);
         }
-        String tcpParentPath = Constants.ZKConstants.ImCoreZkRoot + Constants.ZKConstants.ImCoreZkRootTcp;
+        String tcpParentPath = Constants.ZKConstants.IM_CORE_ZK_ROOT + Constants.ZKConstants.IM_CORE_ZK_ROOT_TCP;
         boolean tcpExists = zkClient.exists(tcpParentPath);
         if (!tcpExists) {
             zkClient.createPersistent(tcpParentPath);
         }
-        String webParentPath = Constants.ZKConstants.ImCoreZkRoot + Constants.ZKConstants.ImCoreZkRootWeb;
+        String webParentPath = Constants.ZKConstants.IM_CORE_ZK_ROOT + Constants.ZKConstants.IM_CORE_ZK_ROOT_WEB;
         boolean webExists = zkClient.exists(webParentPath);
         if (!webExists) {
             zkClient.createPersistent(webParentPath);

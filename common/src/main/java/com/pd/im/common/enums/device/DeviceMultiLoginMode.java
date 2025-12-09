@@ -1,12 +1,12 @@
 package com.pd.im.common.enums.device;
 
-import com.pd.im.common.enums.CodeAdapter;
+import com.pd.im.common.enums.CodeProvider;
 
 /**
  * @author Parker
  * @date 12/3/25
  */
-public enum DeviceMultiLoginEnum implements CodeAdapter {
+public enum DeviceMultiLoginMode implements CodeProvider {
     /**
      * 单端登录 仅允许 Windows、Web、Android 或 iOS 单端登录。
      */
@@ -30,7 +30,7 @@ public enum DeviceMultiLoginEnum implements CodeAdapter {
     private Integer loginMode;
     private String loginDesc;
 
-    DeviceMultiLoginEnum(Integer loginMode, String loginDesc) {
+    DeviceMultiLoginMode(Integer loginMode, String loginDesc) {
         this.loginMode = loginMode;
         this.loginDesc = loginDesc;
     }

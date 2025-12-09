@@ -6,7 +6,7 @@ import com.pd.im.common.ResponseVO;
 import com.pd.im.common.config.AppConfig;
 import com.pd.im.common.constant.Constants;
 import com.pd.im.common.enums.command.GroupEventCommand;
-import com.pd.im.common.enums.conversation.ConversationTypeEnum;
+import com.pd.im.common.enums.conversation.ConversationType;
 import com.pd.im.common.model.ClientInfo;
 import com.pd.im.common.model.message.GroupChatMessageContent;
 import com.pd.im.common.model.message.MessageContent;
@@ -290,7 +290,7 @@ public class GroupMessageService {
     private long generateMessageSequence(GroupChatMessageContent messageContent) {
         // 定义群聊消息的 Sequence, 客户端根据 seq 进行排序
         // key: appId + Seq + (from + toId) / groupId
-        String seqKey = messageContent.getAppId() + ":" + Constants.SeqConstants.GroupMessageSeq + ":"
+        String seqKey = messageContent.getAppId() + ":" + Constants.SeqConstants.GROUP_MESSAGE_SEQ + ":"
                 + messageContent.getGroupId();
 
         return redisSequence.doGetSeq(seqKey);
@@ -314,7 +314,7 @@ public class GroupMessageService {
         OfflineMessageContent offlineMessage = new OfflineMessageContent();
         BeanUtils.copyProperties(messageContent, offlineMessage);
         offlineMessage.setToId(messageContent.getGroupId());
-        offlineMessage.setConversationType(ConversationTypeEnum.GROUP.getCode());
+        offlineMessage.setConversationType(ConversationType.GROUP.getCode());
         messageStoreService.storeGroupOfflineMessage(offlineMessage, groupMemberIds);
     }
 
@@ -332,7 +332,7 @@ public class GroupMessageService {
         try {
             return callbackService.beforeCallback(
                     messageContent.getAppId(),
-                    Constants.CallbackCommand.SendGroupMessageBefore,
+                    Constants.CallbackCommand.SEND_GROUP_MESSAGE_BEFORE,
                     JSONObject.toJSONString(messageContent));
         } catch (Exception e) {
             log.error("前置回调执行异常: messageId={}", messageContent.getMessageId(), e);
@@ -353,7 +353,7 @@ public class GroupMessageService {
         try {
             callbackService.afterCallback(
                     messageContent.getAppId(),
-                    Constants.CallbackCommand.SendGroupMessageAfter,
+                    Constants.CallbackCommand.SEND_GROUP_MESSAGE_AFTER,
                     JSONObject.toJSONString(messageContent));
         } catch (Exception e) {
             log.error("后置回调执行异常: messageId={}", messageContent.getMessageId(), e);

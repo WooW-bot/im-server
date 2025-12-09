@@ -1,6 +1,6 @@
 package com.pd.im.common.route.algorithm.loop;
 
-import com.pd.im.common.BaseErrorCode;
+import com.pd.im.common.enums.BaseErrorCode;
 import com.pd.im.common.exception.ApplicationException;
 import com.pd.im.common.route.RouteHandler;
 

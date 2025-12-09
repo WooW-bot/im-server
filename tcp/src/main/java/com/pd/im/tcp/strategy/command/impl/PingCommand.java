@@ -19,7 +19,7 @@ public class PingCommand implements CommandStrategy {
     public void execute(CommandContext context) {
         // 更新channel的最后读取时间
         context.getCtx().channel()
-                .attr(AttributeKey.valueOf(Constants.ChannelConstants.ReadTime))
+                .attr(AttributeKey.valueOf(Constants.ChannelConstants.READ_TIME))
                 .set(System.currentTimeMillis());
     }
 }

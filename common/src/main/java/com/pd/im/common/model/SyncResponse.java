@@ -9,7 +9,7 @@ import java.util.List;
  * @date 12/7/25
  */
 @Data
-public class SyncResp<T> {
+public class SyncResponse<T> {
     /**
      * 服务端本次拉取的最大 Seq
      */

@@ -1,6 +1,6 @@
 package com.pd.im.common.enums;
 
-public enum DelFlagEnum {
+public enum DeleteFlag {
 
     /**
      * 0 正常；1 删除。
@@ -12,7 +12,7 @@ public enum DelFlagEnum {
 
     private int code;
 
-    DelFlagEnum(int code){
+    DeleteFlag(int code){
         this.code=code;
     }
 

@@ -4,7 +4,7 @@ package com.pd.im.common.enums.group;
  * @author Parker
  * @date 12/7/25
  */
-public enum GroupMuteTypeEnum {
+public enum GroupMuteType {
     /**
      * 是否全员禁言，0 不禁言；1 全员禁言。
      */
@@ -20,13 +20,13 @@ public enum GroupMuteTypeEnum {
      * @param ordinal
      * @return
      */
-    public static GroupMuteTypeEnum getEnum(Integer ordinal) {
+    public static GroupMuteType getEnum(Integer ordinal) {
         if (ordinal == null) {
             return null;
         }
-        for (int i = 0; i < GroupMuteTypeEnum.values().length; i++) {
-            if (GroupMuteTypeEnum.values()[i].getCode().equals(ordinal)) {
-                return GroupMuteTypeEnum.values()[i];
+        for (int i = 0; i < GroupMuteType.values().length; i++) {
+            if (GroupMuteType.values()[i].getCode().equals(ordinal)) {
+                return GroupMuteType.values()[i];
             }
         }
         return null;
@@ -34,7 +34,7 @@ public enum GroupMuteTypeEnum {
 
     private Integer code;
 
-    GroupMuteTypeEnum(int code) {
+    GroupMuteType(int code) {
         this.code = code;
     }
 

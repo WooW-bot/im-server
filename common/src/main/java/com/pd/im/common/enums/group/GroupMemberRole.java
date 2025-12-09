@@ -4,7 +4,7 @@ package com.pd.im.common.enums.group;
  * @author Parker
  * @date 12/7/25
  */
-public enum GroupMemberRoleEnum {
+public enum GroupMemberRole {
     /**
      * 普通成员
      */
@@ -34,16 +34,16 @@ public enum GroupMemberRoleEnum {
      * @param ordinal
      * @return
      */
-    public static GroupMemberRoleEnum getItem(int ordinal) {
-        for (int i = 0; i < GroupMemberRoleEnum.values().length; i++) {
-            if (GroupMemberRoleEnum.values()[i].getCode() == ordinal) {
-                return GroupMemberRoleEnum.values()[i];
+    public static GroupMemberRole getItem(int ordinal) {
+        for (int i = 0; i < GroupMemberRole.values().length; i++) {
+            if (GroupMemberRole.values()[i].getCode() == ordinal) {
+                return GroupMemberRole.values()[i];
             }
         }
         return null;
     }
 
-    GroupMemberRoleEnum(int code) {
+    GroupMemberRole(int code) {
         this.code = code;
     }
 

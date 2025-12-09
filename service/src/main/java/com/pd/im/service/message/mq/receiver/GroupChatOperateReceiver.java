@@ -32,8 +32,8 @@ public class GroupChatOperateReceiver extends AbstractChatOperateReceiver {
     @Override
     @RabbitListener(
             bindings = @QueueBinding(
-                    value = @Queue(value = Constants.RabbitmqConstants.Im2GroupService, durable = "true"),
-                    exchange = @Exchange(value = Constants.RabbitmqConstants.Im2GroupService, durable = "true")
+                    value = @Queue(value = Constants.RabbitmqConstants.IM_TO_GROUP_SERVICE, durable = "true"),
+                    exchange = @Exchange(value = Constants.RabbitmqConstants.IM_TO_GROUP_SERVICE, durable = "true")
             ),
             concurrency = "1"
     )
@@ -45,7 +45,7 @@ public class GroupChatOperateReceiver extends AbstractChatOperateReceiver {
 
     @Override
     protected String getQueueName() {
-        return Constants.RabbitmqConstants.Im2GroupService;
+        return Constants.RabbitmqConstants.IM_TO_GROUP_SERVICE;
     }
 
     @Override

@@ -1,4 +1,4 @@
-package com.pd.im.common.utils;
+package com.pd.im.common.util;
 
 import com.alibaba.fastjson.JSON;
 import com.pd.im.common.config.GlobalHttpClientConfig;

@@ -3,13 +3,13 @@ package com.pd.im.service.message.service.check.impl;
 import com.pd.im.common.ResponseVO;
 import com.pd.im.common.config.AppConfig;
 import com.pd.im.common.enums.friend.FriendShipErrorCode;
-import com.pd.im.common.enums.friend.FriendShipStatusEnum;
+import com.pd.im.common.enums.friend.FriendshipStatus;
 import com.pd.im.common.enums.group.GroupErrorCode;
-import com.pd.im.common.enums.group.GroupMemberRoleEnum;
-import com.pd.im.common.enums.group.GroupMuteTypeEnum;
+import com.pd.im.common.enums.group.GroupMemberRole;
+import com.pd.im.common.enums.group.GroupMuteType;
 import com.pd.im.common.enums.message.MessageErrorCode;
-import com.pd.im.common.enums.user.UserForbiddenFlagEnum;
-import com.pd.im.common.enums.user.UserSilentFlagEnum;
+import com.pd.im.common.enums.user.UserForbiddenFlag;
+import com.pd.im.common.enums.user.UserSilentFlag;
 import com.pd.im.service.friendship.dao.ImFriendShipEntity;
 import com.pd.im.service.friendship.model.req.GetRelationReq;
 import com.pd.im.service.friendship.service.ImFriendService;
@@ -56,9 +56,9 @@ public class CheckSendMessageServiceImpl implements CheckSendMessageService {
 
         // 用户是否被禁言或禁用
         ImUserDataEntity user = singleUserInfo.getData();
-        if (user.getForbiddenFlag() == UserForbiddenFlagEnum.FORBIBBEN.getCode()) {
+        if (user.getForbiddenFlag() == UserForbiddenFlag.FORBIBBEN.getCode()) {
             return ResponseVO.errorResponse(MessageErrorCode.FROMER_IS_FORBIBBEN);
-        } else if (user.getSilentFlag() == UserSilentFlagEnum.MUTE.getCode()) {
+        } else if (user.getSilentFlag() == UserSilentFlag.MUTE.getCode()) {
             return ResponseVO.errorResponse(MessageErrorCode.FROMER_IS_MUTE);
         }
 
@@ -80,21 +80,21 @@ public class CheckSendMessageServiceImpl implements CheckSendMessageService {
             }
 
             // 检查自己是否删除对方
-            if (!FriendShipStatusEnum.FRIEND_STATUS_NORMAL.getCode().equals(fromRelation.getData().getStatus())) {
+            if (!FriendshipStatus.FRIEND_STATUS_NORMAL.getCode().equals(fromRelation.getData().getStatus())) {
                 return ResponseVO.errorResponse(FriendShipErrorCode.FRIEND_IS_DELETED);
             }
 
             // 检查对方是否删除己方
-            if (!FriendShipStatusEnum.FRIEND_STATUS_NORMAL.getCode().equals(toRelation.getData().getStatus())) {
+            if (!FriendshipStatus.FRIEND_STATUS_NORMAL.getCode().equals(toRelation.getData().getStatus())) {
                 return ResponseVO.errorResponse(FriendShipErrorCode.FRIEND_IS_DELETED);
             }
 
             if (appConfig.isSendMessageCheckBlack()) {
-                if (!FriendShipStatusEnum.BLACK_STATUS_NORMAL.getCode().equals(fromRelation.getData().getBlack())) {
+                if (!FriendshipStatus.BLACK_STATUS_NORMAL.getCode().equals(fromRelation.getData().getBlack())) {
                     return ResponseVO.errorResponse(FriendShipErrorCode.FRIEND_IS_BLACK);
                 }
 
-                if (!Objects.equals(FriendShipStatusEnum.BLACK_STATUS_NORMAL.getCode(), toRelation.getData().getBlack())) {
+                if (!Objects.equals(FriendshipStatus.BLACK_STATUS_NORMAL.getCode(), toRelation.getData().getBlack())) {
                     return ResponseVO.errorResponse(FriendShipErrorCode.TARGET_IS_BLACK_YOU);
                 }
             }
@@ -126,9 +126,9 @@ public class CheckSendMessageServiceImpl implements CheckSendMessageService {
         // 判断群是否被禁言
         // 如果禁言 只有裙管理和群主可以发言
         ImGroupEntity groupData = group.getData();
-        boolean isGroupMute = GroupMuteTypeEnum.MUTE.getCode().equals(groupData.getMute());
-        boolean isManager = GroupMemberRoleEnum.MANAGER.getCode().equals(data.getRole());
-        boolean isOwner = GroupMemberRoleEnum.OWNER.getCode().equals(data.getRole());
+        boolean isGroupMute = GroupMuteType.MUTE.getCode().equals(groupData.getMute());
+        boolean isManager = GroupMemberRole.MANAGER.getCode().equals(data.getRole());
+        boolean isOwner = GroupMemberRole.OWNER.getCode().equals(data.getRole());
         if (isGroupMute && !(isManager || isOwner)) {
             return ResponseVO.errorResponse(GroupErrorCode.THIS_GROUP_IS_MUTE);
         }

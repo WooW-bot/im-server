@@ -6,9 +6,9 @@ import com.pd.im.common.ResponseVO;
 import com.pd.im.common.config.AppConfig;
 import com.pd.im.common.constant.Constants;
 import com.pd.im.common.enums.GateWayErrorCode;
-import com.pd.im.common.enums.user.UserTypeEnum;
+import com.pd.im.common.enums.user.UserType;
 import com.pd.im.common.exception.ApplicationExceptionEnum;
-import com.pd.im.common.utils.SigAPI;
+import com.pd.im.common.util.SigAPI;
 import com.pd.im.service.user.dao.ImUserDataEntity;
 import com.pd.im.service.user.service.ImUserService;
 import lombok.extern.slf4j.Slf4j;
@@ -35,7 +35,7 @@ public class IdentityCheck {
 
     public ApplicationExceptionEnum checkUserSig(String identifier, String appId, String userSig) {
         // 10001:userSign:bantangereJyrVgrxCdZLrSjILEpVsjI0gAIdsHBiQYFnCkTUUAdJYUhmLkixmYWBiYm5sSVULjMlNa8kMy0ztUjJSikpMa8kMS8dyIZIFmemA0XziiJzQs0tvVLK-IPLjE1K9XOTMs3KyiL9w0qTwkMCsg1CLI2Kg-wiqyIibZVqAQHCL7I_
-        String cacheUserSig = stringRedisTemplate.opsForValue().get(appId + Constants.RedisConstants.UserSign + identifier + userSig);
+        String cacheUserSig = stringRedisTemplate.opsForValue().get(appId + Constants.RedisConstants.USER_SIGN + identifier + userSig);
         if (!StringUtils.isBlank(cacheUserSig) && Long.valueOf(cacheUserSig) > System.currentTimeMillis() / 1000) {
             this.setIsAdmin(identifier, Integer.valueOf(appId));
             return BaseErrorCode.SUCCESS;
@@ -90,7 +90,7 @@ public class IdentityCheck {
         //appid + "xxx" + userId + sign
         String genSig = sigAPI.genUserSig(identifier, expireSec, time, null);
         if (genSig.toLowerCase().equals(userSig.toLowerCase())) {
-            String key = appId + Constants.RedisConstants.UserSign + identifier + "#" + userSig;
+            String key = appId + Constants.RedisConstants.USER_SIGN + identifier + "#" + userSig;
 
             Long etime = expireTime - System.currentTimeMillis() / 1000;
             stringRedisTemplate.opsForValue().set(key, expireTime.toString(), etime, TimeUnit.SECONDS);
@@ -112,7 +112,7 @@ public class IdentityCheck {
         //去DB或Redis中查找, 后面写
         ResponseVO<ImUserDataEntity> singleUserInfo = imUserService.getSingleUserInfo(identifier, appId);
         if (singleUserInfo.isOk()) {
-            RequestHolder.set(singleUserInfo.getData().getUserType() == UserTypeEnum.APP_ADMIN.getCode());
+            RequestHolder.set(singleUserInfo.getData().getUserType() == UserType.APP_ADMIN.getCode());
         } else {
             RequestHolder.set(false);
         }

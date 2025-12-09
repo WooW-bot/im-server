@@ -7,7 +7,7 @@ import com.pd.im.common.ResponseVO;
 import com.pd.im.common.config.AppConfig;
 import com.pd.im.common.constant.Constants;
 import com.pd.im.common.enums.command.MessageCommand;
-import com.pd.im.common.enums.conversation.ConversationTypeEnum;
+import com.pd.im.common.enums.conversation.ConversationType;
 import com.pd.im.common.model.ClientInfo;
 import com.pd.im.common.model.message.MessageContent;
 import com.pd.im.common.model.message.OfflineMessageContent;
@@ -244,7 +244,7 @@ public class P2PMessageService {
         try {
             return callbackService.beforeCallback(
                     messageContent.getAppId(),
-                    Constants.CallbackCommand.SendMessageBefore,
+                    Constants.CallbackCommand.SEND_MESSAGE_BEFORE,
                     JSONObject.toJSONString(messageContent));
         } catch (Exception e) {
             log.error("前置回调执行异常: messageId={}", messageContent.getMessageId(), e);
@@ -265,7 +265,7 @@ public class P2PMessageService {
         try {
             callbackService.afterCallback(
                     messageContent.getAppId(),
-                    Constants.CallbackCommand.SendMessageAfter,
+                    Constants.CallbackCommand.SEND_MESSAGE_AFTER,
                     JSONObject.toJSONString(messageContent));
         } catch (Exception e) {
             log.error("后置回调执行异常: messageId={}", messageContent.getMessageId(), e);
@@ -282,7 +282,7 @@ public class P2PMessageService {
         String conversationId = ConversationIdGenerate.generateP2PId(
                 messageContent.getFromId(), messageContent.getToId());
 
-        String seqKey = messageContent.getAppId() + ":" + Constants.SeqConstants.MessageSeq + ":" + conversationId;
+        String seqKey = messageContent.getAppId() + ":" + Constants.SeqConstants.MESSAGE_SEQ + ":" + conversationId;
 
         return redisSequence.doGetSeq(seqKey);
     }
@@ -304,7 +304,7 @@ public class P2PMessageService {
     private void storeOfflineMessage(MessageContent messageContent) {
         OfflineMessageContent offlineMessage = new OfflineMessageContent();
         BeanUtils.copyProperties(messageContent, offlineMessage);
-        offlineMessage.setConversationType(ConversationTypeEnum.P2P.getCode());
+        offlineMessage.setConversationType(ConversationType.P2P.getCode());
         messageStoreService.storeOfflineMessage(offlineMessage);
     }
 

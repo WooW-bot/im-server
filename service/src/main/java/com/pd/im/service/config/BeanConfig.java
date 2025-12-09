@@ -1,8 +1,8 @@
 package com.pd.im.service.config;
 
 import com.pd.im.common.config.AppConfig;
-import com.pd.im.common.enums.route.RouteHashMethodEnum;
-import com.pd.im.common.enums.route.UrlRouteModelEnum;
+import com.pd.im.common.enums.route.RouteHashMethod;
+import com.pd.im.common.enums.route.UrlRouteMode;
 import com.pd.im.common.route.RouteHandler;
 import com.pd.im.common.route.algorithm.hash.AbstractConsistentHash;
 import org.I0Itec.zkclient.ZkClient;
@@ -33,18 +33,18 @@ public class BeanConfig {
         String routeModel = "";
 
         // 配置文件指定使用哪种路由策略
-        UrlRouteModelEnum handler = UrlRouteModelEnum.getHandler(imRouteModel);
+        UrlRouteMode handler = UrlRouteMode.getHandler(imRouteModel);
         routeModel = handler.getClazz();
 
         // 反射机制调用具体的类对象执行对应方法
         RouteHandler routeHandler = (RouteHandler) Class.forName(routeModel).newInstance();
         // 特判，一致性哈希可以指定底层数据结构
-        if (UrlRouteModelEnum.HASH.equals(handler)) {
+        if (UrlRouteMode.HASH.equals(handler)) {
             Method setHash = Class.forName(routeModel).getMethod("setHash", AbstractConsistentHash.class);
             Integer consistentHashModel = appConfig.getConsistentHashModel();
             String hashModel = "";
 
-            RouteHashMethodEnum hashHandler = RouteHashMethodEnum.getHandler(consistentHashModel);
+            RouteHashMethod hashHandler = RouteHashMethod.getHandler(consistentHashModel);
             hashModel = hashHandler.getClazz();
             AbstractConsistentHash consistentHash = (AbstractConsistentHash) Class.forName(hashModel).newInstance();
             setHash.invoke(routeHandler, consistentHash);

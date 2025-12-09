@@ -65,8 +65,8 @@ public class LoginStrategyUtils {
 
         // 发送下线通知
         MessagePack<Object> pack = new MessagePack<>();
-        pack.setToId((String) oldChannel.attr(AttributeKey.valueOf(Constants.ChannelConstants.UserId)).get());
-        pack.setUserId((String) oldChannel.attr(AttributeKey.valueOf(Constants.ChannelConstants.UserId)).get());
+        pack.setToId((String) oldChannel.attr(AttributeKey.valueOf(Constants.ChannelConstants.USER_ID)).get());
+        pack.setUserId((String) oldChannel.attr(AttributeKey.valueOf(Constants.ChannelConstants.USER_ID)).get());
         pack.setCommand(SystemCommand.MUTALOGIN.getCommand());
         oldChannel.writeAndFlush(pack);
     }

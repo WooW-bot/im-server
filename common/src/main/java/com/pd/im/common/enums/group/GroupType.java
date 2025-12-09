@@ -4,7 +4,7 @@ package com.pd.im.common.enums.group;
  * @author Parker
  * @date 12/8/25
  */
-public enum GroupTypeEnum {
+public enum GroupType {
     /**
      * 群类型 1私有群（类似微信） 2公开群(类似qq）
      */
@@ -19,15 +19,15 @@ public enum GroupTypeEnum {
      * @param ordinal
      * @return
      */
-    public static GroupTypeEnum getEnum(Integer ordinal) {
+    public static GroupType getEnum(Integer ordinal) {
 
         if(ordinal == null){
             return null;
         }
 
-        for (int i = 0; i < GroupTypeEnum.values().length; i++) {
-            if (GroupTypeEnum.values()[i].getCode() == ordinal) {
-                return GroupTypeEnum.values()[i];
+        for (int i = 0; i < GroupType.values().length; i++) {
+            if (GroupType.values()[i].getCode() == ordinal) {
+                return GroupType.values()[i];
             }
         }
         return null;
@@ -35,7 +35,7 @@ public enum GroupTypeEnum {
 
     private int code;
 
-    GroupTypeEnum(int code){
+    GroupType(int code){
         this.code=code;
     }
 

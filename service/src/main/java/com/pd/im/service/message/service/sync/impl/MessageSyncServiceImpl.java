@@ -11,7 +11,7 @@ import com.pd.im.common.enums.DelFlagEnum;
 import com.pd.im.common.enums.command.Command;
 import com.pd.im.common.enums.command.GroupEventCommand;
 import com.pd.im.common.enums.command.MessageCommand;
-import com.pd.im.common.enums.conversation.ConversationTypeEnum;
+import com.pd.im.common.enums.conversation.ConversationType;
 import com.pd.im.common.enums.message.MessageErrorCode;
 import com.pd.im.common.model.ClientInfo;
 import com.pd.im.common.model.SyncReq;
@@ -20,7 +20,7 @@ import com.pd.im.common.model.message.MessageReadContent;
 import com.pd.im.common.model.message.MessageReceiveAckContent;
 import com.pd.im.common.model.message.OfflineMessageContent;
 import com.pd.im.common.model.message.RecallMessageContent;
-import com.pd.im.common.utils.SnowflakeIdWorker;
+import com.pd.im.common.util.SnowflakeIdWorker;
 import com.pd.im.service.conversation.service.ConversationService;
 import com.pd.im.service.group.service.ImGroupMemberService;
 import com.pd.im.service.message.dao.ImMessageBodyEntity;
@@ -110,7 +110,7 @@ public class MessageSyncServiceImpl implements MessageSyncService {
     public ResponseVO syncOfflineMessage(SyncReq req) {
         SyncResp<OfflineMessageContent> resp = new SyncResp<>();
         // 构建用户离线消息队列key: appId:offline:userId
-        String userKey = req.getAppId() + Constants.RedisConstants.OfflineMessage + req.getOperator();
+        String userKey = req.getAppId() + Constants.RedisConstants.OFFLINE_MESSAGE + req.getOperator();
         Long maxSeq = 0L;
         ZSetOperations zSetOperations = redisTemplate.opsForZSet();
         // 获取最大的 seq
@@ -174,17 +174,17 @@ public class MessageSyncServiceImpl implements MessageSyncService {
         body.setDelFlag(DelFlagEnum.DELETE.getCode());
         imMessageBodyMapper.update(body, query);
 
-        if (content.getConversationType().equals(ConversationTypeEnum.P2P.getCode())) {
+        if (content.getConversationType().equals(ConversationType.P2P.getCode())) {
             // 找到fromId的队列
-            String fromKey = content.getAppId() + Constants.RedisConstants.OfflineMessage + content.getFromId();
+            String fromKey = content.getAppId() + Constants.RedisConstants.OFFLINE_MESSAGE + content.getFromId();
             // 找到toId的队列
-            String toKey = content.getAppId() + Constants.RedisConstants.OfflineMessage + content.getToId();
+            String toKey = content.getAppId() + Constants.RedisConstants.OFFLINE_MESSAGE + content.getToId();
 
             OfflineMessageContent offlineMessageContent = new OfflineMessageContent();
             BeanUtils.copyProperties(content, offlineMessageContent);
             offlineMessageContent.setDelFlag(DelFlagEnum.DELETE.getCode());
             offlineMessageContent.setMessageKey(content.getMessageKey());
-            offlineMessageContent.setConversationType(ConversationTypeEnum.P2P.getCode());
+            offlineMessageContent.setConversationType(ConversationType.P2P.getCode());
             offlineMessageContent.setConversationId(ConversationService.convertConversationId(
                     offlineMessageContent.getConversationType(), content.getFromId(), content.getToId()));
             offlineMessageContent.setMessageBody(body.getMessageBody());
@@ -192,7 +192,7 @@ public class MessageSyncServiceImpl implements MessageSyncService {
             String conversationId = ConversationIdGenerate.generateP2PId(
                     content.getFromId(), content.getToId());
 
-            String seqKey = content.getAppId() + ":" + Constants.SeqConstants.MessageSeq + ":" + conversationId;
+            String seqKey = content.getAppId() + ":" + Constants.SeqConstants.MESSAGE_SEQ + ":" + conversationId;
 
             long seq = redisSequence.doGetSeq(seqKey);
             offlineMessageContent.setMessageSequence(seq);
@@ -210,7 +210,7 @@ public class MessageSyncServiceImpl implements MessageSyncService {
             messageProducer.sendToAllClients(content.getToId(), MessageCommand.MSG_RECALL_NOTIFY, pack, content.getAppId());
         } else {
             List<String> getGroupMemberIds = groupMemberService.getGroupMemberIds(content.getToId(), content.getAppId());
-            long seq = redisSequence.doGetSeq(content.getAppId() + ":" + Constants.SeqConstants.MessageSeq + ":"
+            long seq = redisSequence.doGetSeq(content.getAppId() + ":" + Constants.SeqConstants.MESSAGE_SEQ + ":"
                     + ConversationIdGenerate.generateP2PId(content.getFromId(), content.getToId()));
             //ack
             recallAck(pack, ResponseVO.successResponse(), content);
@@ -218,11 +218,11 @@ public class MessageSyncServiceImpl implements MessageSyncService {
             messageProducer.sendToOtherClients(content.getFromId(), MessageCommand.MSG_RECALL_NOTIFY, pack
                     , content);
             for (String memberId : getGroupMemberIds) {
-                String toKey = content.getAppId() + ":" + Constants.SeqConstants.MessageSeq + ":" + memberId;
+                String toKey = content.getAppId() + ":" + Constants.SeqConstants.MESSAGE_SEQ + ":" + memberId;
                 OfflineMessageContent offlineMessageContent = new OfflineMessageContent();
                 offlineMessageContent.setDelFlag(DelFlagEnum.DELETE.getCode());
                 BeanUtils.copyProperties(content, offlineMessageContent);
-                offlineMessageContent.setConversationType(ConversationTypeEnum.GROUP.getCode());
+                offlineMessageContent.setConversationType(ConversationType.GROUP.getCode());
                 offlineMessageContent.setConversationId(ConversationService.convertConversationId(offlineMessageContent.getConversationType()
                         , content.getFromId(), content.getToId()));
                 offlineMessageContent.setMessageBody(body.getMessageBody());

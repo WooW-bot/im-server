@@ -34,10 +34,10 @@ public class MqMessageProducer {
 
     static {
         Map<CommandType, String> map = new HashMap<>();
-        map.put(CommandType.MESSAGE, Constants.RabbitmqConstants.Im2MessageService);
-        map.put(CommandType.GROUP, Constants.RabbitmqConstants.Im2GroupService);
-        map.put(CommandType.FRIEND, Constants.RabbitmqConstants.Im2FriendshipService);
-        map.put(CommandType.USER, Constants.RabbitmqConstants.Im2UserService);
+        map.put(CommandType.MESSAGE, Constants.RabbitmqConstants.IM_TO_MESSAGE_SERVICE);
+        map.put(CommandType.GROUP, Constants.RabbitmqConstants.IM_TO_GROUP_SERVICE);
+        map.put(CommandType.FRIEND, Constants.RabbitmqConstants.IM_TO_FRIENDSHIP_SERVICE);
+        map.put(CommandType.USER, Constants.RabbitmqConstants.IM_TO_USER_SERVICE);
         COMMAND_TYPE_TO_QUEUE_MAP = map;
     }
 

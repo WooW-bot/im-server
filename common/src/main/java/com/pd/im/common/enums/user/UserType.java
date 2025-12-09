@@ -2,20 +2,18 @@ package com.pd.im.common.enums.user;
 
 /**
  * @author Parker
- * @date 12/7/25
+ * @date 12/9/25
  */
-public enum UserForbiddenFlagEnum {
-    /**
-     * 0 正常；1 禁用。
-     */
-    NORMAL(0),
+public enum UserType {
 
-    FORBIBBEN(1),
+    IM_USER(1),
+
+    APP_ADMIN(100),
     ;
 
     private int code;
 
-    UserForbiddenFlagEnum(int code){
+    UserType(int code){
         this.code=code;
     }
 

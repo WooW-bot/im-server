@@ -1,6 +1,6 @@
 package com.pd.im.service.friendship.model.req;
 
-import com.pd.im.common.enums.friend.FriendShipStatusEnum;
+import com.pd.im.common.enums.friend.FriendshipStatus;
 import com.pd.im.common.model.RequestBase;
 import lombok.Data;
 
@@ -26,8 +26,8 @@ public class ImportFriendShipReq extends RequestBase {
 
         private String addSource;
 
-        private Integer status = FriendShipStatusEnum.FRIEND_STATUS_NO_FRIEND.getCode();
+        private Integer status = FriendshipStatus.FRIEND_STATUS_NO_FRIEND.getCode();
 
-        private Integer black = FriendShipStatusEnum.BLACK_STATUS_NORMAL.getCode();
+        private Integer black = FriendshipStatus.BLACK_STATUS_NORMAL.getCode();
     }
 }

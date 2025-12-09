@@ -6,7 +6,7 @@ import com.pd.im.common.exception.ApplicationExceptionEnum;
  * @author Parker
  * @date 12/9/25
  */
-public enum GateWayErrorCode implements ApplicationExceptionEnum {
+public enum GatewayErrorCode implements ApplicationExceptionEnum {
 
     USERSIGN_NOT_EXIST(60000,"用户签名不存在"),
 
@@ -25,7 +25,7 @@ public enum GateWayErrorCode implements ApplicationExceptionEnum {
     private int code;
     private String error;
 
-    GateWayErrorCode(int code, String error){
+    GatewayErrorCode(int code, String error){
         this.code = code;
         this.error = error;
     }

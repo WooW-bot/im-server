@@ -1,4 +1,4 @@
-package com.pd.im.common;
+package com.pd.im.common.enums;
 
 import com.pd.im.common.exception.ApplicationExceptionEnum;
 

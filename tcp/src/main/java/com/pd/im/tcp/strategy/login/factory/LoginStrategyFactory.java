@@ -1,6 +1,6 @@
 package com.pd.im.tcp.strategy.login.factory;
 
-import com.pd.im.common.enums.device.DeviceMultiLoginEnum;
+import com.pd.im.common.enums.device.DeviceMultiLoginMode;
 import com.pd.im.tcp.strategy.login.LoginStrategy;
 import com.pd.im.tcp.strategy.login.impl.AllClientLoginStrategy;
 import com.pd.im.tcp.strategy.login.impl.OneClientLoginStrategy;
@@ -37,10 +37,10 @@ public class LoginStrategyFactory {
      * 初始化策略映射
      */
     public static void init() {
-        STRATEGY_MAP.put(DeviceMultiLoginEnum.ONE.getCode(), new OneClientLoginStrategy());
-        STRATEGY_MAP.put(DeviceMultiLoginEnum.TWO.getCode(), new TwoClientLoginStrategy());
-        STRATEGY_MAP.put(DeviceMultiLoginEnum.THREE.getCode(), new ThreeClientLoginStrategy());
-        STRATEGY_MAP.put(DeviceMultiLoginEnum.ALL.getCode(), new AllClientLoginStrategy());
+        STRATEGY_MAP.put(DeviceMultiLoginMode.ONE.getCode(), new OneClientLoginStrategy());
+        STRATEGY_MAP.put(DeviceMultiLoginMode.TWO.getCode(), new TwoClientLoginStrategy());
+        STRATEGY_MAP.put(DeviceMultiLoginMode.THREE.getCode(), new ThreeClientLoginStrategy());
+        STRATEGY_MAP.put(DeviceMultiLoginMode.ALL.getCode(), new AllClientLoginStrategy());
 
         log.info("LoginStrategyFactory initialized with {} strategies", STRATEGY_MAP.size());
     }

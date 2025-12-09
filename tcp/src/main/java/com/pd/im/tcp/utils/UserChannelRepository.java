@@ -95,11 +95,11 @@ public class UserChannelRepository {
             }
 
             // 双向绑定：channel -> user properties
-            channel.attr(AttributeKey.valueOf(Constants.ChannelConstants.UserId)).set(userClientDto.getUserId());
-            channel.attr(AttributeKey.valueOf(Constants.ChannelConstants.AppId)).set(userClientDto.getAppId());
-            channel.attr(AttributeKey.valueOf(Constants.ChannelConstants.ClientType)).set(userClientDto.getClientType());
-            channel.attr(AttributeKey.valueOf(Constants.ChannelConstants.imei)).set(userClientDto.getImei());
-            channel.attr(AttributeKey.valueOf(Constants.ChannelConstants.ClientImei)).set(userClientDto.getClientType() + ":" + userClientDto.getImei());
+            channel.attr(AttributeKey.valueOf(Constants.ChannelConstants.USER_ID)).set(userClientDto.getUserId());
+            channel.attr(AttributeKey.valueOf(Constants.ChannelConstants.APP_ID)).set(userClientDto.getAppId());
+            channel.attr(AttributeKey.valueOf(Constants.ChannelConstants.CLIENT_TYPE)).set(userClientDto.getClientType());
+            channel.attr(AttributeKey.valueOf(Constants.ChannelConstants.IMEI)).set(userClientDto.getImei());
+            channel.attr(AttributeKey.valueOf(Constants.ChannelConstants.CLIENT_IMEI)).set(userClientDto.getClientType() + ":" + userClientDto.getImei());
 
             // userClientDto -> channel
             USER_CHANNEL.put(userClientDto, channel);
@@ -195,10 +195,10 @@ public class UserChannelRepository {
      * @return 用户客户端信息，未绑定返回null
      */
     public static UserClientDto getUserInfo(Channel channel) {
-        String userId = (String) channel.attr(AttributeKey.valueOf(Constants.ChannelConstants.UserId)).get();
-        Integer appId = (Integer) channel.attr(AttributeKey.valueOf(Constants.ChannelConstants.AppId)).get();
-        Integer clientType = (Integer) channel.attr(AttributeKey.valueOf(Constants.ChannelConstants.ClientType)).get();
-        String imei = (String) channel.attr(AttributeKey.valueOf(Constants.ChannelConstants.imei)).get();
+        String userId = (String) channel.attr(AttributeKey.valueOf(Constants.ChannelConstants.USER_ID)).get();
+        Integer appId = (Integer) channel.attr(AttributeKey.valueOf(Constants.ChannelConstants.APP_ID)).get();
+        Integer clientType = (Integer) channel.attr(AttributeKey.valueOf(Constants.ChannelConstants.CLIENT_TYPE)).get();
+        String imei = (String) channel.attr(AttributeKey.valueOf(Constants.ChannelConstants.IMEI)).get();
 
         if (userId == null || appId == null || clientType == null || imei == null) {
             return null;
@@ -281,7 +281,7 @@ public class UserChannelRepository {
     private static void markSessionOffline(UserClientDto userInfo) {
         try {
             RedissonClient redissonClient = RedissonManager.getRedissonClient();
-            String mapKey = userInfo.getAppId() + Constants.RedisConstants.UserSessionConstants + userInfo.getUserId();
+            String mapKey = userInfo.getAppId() + Constants.RedisConstants.USER_SESSION + userInfo.getUserId();
             RMap<String, String> map = redissonClient.getMap(mapKey);
 
             String sessionKey = userInfo.getClientType() + ":" + userInfo.getImei();
@@ -305,7 +305,7 @@ public class UserChannelRepository {
     private static void deleteSession(UserClientDto userInfo) {
         try {
             RedissonClient redissonClient = RedissonManager.getRedissonClient();
-            String mapKey = userInfo.getAppId() + Constants.RedisConstants.UserSessionConstants + userInfo.getUserId();
+            String mapKey = userInfo.getAppId() + Constants.RedisConstants.USER_SESSION + userInfo.getUserId();
             RMap<String, String> map = redissonClient.getMap(mapKey);
 
             String sessionKey = userInfo.getClientType() + ":" + userInfo.getImei();

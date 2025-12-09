@@ -35,7 +35,7 @@ public class MessageProducer {
     /**
      * 消息队列名称
      */
-    private static final String QUEUE_NAME = Constants.RabbitmqConstants.MessageService2Im;
+    private static final String QUEUE_NAME = Constants.RabbitmqConstants.MESSAGE_SERVICE_TO_IM;
 
     private final RabbitTemplate rabbitTemplate;
     private final UserSessionUtils userSessionUtils;

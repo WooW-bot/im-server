@@ -109,7 +109,7 @@ public class LoginCommand implements CommandStrategy {
     private void saveUserSession(UserSession userSession, Message msg) {
         RedissonClient redissonClient = RedissonManager.getRedissonClient();
         String mapKey = msg.getMessageHeader().getAppId()
-                + Constants.RedisConstants.UserSessionConstants
+                + Constants.RedisConstants.USER_SESSION
                 + userSession.getUserId();
         RMap<String, String> map = redissonClient.getMap(mapKey);
 
@@ -122,7 +122,7 @@ public class LoginCommand implements CommandStrategy {
      */
     private void publishUserLoginEvent(UserClientDto userClientDto) {
         RedissonClient redissonClient = RedissonManager.getRedissonClient();
-        RTopic topic = redissonClient.getTopic(Constants.RedisConstants.UserLoginChannel);
+        RTopic topic = redissonClient.getTopic(Constants.RedisConstants.USER_LOGIN_CHANNEL);
         topic.publish(JSONObject.toJSONString(userClientDto));
     }
 

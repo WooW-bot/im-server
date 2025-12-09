@@ -1,4 +1,4 @@
-package com.pd.im.common.utils;
+package com.pd.im.common.util;
 
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;

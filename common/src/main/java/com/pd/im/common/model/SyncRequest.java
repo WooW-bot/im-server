@@ -7,7 +7,7 @@ import lombok.Data;
  * @date 12/7/25
  */
 @Data
-public class SyncReq extends RequestBase {
+public class SyncRequest extends RequestBase {
     /**
      * 客户端最大 Seq
      */

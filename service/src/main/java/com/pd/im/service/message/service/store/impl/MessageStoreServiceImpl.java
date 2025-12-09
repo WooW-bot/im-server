@@ -4,10 +4,10 @@ import com.alibaba.fastjson.JSONObject;
 import com.pd.im.common.config.AppConfig;
 import com.pd.im.common.constant.Constants;
 import com.pd.im.common.enums.DelFlagEnum;
-import com.pd.im.common.enums.conversation.ConversationTypeEnum;
+import com.pd.im.common.enums.conversation.ConversationType;
 import com.pd.im.common.model.message.*;
 import com.pd.im.common.model.message.MessageBody;
-import com.pd.im.common.utils.SnowflakeIdWorker;
+import com.pd.im.common.util.SnowflakeIdWorker;
 import com.pd.im.service.conversation.service.ConversationService;
 import com.pd.im.service.message.service.store.MessageStoreService;
 import lombok.extern.slf4j.Slf4j;
@@ -67,7 +67,7 @@ public class MessageStoreServiceImpl implements MessageStoreService {
 
             // MQ 异步持久化, 将实体消息传递给 MQ
             rabbitTemplate.convertAndSend(
-                    Constants.RabbitmqConstants.StoreP2PMessage, "",
+                    Constants.RabbitmqConstants.STORE_P2P_MESSAGE, "",
                     JSONObject.toJSONString(dto));
 
             log.debug("P2P消息发送到存储队列成功: messageId={}, messageKey={}",
@@ -97,7 +97,7 @@ public class MessageStoreServiceImpl implements MessageStoreService {
 
             // MQ 异步持久化
             rabbitTemplate.convertAndSend(
-                    Constants.RabbitmqConstants.StoreGroupMessage, "",
+                    Constants.RabbitmqConstants.STORE_GROUP_MESSAGE, "",
                     JSONObject.toJSONString(dto));
 
             log.debug("群消息发送到存储队列成功: messageId={}, groupId={}, messageKey={}",
@@ -115,7 +115,7 @@ public class MessageStoreServiceImpl implements MessageStoreService {
     public void setMessageCacheByMessageId(Integer appId, String messageId, Object messageContent) {
         try {
             // 构建缓存key: appId:cache:messageId
-            String key = appId + Constants.RedisConstants.CacheMessage + messageId;
+            String key = appId + Constants.RedisConstants.CACHE_MESSAGE + messageId;
             String value = JSONObject.toJSONString(messageContent);
 
             stringRedisTemplate.opsForValue().set(key, value, MESSAGE_CACHE_EXPIRE_SECONDS, TimeUnit.SECONDS);
@@ -131,7 +131,7 @@ public class MessageStoreServiceImpl implements MessageStoreService {
     public <T> T getMessageCacheByMessageId(Integer appId, String messageId, Class<T> clazz) {
         try {
             // 构建缓存key: appId:cache:messageId
-            String key = appId + Constants.RedisConstants.CacheMessage + messageId;
+            String key = appId + Constants.RedisConstants.CACHE_MESSAGE + messageId;
             String msg = stringRedisTemplate.opsForValue().get(key);
 
             if (StringUtils.isBlank(msg)) {
@@ -152,10 +152,10 @@ public class MessageStoreServiceImpl implements MessageStoreService {
         try {
             // 为 fromId 添加离线消息
             addToOfflineMsgQueue(offlineMessage, offlineMessage.getFromId(),
-                    offlineMessage.getToId(), ConversationTypeEnum.P2P);
+                    offlineMessage.getToId(), ConversationType.P2P);
             // 为 toId 添加离线消息
             addToOfflineMsgQueue(offlineMessage, offlineMessage.getToId(),
-                    offlineMessage.getFromId(), ConversationTypeEnum.P2P);
+                    offlineMessage.getFromId(), ConversationType.P2P);
 
             log.debug("P2P离线消息存储成功: fromId={}, toId={}, messageKey={}",
                     offlineMessage.getFromId(), offlineMessage.getToId(), offlineMessage.getMessageKey());
@@ -171,7 +171,7 @@ public class MessageStoreServiceImpl implements MessageStoreService {
         try {
             // 对每个群成员添加离线消息
             memberIds.forEach(memberId ->
-                    addToOfflineMsgQueue(offlineMessage, memberId, offlineMessage.getToId(), ConversationTypeEnum.GROUP));
+                    addToOfflineMsgQueue(offlineMessage, memberId, offlineMessage.getToId(), ConversationType.GROUP));
 
             log.debug("群离线消息存储成功: groupId={}, memberCount={}, messageKey={}",
                     offlineMessage.getToId(), memberIds.size(), offlineMessage.getMessageKey());
@@ -199,7 +199,7 @@ public class MessageStoreServiceImpl implements MessageStoreService {
                                       ConversationTypeEnum conversationType) {
         try {
             // 构建用户离线消息队列key: appId:offline:userId
-            String userKey = offlineMessage.getAppId() + Constants.RedisConstants.OfflineMessage + userId;
+            String userKey = offlineMessage.getAppId() + Constants.RedisConstants.OFFLINE_MESSAGE + userId;
 
             ZSetOperations<String, String> operations = stringRedisTemplate.opsForZSet();
 

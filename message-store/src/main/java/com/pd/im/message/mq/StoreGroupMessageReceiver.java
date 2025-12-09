@@ -34,8 +34,8 @@ public class StoreGroupMessageReceiver {
 
     @RabbitListener(
             bindings = @QueueBinding(
-                    value = @Queue(value = Constants.RabbitmqConstants.StoreGroupMessage, durable = "true"),
-                    exchange = @Exchange(value = Constants.RabbitmqConstants.StoreGroupMessage, durable = "true")
+                    value = @Queue(value = Constants.RabbitmqConstants.STORE_GROUP_MESSAGE, durable = "true"),
+                    exchange = @Exchange(value = Constants.RabbitmqConstants.STORE_GROUP_MESSAGE, durable = "true")
             ),
             concurrency = "1"
     )

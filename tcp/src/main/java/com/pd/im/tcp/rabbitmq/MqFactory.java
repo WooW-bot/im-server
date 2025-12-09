@@ -48,7 +48,7 @@ public class MqFactory {
     public static void createExchange() {
         try {
             Channel channel = getConnection().createChannel();
-            channel.exchangeDeclare(Constants.RabbitmqConstants.MessageService2Im, "direct");
+            channel.exchangeDeclare(Constants.RabbitmqConstants.MESSAGE_SERVICE_TO_IM, "direct");
         } catch (IOException e) {
             log.error("创建交换机失败，错误原因:", e);
         }

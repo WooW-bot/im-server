@@ -4,7 +4,7 @@ package com.pd.im.common.enums.friend;
  * @author Parker
  * @date 12/9/25
  */
-public enum ApproveFriendRequestStatusEnum {
+public enum FriendRequestApprovalStatus {
     /**
      * 默认状态
      */
@@ -20,7 +20,7 @@ public enum ApproveFriendRequestStatusEnum {
 
     private int code;
 
-    ApproveFriendRequestStatusEnum(int code) {
+    FriendRequestApprovalStatus(int code) {
         this.code = code;
     }
 

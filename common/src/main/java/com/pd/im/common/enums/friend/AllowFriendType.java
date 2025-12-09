@@ -4,7 +4,7 @@ package com.pd.im.common.enums.friend;
  * @author Parker
  * @date 12/8/25
  */
-public enum AllowFriendTypeEnum {
+public enum AllowFriendType {
     /**
      * 验证
      */
@@ -20,7 +20,7 @@ public enum AllowFriendTypeEnum {
 
     private int code;
 
-    AllowFriendTypeEnum(int code) {
+    AllowFriendType(int code) {
         this.code = code;
     }
 

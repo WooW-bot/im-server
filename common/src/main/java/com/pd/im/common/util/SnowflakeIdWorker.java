@@ -1,4 +1,4 @@
-package com.pd.im.common.utils;
+package com.pd.im.common.util;
 
 import cn.hutool.core.date.SystemClock;
 import lombok.extern.slf4j.Slf4j;

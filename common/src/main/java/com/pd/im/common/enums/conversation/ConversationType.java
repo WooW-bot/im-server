@@ -4,7 +4,7 @@ package com.pd.im.common.enums.conversation;
  * @author Parker
  * @date 12/5/25
  */
-public enum ConversationTypeEnum {
+public enum ConversationType {
     /**
      * 0 单聊
      * 1 群聊
@@ -20,7 +20,7 @@ public enum ConversationTypeEnum {
 
     private Integer code;
 
-    ConversationTypeEnum(int code) {
+    ConversationType(int code) {
         this.code = code;
     }
 

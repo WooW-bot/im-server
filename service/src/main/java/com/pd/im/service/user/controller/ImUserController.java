@@ -4,7 +4,7 @@ import com.pd.im.common.ResponseVO;
 import com.pd.im.common.enums.device.ClientType;
 import com.pd.im.common.route.RouteHandler;
 import com.pd.im.common.route.RouteInfo;
-import com.pd.im.common.utils.RouteInfoParseUtil;
+import com.pd.im.common.util.RouteInfoParser;
 import com.pd.im.service.user.model.req.*;
 import com.pd.im.service.user.service.ImUserService;
 import com.pd.im.service.user.service.ImUserStatusService;
@@ -65,7 +65,7 @@ public class ImUserController {
                 allNode = zKit.getAllTcpNode();
             }
             String s = routeHandler.routeServer(allNode, req.getUserId());
-            RouteInfo parse = RouteInfoParseUtil.parse(s);
+            RouteInfo parse = RouteInfoParser.parse(s);
             return ResponseVO.successResponse(parse);
         }
         return ResponseVO.errorResponse();

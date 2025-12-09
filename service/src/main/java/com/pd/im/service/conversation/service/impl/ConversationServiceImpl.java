@@ -9,7 +9,7 @@ import com.pd.im.common.config.AppConfig;
 import com.pd.im.common.constant.Constants;
 import com.pd.im.common.enums.command.ConversationEventCommand;
 import com.pd.im.common.enums.conversation.ConversationErrorCode;
-import com.pd.im.common.enums.conversation.ConversationTypeEnum;
+import com.pd.im.common.enums.conversation.ConversationType;
 import com.pd.im.common.model.ClientInfo;
 import com.pd.im.common.model.SyncReq;
 import com.pd.im.common.model.SyncResp;
@@ -84,7 +84,7 @@ public class ConversationServiceImpl implements ConversationService {
          * 即客户端看到的消息从高到低是按照会话里的最新消息进行排序（置顶另外讨论）最新会话在最前
          * 而 p2p，group 的 seq 是为了对一个会话里的消息进行排序
          */
-        long seq = redisSequence.doGetSeq(messageReadContent.getAppId() + ":" + Constants.SeqConstants.ConversationSeq);
+        long seq = redisSequence.doGetSeq(messageReadContent.getAppId() + ":" + Constants.SeqConstants.CONVERSATION_SEQ);
         if (imConversationSetEntity == null) {
             imConversationSetEntity = new ImConversationSetEntity();
             imConversationSetEntity.setConversationId(conversationId);
@@ -94,13 +94,13 @@ public class ConversationServiceImpl implements ConversationService {
             imConversationSetEntity.setSequence(seq);
             imConversationSetMapper.insert(imConversationSetEntity);
             userSequenceRepository.writeUserSeq(messageReadContent.getAppId(),
-                    messageReadContent.getFromId(), Constants.SeqConstants.ConversationSeq, seq);
+                    messageReadContent.getFromId(), Constants.SeqConstants.CONVERSATION_SEQ, seq);
         } else {
             imConversationSetEntity.setSequence(seq);
             imConversationSetEntity.setReadSequence(messageReadContent.getMessageSequence());
             imConversationSetMapper.readMark(imConversationSetEntity);
             userSequenceRepository.writeUserSeq(messageReadContent.getAppId(),
-                    messageReadContent.getFromId(), Constants.SeqConstants.ConversationSeq, seq);
+                    messageReadContent.getFromId(), Constants.SeqConstants.CONVERSATION_SEQ, seq);
         }
     }
 
@@ -125,7 +125,7 @@ public class ConversationServiceImpl implements ConversationService {
         queryWrapper.eq("app_id", req.getAppId());
         ImConversationSetEntity imConversationSetEntity = imConversationSetMapper.selectOne(queryWrapper);
         if (imConversationSetEntity != null) {
-            long seq = redisSequence.doGetSeq(req.getAppId() + ":" + Constants.SeqConstants.ConversationSeq);
+            long seq = redisSequence.doGetSeq(req.getAppId() + ":" + Constants.SeqConstants.CONVERSATION_SEQ);
 
             if (req.getIsMute() != null) {
                 imConversationSetEntity.setIsTop(req.getIsTop());
@@ -136,7 +136,7 @@ public class ConversationServiceImpl implements ConversationService {
             imConversationSetEntity.setSequence(seq);
             imConversationSetMapper.update(imConversationSetEntity, queryWrapper);
             userSequenceRepository.writeUserSeq(req.getAppId(), req.getFromId(),
-                    Constants.SeqConstants.ConversationSeq, seq);
+                    Constants.SeqConstants.CONVERSATION_SEQ, seq);
 
             UpdateConversationPack pack = new UpdateConversationPack();
             pack.setConversationId(req.getConversationId());
@@ -185,7 +185,7 @@ public class ConversationServiceImpl implements ConversationService {
     private static String getToIdOrGroupId(MessageReadContent messageReadContent) {
         // 会话类型为单聊，toId 赋值为目标用户
         String toId = messageReadContent.getToId();
-        if (ConversationTypeEnum.GROUP.getCode().equals(messageReadContent.getConversationType())) {
+        if (ConversationType.GROUP.getCode().equals(messageReadContent.getConversationType())) {
             // 会话类型为群聊，toId 赋值为 groupId
             toId = messageReadContent.getGroupId();
         }

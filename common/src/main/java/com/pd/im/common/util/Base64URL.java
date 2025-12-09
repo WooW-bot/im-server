@@ -1,4 +1,4 @@
-package com.pd.im.common.utils;
+package com.pd.im.common.util;
 import sun.misc.BASE64Decoder;
 import sun.misc.BASE64Encoder;
 

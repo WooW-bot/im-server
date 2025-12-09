@@ -4,7 +4,7 @@ package com.pd.im.common.enums.user;
  * @author Parker
  * @date 12/7/25
  */
-public enum UserSilentFlagEnum {
+public enum UserSilentFlag {
     /**
      * 0 正常；1 禁言。
      */
@@ -15,7 +15,7 @@ public enum UserSilentFlagEnum {
 
     private int code;
 
-    UserSilentFlagEnum(int code) {
+    UserSilentFlag(int code) {
         this.code = code;
     }
 

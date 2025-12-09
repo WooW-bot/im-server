@@ -171,7 +171,7 @@ public class ImUserServiceImpl implements ImUserService {
 
             if (appConfig.isModifyUserAfterCallback()) {
                 callbackService.afterCallback(req.getAppId(),
-                        Constants.CallbackCommand.ModifyUserAfter,
+                        Constants.CallbackCommand.MODIFY_USER_AFTER,
                         JSONObject.toJSONString(req));
             }
             return ResponseVO.successResponse();
@@ -202,10 +202,10 @@ public class ImUserServiceImpl implements ImUserService {
 
     @Override
     public ResponseVO getUserSequence(GetUserSequenceReq req) {
-        String key = req.getAppId() + Constants.RedisConstants.SeqPrefix + req.getUserId();
+        String key = req.getAppId() + Constants.RedisConstants.SEQ_PREFIX + req.getUserId();
         Map<Object, Object> map = stringRedisTemplate.opsForHash().entries(key);
         Long groupSeq = imGroupService.getUserGroupMaxSeq(req.getUserId(), req.getAppId());
-        map.put(Constants.SeqConstants.GroupSeq, groupSeq);
+        map.put(Constants.SeqConstants.GROUP_SEQ, groupSeq);
         return ResponseVO.successResponse(map);
     }
 }

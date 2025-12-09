@@ -49,7 +49,7 @@ public class ImUserStatusServiceImpl implements ImUserStatusService {
         }
 
         for (String beSubUserId : req.getSubUserId()) {
-            String userKey = req.getAppId() + Constants.RedisConstants.Subscribe + beSubUserId;
+            String userKey = req.getAppId() + Constants.RedisConstants.SUBSCRIBE + beSubUserId;
             stringRedisTemplate.opsForHash().put(userKey, req.getOperator(), subExpireTime.toString());
         }
     }
@@ -61,7 +61,7 @@ public class ImUserStatusServiceImpl implements ImUserStatusService {
         userCustomStatusChangeNotifyPack.setCustomText(req.getCustomText());
         userCustomStatusChangeNotifyPack.setUserId(req.getUserId());
         stringRedisTemplate.opsForValue().set(
-                req.getAppId() + Constants.RedisConstants.UserCustomerStatus + req.getUserId(),
+                req.getAppId() + Constants.RedisConstants.USER_CUSTOMER_STATUS + req.getUserId(),
                 JSONObject.toJSONString(userCustomStatusChangeNotifyPack));
 
         syncSender(userCustomStatusChangeNotifyPack,
@@ -86,7 +86,7 @@ public class ImUserStatusServiceImpl implements ImUserStatusService {
             UserOnlineStatusResp resp = new UserOnlineStatusResp();
             List<UserSession> userSession = userSessionUtils.getUserSession(appId, uid);
             resp.setSession(userSession);
-            String userKey = appId + Constants.RedisConstants.UserCustomerStatus + uid;
+            String userKey = appId + Constants.RedisConstants.USER_CUSTOMER_STATUS + uid;
             String s = stringRedisTemplate.opsForValue().get(userKey);
             if (StringUtils.isNotBlank(s)) {
                 JSONObject parse = (JSONObject) JSON.parse(s);
@@ -110,7 +110,7 @@ public class ImUserStatusServiceImpl implements ImUserStatusService {
             messageProducer.sendToAllClients(fid, UserEventCommand.USER_ONLINE_STATUS_CHANGE_NOTIFY, pack, appId);
         }
 
-        String userKey = appId + Constants.RedisConstants.Subscribe + userId;
+        String userKey = appId + Constants.RedisConstants.SUBSCRIBE + userId;
         Set<Object> keys = stringRedisTemplate.opsForHash().keys(userKey);
         for (Object key : keys) {
             String filed = (String) key;

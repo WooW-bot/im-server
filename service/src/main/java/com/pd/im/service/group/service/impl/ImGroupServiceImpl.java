@@ -14,9 +14,9 @@ import com.pd.im.common.config.AppConfig;
 import com.pd.im.common.constant.Constants;
 import com.pd.im.common.enums.command.GroupEventCommand;
 import com.pd.im.common.enums.group.GroupErrorCode;
-import com.pd.im.common.enums.group.GroupMemberRoleEnum;
-import com.pd.im.common.enums.group.GroupStatusEnum;
-import com.pd.im.common.enums.group.GroupTypeEnum;
+import com.pd.im.common.enums.group.GroupMemberRole;
+import com.pd.im.common.enums.group.GroupStatus;
+import com.pd.im.common.enums.group.GroupType;
 import com.pd.im.common.exception.ApplicationException;
 import com.pd.im.common.model.ClientInfo;
 import com.pd.im.common.model.SyncReq;
@@ -67,13 +67,13 @@ public class ImGroupServiceImpl implements ImGroupService {
         req.setGroupId(getGroupId(req.getAppId(), req.getGroupId()));
 
         ImGroupEntity imGroupEntity = new ImGroupEntity();
-        if (req.getGroupType() == GroupTypeEnum.PUBLIC.getCode() && StringUtils.isBlank(req.getOwnerId())) {
+        if (req.getGroupType() == GroupType.PUBLIC.getCode() && StringUtils.isBlank(req.getOwnerId())) {
             throw new ApplicationException(GroupErrorCode.PUBLIC_GROUP_MUST_HAVE_OWNER);
         }
         if (req.getCreateTime() == null) {
             imGroupEntity.setCreateTime(System.currentTimeMillis());
         }
-        imGroupEntity.setStatus(GroupStatusEnum.NORMAL.getCode());
+        imGroupEntity.setStatus(GroupStatus.NORMAL.getCode());
         BeanUtils.copyProperties(req, imGroupEntity);
         int insert = imGroupMapper.insert(imGroupEntity);
         if (insert != 1) {
@@ -93,21 +93,21 @@ public class ImGroupServiceImpl implements ImGroupService {
         req.setGroupId(getGroupId(req.getAppId(), req.getGroupId()));
 
         // 公开群需要指定群主
-        if (req.getGroupType() == GroupTypeEnum.PUBLIC.getCode() && StringUtils.isBlank(req.getOwnerId())) {
+        if (req.getGroupType() == GroupType.PUBLIC.getCode() && StringUtils.isBlank(req.getOwnerId())) {
             throw new ApplicationException(GroupErrorCode.PUBLIC_GROUP_MUST_HAVE_OWNER);
         }
 
         ImGroupEntity imGroupEntity = new ImGroupEntity();
         BeanUtils.copyProperties(req, imGroupEntity);
-        long seq = redisSequence.doGetSeq(req.getAppId() + ":" + Constants.SeqConstants.GroupSeq);
+        long seq = redisSequence.doGetSeq(req.getAppId() + ":" + Constants.SeqConstants.GROUP_SEQ);
         imGroupEntity.setSequence(seq);
         imGroupEntity.setCreateTime(System.currentTimeMillis());
-        imGroupEntity.setStatus(GroupStatusEnum.NORMAL.getCode());
+        imGroupEntity.setStatus(GroupStatus.NORMAL.getCode());
         int insert = imGroupMapper.insert(imGroupEntity);
 
         GroupMemberDto groupMemberDto = new GroupMemberDto();
         groupMemberDto.setMemberId(req.getOwnerId());
-        groupMemberDto.setRole(GroupMemberRoleEnum.OWNER.getCode());
+        groupMemberDto.setRole(GroupMemberRole.OWNER.getCode());
         groupMemberDto.setJoinTime(System.currentTimeMillis());
         groupMemberService.addGroupMember(req.getGroupId(), req.getAppId(), groupMemberDto);
 
@@ -117,7 +117,7 @@ public class ImGroupServiceImpl implements ImGroupService {
         }
 
         if (appConfig.isCreateGroupAfterCallback()) {
-            callbackService.afterCallback(req.getAppId(), Constants.CallbackCommand.CreateGroupAfter,
+            callbackService.afterCallback(req.getAppId(), Constants.CallbackCommand.CREATE_GROUP_AFTER,
                     JSONObject.toJSONString(imGroupEntity));
         }
 
@@ -139,7 +139,7 @@ public class ImGroupServiceImpl implements ImGroupService {
         Optional.ofNullable(imGroupEntity)
                 .orElseThrow(() -> new ApplicationException(GroupErrorCode.GROUP_IS_NOT_EXIST));
         Optional.ofNullable(imGroupEntity.getStatus())
-                .filter(status -> status.equals(GroupStatusEnum.DESTROY.getCode()))
+                .filter(status -> status.equals(GroupStatus.DESTROY.getCode()))
                 .orElseThrow(() -> new ApplicationException(GroupErrorCode.GROUP_IS_DESTROY));
 
         boolean isAdmin = false;
@@ -154,15 +154,15 @@ public class ImGroupServiceImpl implements ImGroupService {
             }
             GetRoleInGroupResp data = role.getData();
             Integer roleInfo = data.getRole();
-            boolean isManager = Objects.equals(roleInfo, GroupMemberRoleEnum.MANAGER.getCode())
-                    || Objects.equals(roleInfo, GroupMemberRoleEnum.OWNER.getCode());
+            boolean isManager = Objects.equals(roleInfo, GroupMemberRole.MANAGER.getCode())
+                    || Objects.equals(roleInfo, GroupMemberRole.OWNER.getCode());
             //公开群只能群主修改资料
-            if (!isManager && GroupTypeEnum.PUBLIC.getCode() == imGroupEntity.getGroupType()) {
+            if (!isManager && GroupType.PUBLIC.getCode() == imGroupEntity.getGroupType()) {
                 throw new ApplicationException(GroupErrorCode.THIS_OPERATE_NEED_MANAGER_ROLE);
             }
         }
 
-        long seq = redisSequence.doGetSeq(req.getAppId() + ":" + Constants.SeqConstants.GroupSeq);
+        long seq = redisSequence.doGetSeq(req.getAppId() + ":" + Constants.SeqConstants.GROUP_SEQ);
         ImGroupEntity update = new ImGroupEntity();
         update.setSequence(seq);
         update.setGroupId(req.getGroupId());
@@ -195,7 +195,7 @@ public class ImGroupServiceImpl implements ImGroupService {
 
         // 之后回调
         if (appConfig.isModifyGroupAfterCallback()) {
-            callbackService.afterCallback(req.getAppId(), Constants.CallbackCommand.UpdateGroupAfter,
+            callbackService.afterCallback(req.getAppId(), Constants.CallbackCommand.UPDATE_GROUP_AFTER,
                     // 将修改之后的群聊信息查询给服务器 TCP 服务层
                     JSONObject.toJSONString(imGroupMapper.selectOne(queryWrapper)));
         }
@@ -245,17 +245,17 @@ public class ImGroupServiceImpl implements ImGroupService {
         if (imGroupEntity == null) {
             throw new ApplicationException(GroupErrorCode.PRIVATE_GROUP_CAN_NOT_DESTORY);
         }
-        if (imGroupEntity.getStatus() == GroupStatusEnum.DESTROY.getCode()) {
+        if (imGroupEntity.getStatus() == GroupStatus.DESTROY.getCode()) {
             throw new ApplicationException(GroupErrorCode.GROUP_IS_DESTROY);
         }
-        if (!isAdmin && imGroupEntity.getGroupType() == GroupTypeEnum.PUBLIC.getCode() &&
+        if (!isAdmin && imGroupEntity.getGroupType() == GroupType.PUBLIC.getCode() &&
                 !imGroupEntity.getOwnerId().equals(req.getOperator())) {
             throw new ApplicationException(GroupErrorCode.THIS_OPERATE_NEED_OWNER_ROLE);
         }
-        long seq = redisSequence.doGetSeq(req.getAppId() + ":" + Constants.SeqConstants.GroupSeq);
+        long seq = redisSequence.doGetSeq(req.getAppId() + ":" + Constants.SeqConstants.GROUP_SEQ);
         ImGroupEntity update = new ImGroupEntity();
         update.setSequence(seq);
-        update.setStatus(GroupStatusEnum.DESTROY.getCode());
+        update.setStatus(GroupStatus.DESTROY.getCode());
         int update1 = imGroupMapper.update(update, queryWrapper);
         if (update1 != 1) {
             throw new ApplicationException(GroupErrorCode.UPDATE_GROUP_BASE_INFO_ERROR);
@@ -272,7 +272,7 @@ public class ImGroupServiceImpl implements ImGroupService {
         if (appConfig.isModifyGroupAfterCallback()) {
             DestroyGroupCallbackDto dto = new DestroyGroupCallbackDto();
             dto.setGroupId(req.getGroupId());
-            callbackService.afterCallback(req.getAppId(), Constants.CallbackCommand.DestroyGroupAfter,
+            callbackService.afterCallback(req.getAppId(), Constants.CallbackCommand.DESTROY_GROUP_AFTER,
                     JSONObject.toJSONString(dto));
         }
 
@@ -286,7 +286,7 @@ public class ImGroupServiceImpl implements ImGroupService {
         if (!roleInGroupOne.isOk()) {
             return roleInGroupOne;
         }
-        if (!Objects.equals(roleInGroupOne.getData().getRole(), GroupMemberRoleEnum.OWNER.getCode())) {
+        if (!Objects.equals(roleInGroupOne.getData().getRole(), GroupMemberRole.OWNER.getCode())) {
             return ResponseVO.errorResponse(GroupErrorCode.THIS_OPERATE_NEED_OWNER_ROLE);
         }
         ResponseVO<GetRoleInGroupResp> newOwnerRole = groupMemberService.getRoleInGroupOne(req.getGroupId(),
@@ -298,10 +298,10 @@ public class ImGroupServiceImpl implements ImGroupService {
                 .eq(ImGroupEntity::getGroupId, req.getGroupId())
                 .eq(ImGroupEntity::getAppId, req.getAppId());
         ImGroupEntity imGroupEntity = imGroupMapper.selectOne(queryWrapper);
-        if (imGroupEntity.getStatus() == GroupStatusEnum.DESTROY.getCode()) {
+        if (imGroupEntity.getStatus() == GroupStatus.DESTROY.getCode()) {
             throw new ApplicationException(GroupErrorCode.GROUP_IS_DESTROY);
         }
-        long seq = redisSequence.doGetSeq(req.getAppId() + ":" + Constants.SeqConstants.GroupSeq);
+        long seq = redisSequence.doGetSeq(req.getAppId() + ":" + Constants.SeqConstants.GROUP_SEQ);
         ImGroupEntity updateGroup = new ImGroupEntity();
         updateGroup.setSequence(seq);
         updateGroup.setOwnerId(req.getOwnerId());
@@ -364,7 +364,7 @@ public class ImGroupServiceImpl implements ImGroupService {
         if (!groupResp.isOk()) {
             return groupResp;
         }
-        if (groupResp.getData().getStatus() == GroupStatusEnum.DESTROY.getCode()) {
+        if (groupResp.getData().getStatus() == GroupStatus.DESTROY.getCode()) {
             throw new ApplicationException(GroupErrorCode.GROUP_IS_DESTROY);
         }
         boolean isAdmin = false;
@@ -377,7 +377,7 @@ public class ImGroupServiceImpl implements ImGroupService {
             }
             GetRoleInGroupResp data = role.getData();
             Integer roleInfo = data.getRole();
-            boolean isManager = Objects.equals(roleInfo, GroupMemberRoleEnum.MANAGER.getCode()) || Objects.equals(roleInfo, GroupMemberRoleEnum.OWNER.getCode());
+            boolean isManager = Objects.equals(roleInfo, GroupMemberRole.MANAGER.getCode()) || Objects.equals(roleInfo, GroupMemberRole.OWNER.getCode());
             //公开群只能群主修改资料
             if (!isManager) {
                 throw new ApplicationException(GroupErrorCode.THIS_OPERATE_NEED_MANAGER_ROLE);

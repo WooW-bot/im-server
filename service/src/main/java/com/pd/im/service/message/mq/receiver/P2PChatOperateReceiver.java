@@ -35,9 +35,9 @@ public class P2PChatOperateReceiver extends AbstractChatOperateReceiver {
     @RabbitListener(
             bindings = @QueueBinding(
                     // 绑定 MQ 队列
-                    value = @Queue(value = Constants.RabbitmqConstants.Im2MessageService, durable = "true"),
+                    value = @Queue(value = Constants.RabbitmqConstants.IM_TO_MESSAGE_SERVICE, durable = "true"),
                     // 绑定 MQ 交换机
-                    exchange = @Exchange(value = Constants.RabbitmqConstants.Im2MessageService, durable = "true")
+                    exchange = @Exchange(value = Constants.RabbitmqConstants.IM_TO_MESSAGE_SERVICE, durable = "true")
             ),
             concurrency = "1"
     )
@@ -47,7 +47,7 @@ public class P2PChatOperateReceiver extends AbstractChatOperateReceiver {
 
     @Override
     protected String getQueueName() {
-        return Constants.RabbitmqConstants.Im2MessageService;
+        return Constants.RabbitmqConstants.IM_TO_MESSAGE_SERVICE;
     }
 
     @Override

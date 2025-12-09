@@ -2,7 +2,7 @@ package com.pd.im.service.callback.impl;
 
 import com.pd.im.common.ResponseVO;
 import com.pd.im.common.config.AppConfig;
-import com.pd.im.common.utils.HttpRequestUtils;
+import com.pd.im.common.util.HttpRequestUtils;
 import com.pd.im.service.callback.CallbackService;
 import com.pd.im.service.utils.ShareThreadPool;
 import lombok.extern.slf4j.Slf4j;

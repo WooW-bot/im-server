@@ -1,12 +1,12 @@
 package com.pd.im.common.enums.device;
 
-import com.pd.im.common.enums.CodeAdapter;
+import com.pd.im.common.enums.CodeProvider;
 
 /**
  * @author Parker
  * @date 12/4/25
  */
-public enum ConnectState implements CodeAdapter {
+public enum ConnectState implements CodeProvider {
     // 1.在线 2.离线
     CONNECT_STATE_ONLINE(1),
     CONNECT_STATE_OFFLINE(2),
