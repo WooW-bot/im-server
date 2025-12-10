@@ -8,7 +8,8 @@
       "Bash(mvn clean compile:*)",
       "Bash(mvn compile:*)",
       "Bash(rm:*)",
-      "Bash(mvn clean install:*)"
+      "Bash(mvn clean install:*)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []

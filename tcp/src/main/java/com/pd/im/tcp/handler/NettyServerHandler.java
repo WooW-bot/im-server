@@ -14,10 +14,6 @@ import feign.jackson.JacksonEncoder;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.pool2.BasePooledObjectFactory;
-import org.apache.commons.pool2.PooledObject;
-import org.apache.commons.pool2.impl.DefaultPooledObject;
-import org.apache.commons.pool2.impl.GenericObjectPool;
 
 /**
  * Netty服务端消息处理器
@@ -33,15 +29,6 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<Message> {
     private final Integer brokerId;
     private final FeignMessageService feignMessageService;
 
-    /**
-     * 对象池，用于复用CommandContext对象
-     * <p>
-     * 注意：CommandContext是简单POJO，对象池可能是过度设计
-     * 保留此设计是为了避免高并发下的GC压力
-     */
-    private final GenericObjectPool<CommandContext> commandContextPool
-            = new GenericObjectPool<>(new CommandContextFactory());
-
     public NettyServerHandler(Integer brokerId, String logicUrl) {
         this.brokerId = brokerId;
         this.feignMessageService = Feign.builder()
@@ -52,63 +39,41 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<Message> {
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, Message msg) throws Exception {
+    protected void channelRead0(ChannelHandlerContext ctx, Message msg) {
         Integer command = msg.getMessageHeader().getCommand();
         CommandFactory commandFactory = CommandFactory.getInstance();
         CommandStrategy commandStrategy = commandFactory.getStrategy(command);
 
-        CommandContext commandContext = null;
-        try {
-            // 从对象池获取CommandContext对象
-            commandContext = getCommandContext(ctx, msg);
-
-            if (commandStrategy != null) {
-                // 执行命令策略
-                commandStrategy.execute(commandContext);
-            } else {
-                // 未注册的命令，直接转发到MQ
-                log.debug("未找到命令策略，转发到MQ: command={}", command);
-                MqMessageProducer.sendMessage(msg, command);
-            }
-        } finally {
-            // 将对象归还给对象池
-            if (commandContext != null) {
-                commandContextPool.returnObject(commandContext);
-            }
+        if (commandStrategy != null) {
+            // 执行命令策略
+            CommandContext commandContext = buildCommandContext(ctx, msg);
+            commandStrategy.execute(commandContext);
+        } else {
+            // 未注册的命令，直接转发到MQ
+            log.debug("未找到命令策略，转发到MQ: command={}", command);
+            MqMessageProducer.sendMessage(msg, command);
         }
     }
 
     /**
-     * 从对象池获取CommandContext对象并初始化
+     * 构建命令执行上下文
+     * <p>
+     * 注意：移除了对象池设计，原因如下：
+     * 1. CommandContext是简单POJO，现代JVM对象分配速度极快（逃逸分析+栈上分配）
+     * 2. 对象池引入复杂度和同步开销，反而可能降低性能
+     * 3. 简单直接的代码更易维护和理解
+     *
+     * @param ctx Channel上下文
+     * @param msg 消息对象
+     * @return 命令执行上下文
      */
-    private CommandContext getCommandContext(ChannelHandlerContext ctx, Message msg) {
-        CommandContext commandContext = null;
-        try {
-            commandContext = commandContextPool.borrowObject();
-            commandContext.setCtx(ctx);
-            commandContext.setBrokeId(brokerId);
-            commandContext.setMsg(msg);
-            commandContext.setFeignMessageService(feignMessageService);
-        } catch (Exception e) {
-            log.error("从对象池获取CommandContext失败", e);
-        }
+    private CommandContext buildCommandContext(ChannelHandlerContext ctx, Message msg) {
+        CommandContext commandContext = new CommandContext();
+        commandContext.setCtx(ctx);
+        commandContext.setBrokeId(brokerId);
+        commandContext.setMsg(msg);
+        commandContext.setFeignMessageService(feignMessageService);
         return commandContext;
-    }
-
-    /**
-     * CommandContext对象工厂
-     */
-    private static class CommandContextFactory extends BasePooledObjectFactory<CommandContext> {
-
-        @Override
-        public CommandContext create() {
-            return new CommandContext();
-        }
-
-        @Override
-        public PooledObject<CommandContext> wrap(CommandContext obj) {
-            return new DefaultPooledObject<>(obj);
-        }
     }
 
     @Override

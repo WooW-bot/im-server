@@ -7,15 +7,15 @@ import com.pd.im.codec.pack.message.MessageReadPack;
 import com.pd.im.codec.pack.message.RecallMessageNotifyPack;
 import com.pd.im.common.ResponseVO;
 import com.pd.im.common.constant.Constants;
-import com.pd.im.common.enums.DelFlagEnum;
+import com.pd.im.common.enums.DeleteFlag;
 import com.pd.im.common.enums.command.Command;
 import com.pd.im.common.enums.command.GroupEventCommand;
 import com.pd.im.common.enums.command.MessageCommand;
 import com.pd.im.common.enums.conversation.ConversationType;
 import com.pd.im.common.enums.message.MessageErrorCode;
 import com.pd.im.common.model.ClientInfo;
-import com.pd.im.common.model.SyncReq;
-import com.pd.im.common.model.SyncResp;
+import com.pd.im.common.model.SyncRequest;
+import com.pd.im.common.model.SyncResponse;
 import com.pd.im.common.model.message.MessageReadContent;
 import com.pd.im.common.model.message.MessageReceiveAckContent;
 import com.pd.im.common.model.message.OfflineMessageContent;
@@ -107,8 +107,8 @@ public class MessageSyncServiceImpl implements MessageSyncService {
     }
 
     @Override
-    public ResponseVO syncOfflineMessage(SyncReq req) {
-        SyncResp<OfflineMessageContent> resp = new SyncResp<>();
+    public ResponseVO syncOfflineMessage(SyncRequest req) {
+        SyncResponse<OfflineMessageContent> resp = new SyncResponse<>();
         // 构建用户离线消息队列key: appId:offline:userId
         String userKey = req.getAppId() + Constants.RedisConstants.OFFLINE_MESSAGE + req.getOperator();
         Long maxSeq = 0L;
@@ -166,12 +166,12 @@ public class MessageSyncServiceImpl implements MessageSyncService {
             return;
         }
 
-        if (body.getDelFlag() == DelFlagEnum.DELETE.getCode()) {
+        if (body.getDelFlag() == DeleteFlag.DELETE.getCode()) {
             recallAck(pack, ResponseVO.errorResponse(MessageErrorCode.MESSAGE_IS_RECALLED), content);
             return;
         }
 
-        body.setDelFlag(DelFlagEnum.DELETE.getCode());
+        body.setDelFlag(DeleteFlag.DELETE.getCode());
         imMessageBodyMapper.update(body, query);
 
         if (content.getConversationType().equals(ConversationType.P2P.getCode())) {
@@ -182,7 +182,7 @@ public class MessageSyncServiceImpl implements MessageSyncService {
 
             OfflineMessageContent offlineMessageContent = new OfflineMessageContent();
             BeanUtils.copyProperties(content, offlineMessageContent);
-            offlineMessageContent.setDelFlag(DelFlagEnum.DELETE.getCode());
+            offlineMessageContent.setDelFlag(DeleteFlag.DELETE.getCode());
             offlineMessageContent.setMessageKey(content.getMessageKey());
             offlineMessageContent.setConversationType(ConversationType.P2P.getCode());
             offlineMessageContent.setConversationId(ConversationService.convertConversationId(
@@ -220,7 +220,7 @@ public class MessageSyncServiceImpl implements MessageSyncService {
             for (String memberId : getGroupMemberIds) {
                 String toKey = content.getAppId() + ":" + Constants.SeqConstants.MESSAGE_SEQ + ":" + memberId;
                 OfflineMessageContent offlineMessageContent = new OfflineMessageContent();
-                offlineMessageContent.setDelFlag(DelFlagEnum.DELETE.getCode());
+                offlineMessageContent.setDelFlag(DeleteFlag.DELETE.getCode());
                 BeanUtils.copyProperties(content, offlineMessageContent);
                 offlineMessageContent.setConversationType(ConversationType.GROUP.getCode());
                 offlineMessageContent.setConversationId(ConversationService.convertConversationId(offlineMessageContent.getConversationType()

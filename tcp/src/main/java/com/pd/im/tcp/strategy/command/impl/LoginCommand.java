@@ -44,41 +44,106 @@ public class LoginCommand implements CommandStrategy {
 
     @Override
     public void execute(CommandContext context) {
-        Message msg = context.getMsg();
-        Integer brokeId = context.getBrokeId();
+        try {
+            // 参数校验
+            if (context == null || context.getMsg() == null || context.getCtx() == null) {
+                log.error("登录命令执行失败：参数为空");
+                return;
+            }
 
-        // 1. 解析登录请求
-        LoginPack loginPack = JSON.parseObject(
-                JSONObject.toJSONString(msg.getMessagePack()),
-                new TypeReference<LoginPack>() {
-                }.getType()
-        );
+            Message msg = context.getMsg();
+            Integer brokeId = context.getBrokeId();
 
-        UserClientDto userClientDto = new UserClientDto();
-        userClientDto.setUserId(loginPack.getUserId());
-        userClientDto.setAppId(msg.getMessageHeader().getAppId());
-        userClientDto.setClientType(msg.getMessageHeader().getClientType());
-        userClientDto.setImei(msg.getMessageHeader().getImei());
+            // 1. 解析登录请求
+            LoginPack loginPack = parseLoginPack(msg);
+            if (loginPack == null || loginPack.getUserId() == null || loginPack.getUserId().trim().isEmpty()) {
+                log.error("登录失败：用户ID为空");
+                sendLoginFailResponse(context, "用户ID不能为空");
+                return;
+            }
 
-        // 2. 双向绑定用户与Channel
-        UserChannelRepository.bind(userClientDto, context.getCtx().channel());
+            // 校验消息头
+            if (!validateMessageHeader(msg.getMessageHeader())) {
+                log.error("登录失败：消息头参数不完整");
+                sendLoginFailResponse(context, "消息头参数不完整");
+                return;
+            }
 
-        // 3. 构建用户Session并存储到Redis
-        UserSession userSession = buildUserSession(loginPack, msg, brokeId);
-        saveUserSession(userSession, msg);
+            UserClientDto userClientDto = new UserClientDto();
+            userClientDto.setUserId(loginPack.getUserId());
+            userClientDto.setAppId(msg.getMessageHeader().getAppId());
+            userClientDto.setClientType(msg.getMessageHeader().getClientType());
+            userClientDto.setImei(msg.getMessageHeader().getImei());
 
-        // 4. 发布用户上线通知（用于多端登录策略处理）
-        publishUserLoginEvent(userClientDto);
+            // 2. 双向绑定用户与Channel
+            UserChannelRepository.bind(userClientDto, context.getCtx().channel());
 
-        // 5. 发送用户在线状态变更消息到MQ
-        sendUserStatusChangeMessage(loginPack, msg);
+            // 3. 构建用户Session并存储到Redis
+            UserSession userSession = buildUserSession(loginPack, msg, brokeId);
+            saveUserSession(userSession, msg);
 
-        // 6. 返回登录成功响应
-        sendLoginAckResponse(context, loginPack, msg);
+            // 4. 发布用户上线通知（用于多端登录策略处理）
+            publishUserLoginEvent(userClientDto);
 
-        log.info("用户登录成功: appId={}, userId={}, clientType={}, imei={}, brokerId={}",
-                msg.getMessageHeader().getAppId(), loginPack.getUserId(),
-                msg.getMessageHeader().getClientType(), msg.getMessageHeader().getImei(), brokeId);
+            // 5. 发送用户在线状态变更消息到MQ
+            sendUserStatusChangeMessage(loginPack, msg);
+
+            // 6. 返回登录成功响应
+            sendLoginAckResponse(context, loginPack, msg);
+
+            log.info("用户登录成功: appId={}, userId={}, clientType={}, imei={}, brokerId={}",
+                    msg.getMessageHeader().getAppId(), loginPack.getUserId(),
+                    msg.getMessageHeader().getClientType(), msg.getMessageHeader().getImei(), brokeId);
+
+        } catch (Exception e) {
+            log.error("登录命令执行异常", e);
+            sendLoginFailResponse(context, "登录失败：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 解析登录数据包
+     */
+    private LoginPack parseLoginPack(Message msg) {
+        try {
+            return JSON.parseObject(
+                    JSONObject.toJSONString(msg.getMessagePack()),
+                    new TypeReference<LoginPack>() {
+                    }.getType()
+            );
+        } catch (Exception e) {
+            log.error("解析登录数据包失败", e);
+            return null;
+        }
+    }
+
+    /**
+     * 校验消息头参数
+     */
+    private boolean validateMessageHeader(com.pd.im.codec.proto.MessageHeader header) {
+        return header != null
+                && header.getAppId() != null
+                && header.getClientType() != null
+                && header.getImei() != null
+                && !header.getImei().trim().isEmpty();
+    }
+
+    /**
+     * 发送登录失败响应
+     */
+    private void sendLoginFailResponse(CommandContext context, String errorMsg) {
+        try {
+            LoginAckPack loginAckPack = new LoginAckPack();
+            loginAckPack.setUserId("");
+
+            MessagePack<String> loginFail = new MessagePack<>();
+            loginFail.setCommand(SystemCommand.LOGINACK.getCommand());
+            loginFail.setData(errorMsg);
+
+            context.getCtx().channel().writeAndFlush(loginFail);
+        } catch (Exception e) {
+            log.error("发送登录失败响应异常", e);
+        }
     }
 
     /**

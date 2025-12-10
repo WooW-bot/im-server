@@ -1,7 +1,7 @@
 package com.pd.im.service.message.service.sync;
 
 import com.pd.im.common.ResponseVO;
-import com.pd.im.common.model.SyncReq;
+import com.pd.im.common.model.SyncRequest;
 import com.pd.im.common.model.message.MessageReadContent;
 import com.pd.im.common.model.message.MessageReceiveAckContent;
 import com.pd.im.common.model.message.RecallMessageContent;
@@ -50,7 +50,7 @@ public interface MessageSyncService {
      * @param req
      * @return
      */
-    ResponseVO syncOfflineMessage(SyncReq req);
+    ResponseVO syncOfflineMessage(SyncRequest req);
 
     //修改历史消息的状态
     //修改离线消息的状态

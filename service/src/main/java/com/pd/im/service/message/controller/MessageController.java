@@ -1,7 +1,7 @@
 package com.pd.im.service.message.controller;
 
 import com.pd.im.common.ResponseVO;
-import com.pd.im.common.model.SyncReq;
+import com.pd.im.common.model.SyncRequest;
 import com.pd.im.common.model.message.CheckSendMessageReq;
 import com.pd.im.service.message.model.req.SendMessageReq;
 import com.pd.im.service.message.service.GroupMessageService;
@@ -65,7 +65,7 @@ public class MessageController {
     }
 
     @RequestMapping("/syncOfflineMessageList")
-    public ResponseVO syncP2POfflineMessageList(@RequestBody @Validated SyncReq req) {
+    public ResponseVO syncP2POfflineMessageList(@RequestBody @Validated SyncRequest req) {
         return messageSyncService.syncOfflineMessage(req);
     }
 }

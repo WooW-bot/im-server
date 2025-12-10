@@ -5,6 +5,7 @@ import com.pd.im.codec.WebSocketMessageEncoderHandler;
 import com.pd.im.codec.config.ImBootstrapConfig;
 import com.pd.im.tcp.handler.NettyServerHandler;
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
@@ -18,61 +19,97 @@ import io.netty.handler.stream.ChunkedWriteHandler;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * WebSocket 网络通讯, HTTP 包装的协议，双向通信，降低延时，核心在于其定义的 Handler
+ * WebSocket服务器
+ * <p>
+ * 基于Netty实现的WebSocket长连接服务器，支持浏览器客户端连接
  *
  * @author Parker
  * @date 12/3/25
  */
 @Slf4j
 public class ImWebSocketServer {
-    private ImBootstrapConfig.TcpConfig config;
-    private NioEventLoopGroup mainGroup;
-    private NioEventLoopGroup subGroup;
-    private ServerBootstrap bootstrap;
+    private final ImBootstrapConfig.TcpConfig config;
+    private final NioEventLoopGroup bossGroup;
+    private final NioEventLoopGroup workerGroup;
+    private final ServerBootstrap bootstrap;
+    private ChannelFuture channelFuture;
 
     public ImWebSocketServer(ImBootstrapConfig.TcpConfig config) {
         this.config = config;
         // 创建主从线程组
-        mainGroup = new NioEventLoopGroup();
-        subGroup = new NioEventLoopGroup();
-        bootstrap = new ServerBootstrap();
-        bootstrap.group(mainGroup, subGroup)
+        this.bossGroup = new NioEventLoopGroup(config.getBossThreadSize());
+        this.workerGroup = new NioEventLoopGroup(config.getWorkThreadSize());
+        this.bootstrap = new ServerBootstrap();
+
+        bootstrap.group(bossGroup, workerGroup)
                 .channel(NioServerSocketChannel.class)
                 // 服务端可连接的最大队列数量
                 .option(ChannelOption.SO_BACKLOG, 10240)
                 // 允许重复使用本地地址和端口
                 .option(ChannelOption.SO_REUSEADDR, true)
-                // 子线程组禁用 Nagle 算法，简单点说是否批量发送数据 true关闭 false开启。 开启的话可以减少一定的网络开销，但影响消息实时性
+                // 禁用Nagle算法，提高消息实时性
                 .childOption(ChannelOption.TCP_NODELAY, true)
-                // 保活机制，2h 没数据会发送心跳包检测
+                // 保活机制
                 .childOption(ChannelOption.SO_KEEPALIVE, true)
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
-                    protected void initChannel(SocketChannel socketChannel) throws Exception {
+                    protected void initChannel(SocketChannel socketChannel) {
                         ChannelPipeline pipeline = socketChannel.pipeline();
-                        // websocket 基于http协议，所以要有http编解码器
+                        // HTTP编解码器
                         pipeline.addLast("http-codec", new HttpServerCodec());
-                        // 对写大数据流的支持
+                        // 支持大数据流写入
                         pipeline.addLast("http-chunked", new ChunkedWriteHandler());
-                        // 几乎在netty中的编程，都会使用到此hanler
+                        // HTTP消息聚合
                         pipeline.addLast("aggregator", new HttpObjectAggregator(65535));
-                        /**
-                         * websocket 服务器处理的协议，用于指定给客户端连接访问的路由 : /ws
-                         * 本handler会帮你处理一些繁重的复杂的事
-                         * 会帮你处理握手动作： handshaking（close, ping, pong） ping + pong = 心跳
-                         * 对于websocket来讲，都是以frames进行传输的，不同的数据类型对应的frames也不同
-                         */
+                        // WebSocket协议处理器（路由: /ws）
                         pipeline.addLast(new WebSocketServerProtocolHandler("/ws"));
+                        // 自定义消息编解码器
                         pipeline.addLast(new WebSocketMessageDecoderHandler());
                         pipeline.addLast(new WebSocketMessageEncoderHandler());
+                        // 业务逻辑处理器
                         pipeline.addLast(new NettyServerHandler(config.getBrokerId(), config.getLogicUrl()));
                     }
                 });
     }
 
+    /**
+     * 启动WebSocket服务器
+     */
     public void start() {
-        // 启动服务端
-        this.bootstrap.bind(config.getWebSocketPort());
-        log.info("web start success");
+        try {
+            channelFuture = bootstrap.bind(config.getWebSocketPort()).sync();
+            log.info("WebSocket服务器启动成功，端口: {}", config.getWebSocketPort());
+        } catch (InterruptedException e) {
+            log.error("WebSocket服务器启动失败", e);
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("WebSocket服务器启动失败", e);
+        }
+    }
+
+    /**
+     * 优雅关闭WebSocket服务器
+     */
+    public void shutdown() {
+        log.info("开始关闭WebSocket服务器...");
+
+        try {
+            // 关闭服务器Channel
+            if (channelFuture != null && channelFuture.channel() != null) {
+                channelFuture.channel().close().sync();
+            }
+        } catch (InterruptedException e) {
+            log.error("关闭服务器Channel时被中断", e);
+            Thread.currentThread().interrupt();
+        }
+
+        // 优雅关闭线程组
+        if (workerGroup != null) {
+            workerGroup.shutdownGracefully();
+        }
+        if (bossGroup != null) {
+            bossGroup.shutdownGracefully();
+        }
+
+        log.info("WebSocket服务器已关闭");
     }
 }
