@@ -2,6 +2,7 @@ package com.pd.im.service.group.dao.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.pd.im.service.group.dao.ImGroupEntity;
+import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 import org.springframework.stereotype.Repository;
 
@@ -11,7 +12,7 @@ import java.util.Collection;
  * @author Parker
  * @date 12/7/25
  */
-@Repository
+@Mapper
 public interface ImGroupMapper extends BaseMapper<ImGroupEntity> {
 
     /**

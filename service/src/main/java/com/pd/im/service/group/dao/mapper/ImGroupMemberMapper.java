@@ -3,6 +3,7 @@ package com.pd.im.service.group.dao.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.pd.im.service.group.dao.ImGroupMemberEntity;
 import com.pd.im.service.group.model.req.GroupMemberDto;
+import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Result;
 import org.apache.ibatis.annotations.Results;
 import org.apache.ibatis.annotations.Select;
@@ -14,7 +15,7 @@ import java.util.List;
  * @author Parker
  * @date 12/6/25
  */
-@Repository
+@Mapper
 public interface ImGroupMemberMapper extends BaseMapper<ImGroupMemberEntity> {
 
     @Select("select group_id from im_group_member where app_id = #{appId} AND member_id = #{memberId} ")
