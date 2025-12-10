@@ -11,8 +11,8 @@ import com.pd.im.common.enums.command.ConversationEventCommand;
 import com.pd.im.common.enums.conversation.ConversationErrorCode;
 import com.pd.im.common.enums.conversation.ConversationType;
 import com.pd.im.common.model.ClientInfo;
-import com.pd.im.common.model.SyncReq;
-import com.pd.im.common.model.SyncResp;
+import com.pd.im.common.model.SyncRequest;
+import com.pd.im.common.model.SyncResponse;
 import com.pd.im.common.model.message.MessageReadContent;
 import com.pd.im.service.conversation.dao.ImConversationSetEntity;
 import com.pd.im.service.conversation.dao.mapper.ImConversationSetMapper;
@@ -151,11 +151,11 @@ public class ConversationServiceImpl implements ConversationService {
     }
 
     @Override
-    public ResponseVO syncConversationSet(SyncReq req) {
+    public ResponseVO syncConversationSet(SyncRequest req) {
         if (req.getMaxLimit() > appConfig.getConversationMaxCount()) {
             req.setMaxLimit(appConfig.getConversationMaxCount());
         }
-        SyncResp<ImConversationSetEntity> resp = new SyncResp<>();
+        SyncResponse<ImConversationSetEntity> resp = new SyncResponse<>();
         //seq > req.getseq limit maxLimit
         QueryWrapper<ImConversationSetEntity> queryWrapper =
                 new QueryWrapper<>();

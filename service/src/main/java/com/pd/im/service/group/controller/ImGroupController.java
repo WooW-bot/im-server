@@ -1,7 +1,7 @@
 package com.pd.im.service.group.controller;
 
 import com.pd.im.common.ResponseVO;
-import com.pd.im.common.model.SyncReq;
+import com.pd.im.common.model.SyncRequest;
 import com.pd.im.service.group.model.req.*;
 import com.pd.im.service.group.service.ImGroupService;
 import com.pd.im.service.message.service.GroupMessageService;
@@ -79,7 +79,7 @@ public class ImGroupController {
     }
 
     @RequestMapping("/syncJoinedGroup")
-    public ResponseVO syncJoinedGroup(@RequestBody @Validated SyncReq req) {
+    public ResponseVO syncJoinedGroup(@RequestBody @Validated SyncRequest req) {
         return groupService.syncJoinedGroupList(req);
     }
 }

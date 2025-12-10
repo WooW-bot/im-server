@@ -1,9 +1,9 @@
 package com.pd.im.service.interceptor;
 
 import com.alibaba.fastjson.JSONObject;
-import com.pd.im.common.BaseErrorCode;
+import com.pd.im.common.enums.BaseErrorCode;
 import com.pd.im.common.ResponseVO;
-import com.pd.im.common.enums.GateWayErrorCode;
+import com.pd.im.common.enums.GatewayErrorCode;
 import com.pd.im.common.exception.ApplicationExceptionEnum;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,19 +29,19 @@ public class GateWayInterceptor implements HandlerInterceptor {
         //获取appId 操作人 userSign
         String appIdStr = request.getParameter("appId");
         if (StringUtils.isBlank(appIdStr)) {
-            resp(ResponseVO.errorResponse(GateWayErrorCode.APPID_NOT_EXIST), response);
+            resp(ResponseVO.errorResponse(GatewayErrorCode.APPID_NOT_EXIST), response);
             return false;
         }
 
         String identifier = request.getParameter("identifier");
         if (StringUtils.isBlank(identifier)) {
-            resp(ResponseVO.errorResponse(GateWayErrorCode.OPERATER_NOT_EXIST), response);
+            resp(ResponseVO.errorResponse(GatewayErrorCode.OPERATER_NOT_EXIST), response);
             return false;
         }
 
         String userSign = request.getParameter("userSign");
         if (StringUtils.isBlank(userSign)) {
-            resp(ResponseVO.errorResponse(GateWayErrorCode.USERSIGN_NOT_EXIST), response);
+            resp(ResponseVO.errorResponse(GatewayErrorCode.USERSIGN_NOT_EXIST), response);
             return false;
         }
 

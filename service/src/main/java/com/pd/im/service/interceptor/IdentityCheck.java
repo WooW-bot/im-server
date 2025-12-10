@@ -1,11 +1,11 @@
 package com.pd.im.service.interceptor;
 
 import com.alibaba.fastjson.JSONObject;
-import com.pd.im.common.BaseErrorCode;
+import com.pd.im.common.enums.BaseErrorCode;
 import com.pd.im.common.ResponseVO;
 import com.pd.im.common.config.AppConfig;
 import com.pd.im.common.constant.Constants;
-import com.pd.im.common.enums.GateWayErrorCode;
+import com.pd.im.common.enums.GatewayErrorCode;
 import com.pd.im.common.enums.user.UserType;
 import com.pd.im.common.exception.ApplicationExceptionEnum;
 import com.pd.im.common.util.SigAPI;
@@ -72,19 +72,19 @@ public class IdentityCheck {
         }
 
         if (!decoderIdentifier.equals(identifier)) {
-            return GateWayErrorCode.USERSIGN_OPERATE_NOT_MATE;
+            return GatewayErrorCode.USERSIGN_OPERATE_NOT_MATE;
         }
 
         if (!decoderAppId.equals(appId)) {
-            return GateWayErrorCode.USERSIGN_IS_ERROR;
+            return GatewayErrorCode.USERSIGN_IS_ERROR;
         }
 
         if (expireSec == 0L) {
-            return GateWayErrorCode.USERSIGN_IS_EXPIRED;
+            return GatewayErrorCode.USERSIGN_IS_EXPIRED;
         }
 
         if (expireTime < System.currentTimeMillis() / 1000) {
-            return GateWayErrorCode.USERSIGN_IS_EXPIRED;
+            return GatewayErrorCode.USERSIGN_IS_EXPIRED;
         }
 
         //appid + "xxx" + userId + sign
@@ -98,7 +98,7 @@ public class IdentityCheck {
             return BaseErrorCode.SUCCESS;
         }
 
-        return GateWayErrorCode.USERSIGN_IS_ERROR;
+        return GatewayErrorCode.USERSIGN_IS_ERROR;
     }
 
     /**

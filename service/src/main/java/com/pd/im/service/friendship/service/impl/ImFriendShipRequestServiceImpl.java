@@ -7,7 +7,7 @@ import com.pd.im.common.ResponseVO;
 import com.pd.im.common.constant.Constants;
 import com.pd.im.common.enums.command.FriendshipEventCommand;
 import com.pd.im.common.enums.friend.FriendRequestApprovalStatus;
-import com.pd.im.common.enums.friend.FriendShipErrorCode;
+import com.pd.im.common.enums.friend.FriendshipErrorCode;
 import com.pd.im.common.exception.ApplicationException;
 import com.pd.im.common.model.ClientInfo;
 import com.pd.im.service.friendship.dao.ImFriendShipRequestEntity;
@@ -98,11 +98,11 @@ public class ImFriendShipRequestServiceImpl implements ImFriendShipRequestServic
     public ResponseVO approveFriendRequest(ApproveFriendRequestReq req) {
         ImFriendShipRequestEntity imFriendShipRequestEntity = imFriendShipRequestMapper.selectById(req.getId());
         if (imFriendShipRequestEntity == null) {
-            throw new ApplicationException(FriendShipErrorCode.FRIEND_REQUEST_IS_NOT_EXIST);
+            throw new ApplicationException(FriendshipErrorCode.FRIEND_REQUEST_IS_NOT_EXIST);
         }
         if (!req.getOperator().equals(imFriendShipRequestEntity.getToId())) {
             //只能审批发给自己的好友请求
-            throw new ApplicationException(FriendShipErrorCode.NOT_APPROVER_OTHER_MAN_REQUEST);
+            throw new ApplicationException(FriendshipErrorCode.NOT_APPROVER_OTHER_MAN_REQUEST);
         }
 
         long seq = redisSequence.doGetSeq(req.getAppId() + ":" + Constants.SeqConstants.FRIENDSHIP_REQUEST);
@@ -126,7 +126,7 @@ public class ImFriendShipRequestServiceImpl implements ImFriendShipRequestServic
 ////                TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
 //                return responseVO;
 //            }
-            if (!responseVO.isSuccess() && responseVO.getCode() != FriendShipErrorCode.TO_IS_YOUR_FRIEND.getCode()) {
+            if (!responseVO.isSuccess() && responseVO.getCode() != FriendshipErrorCode.TO_IS_YOUR_FRIEND.getCode()) {
                 return responseVO;
             }
         }

@@ -2,7 +2,7 @@ package com.pd.im.service.friendship.service;
 
 import com.pd.im.common.ResponseVO;
 import com.pd.im.common.model.RequestBase;
-import com.pd.im.common.model.SyncReq;
+import com.pd.im.common.model.SyncRequest;
 import com.pd.im.service.friendship.model.req.*;
 
 import java.util.List;
@@ -42,7 +42,7 @@ public interface ImFriendService {
 
     ResponseVO checkBlack(CheckFriendShipReq req);
 
-    ResponseVO syncFriendshipList(SyncReq req);
+    ResponseVO syncFriendshipList(SyncRequest req);
 
     List<String> getFriendIds(String userId, Integer appId);
 }

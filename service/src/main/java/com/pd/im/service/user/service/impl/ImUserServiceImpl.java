@@ -6,7 +6,7 @@ import com.pd.im.codec.pack.user.UserModifyPack;
 import com.pd.im.common.ResponseVO;
 import com.pd.im.common.config.AppConfig;
 import com.pd.im.common.constant.Constants;
-import com.pd.im.common.enums.DelFlagEnum;
+import com.pd.im.common.enums.DeleteFlag;
 import com.pd.im.common.enums.command.Command;
 import com.pd.im.common.enums.command.UserEventCommand;
 import com.pd.im.common.enums.user.UserErrorCode;
@@ -90,7 +90,7 @@ public class ImUserServiceImpl implements ImUserService {
         QueryWrapper<ImUserDataEntity> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("app_id", req.getAppId());
         queryWrapper.in("user_id", req.getUserIds());
-        queryWrapper.eq("del_flag", DelFlagEnum.NORMAL.getCode());
+        queryWrapper.eq("del_flag", DeleteFlag.NORMAL.getCode());
 
         List<ImUserDataEntity> userDataEntities = imUserDataMapper.selectList(queryWrapper);
         HashMap<String, ImUserDataEntity> map = new HashMap<>();
@@ -115,7 +115,7 @@ public class ImUserServiceImpl implements ImUserService {
     @Override
     public ResponseVO deleteUser(DeleteUserReq req) {
         ImUserDataEntity entity = new ImUserDataEntity();
-        entity.setDelFlag(DelFlagEnum.DELETE.getCode());
+        entity.setDelFlag(DeleteFlag.DELETE.getCode());
 
         List<String> errorId = new ArrayList();
         List<String> successId = new ArrayList();
@@ -124,7 +124,7 @@ public class ImUserServiceImpl implements ImUserService {
             QueryWrapper wrapper = new QueryWrapper();
             wrapper.eq("app_id", req.getAppId());
             wrapper.eq("user_id", userId);
-            wrapper.eq("del_flag", DelFlagEnum.NORMAL.getCode());
+            wrapper.eq("del_flag", DeleteFlag.NORMAL.getCode());
             int update = 0;
             try {
                 update = imUserDataMapper.update(entity, wrapper);
@@ -149,7 +149,7 @@ public class ImUserServiceImpl implements ImUserService {
         QueryWrapper query = new QueryWrapper<>();
         query.eq("app_id", req.getAppId());
         query.eq("user_id", req.getUserId());
-        query.eq("del_flag", DelFlagEnum.NORMAL.getCode());
+        query.eq("del_flag", DeleteFlag.NORMAL.getCode());
         ImUserDataEntity user = imUserDataMapper.selectOne(query);
         if (user == null) {
             throw new ApplicationException(UserErrorCode.USER_IS_NOT_EXIST);
@@ -184,7 +184,7 @@ public class ImUserServiceImpl implements ImUserService {
         QueryWrapper wrapper = new QueryWrapper<>();
         wrapper.eq("app_id", appId);
         wrapper.eq("user_id", userId);
-        wrapper.eq("del_flag", DelFlagEnum.NORMAL.getCode());
+        wrapper.eq("del_flag", DeleteFlag.NORMAL.getCode());
 
         ImUserDataEntity imUserDataEntity = imUserDataMapper.selectOne(wrapper);
         if (imUserDataEntity == null) {

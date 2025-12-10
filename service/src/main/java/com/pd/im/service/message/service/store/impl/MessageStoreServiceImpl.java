@@ -3,7 +3,7 @@ package com.pd.im.service.message.service.store.impl;
 import com.alibaba.fastjson.JSONObject;
 import com.pd.im.common.config.AppConfig;
 import com.pd.im.common.constant.Constants;
-import com.pd.im.common.enums.DelFlagEnum;
+import com.pd.im.common.enums.DeleteFlag;
 import com.pd.im.common.enums.conversation.ConversationType;
 import com.pd.im.common.model.message.*;
 import com.pd.im.common.model.message.MessageBody;
@@ -193,10 +193,8 @@ public class MessageStoreServiceImpl implements MessageStoreService {
      * @param conversationWith 会话对方ID（P2P为对方用户ID，群聊为群ID）
      * @param conversationType 会话类型
      */
-    private void addToOfflineMsgQueue(OfflineMessageContent offlineMessage,
-                                      String userId,
-                                      String conversationWith,
-                                      ConversationTypeEnum conversationType) {
+    private void addToOfflineMsgQueue(OfflineMessageContent offlineMessage, String userId, String conversationWith,
+                                      ConversationType conversationType) {
         try {
             // 构建用户离线消息队列key: appId:offline:userId
             String userKey = offlineMessage.getAppId() + Constants.RedisConstants.OFFLINE_MESSAGE + userId;
@@ -248,7 +246,7 @@ public class MessageStoreServiceImpl implements MessageStoreService {
         messageBody.setSecurityKey(null);
 
         messageBody.setExtra(messageContent.getExtra());
-        messageBody.setDelFlag(DelFlagEnum.NORMAL.getCode());
+        messageBody.setDelFlag(DeleteFlag.NORMAL.getCode());
         messageBody.setMessageTime(messageContent.getMessageTime());
         messageBody.setMessageBody(messageContent.getMessageBody());
 

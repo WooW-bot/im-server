@@ -6,9 +6,9 @@ import com.pd.im.codec.pack.friendship.AddFriendGroupPack;
 import com.pd.im.codec.pack.friendship.DeleteFriendGroupPack;
 import com.pd.im.common.ResponseVO;
 import com.pd.im.common.constant.Constants;
-import com.pd.im.common.enums.DelFlagEnum;
+import com.pd.im.common.enums.DeleteFlag;
 import com.pd.im.common.enums.command.FriendshipEventCommand;
-import com.pd.im.common.enums.friend.FriendShipErrorCode;
+import com.pd.im.common.enums.friend.FriendshipErrorCode;
 import com.pd.im.common.model.ClientInfo;
 import com.pd.im.service.friendship.dao.ImFriendShipGroupEntity;
 import com.pd.im.service.friendship.dao.mapper.ImFriendShipGroupMapper;
@@ -53,19 +53,19 @@ public class ImFriendShipGroupServiceImpl implements ImFriendShipGroupService {
         query.eq("group_name", req.getGroupName());
         query.eq("app_id", req.getAppId());
         query.eq("from_id", req.getFromId());
-        query.eq("del_flag", DelFlagEnum.NORMAL.getCode());
+        query.eq("del_flag", DeleteFlag.NORMAL.getCode());
 
         ImFriendShipGroupEntity entity = imFriendShipGroupMapper.selectOne(query);
 
         if (entity != null) {
-            return ResponseVO.errorResponse(FriendShipErrorCode.FRIEND_SHIP_GROUP_IS_EXIST);
+            return ResponseVO.errorResponse(FriendshipErrorCode.FRIEND_SHIP_GROUP_IS_EXIST);
         }
 
         //写入db
         ImFriendShipGroupEntity insert = new ImFriendShipGroupEntity();
         insert.setAppId(req.getAppId());
         insert.setCreateTime(System.currentTimeMillis());
-        insert.setDelFlag(DelFlagEnum.NORMAL.getCode());
+        insert.setDelFlag(DeleteFlag.NORMAL.getCode());
         insert.setGroupName(req.getGroupName());
         long seq = redisSequence.doGetSeq(req.getAppId() + ":" + Constants.SeqConstants.FRIENDSHIP_GROUP);
         insert.setSequence(seq);
@@ -74,7 +74,7 @@ public class ImFriendShipGroupServiceImpl implements ImFriendShipGroupService {
             int insert1 = imFriendShipGroupMapper.insert(insert);
 
             if (insert1 != 1) {
-                return ResponseVO.errorResponse(FriendShipErrorCode.FRIEND_SHIP_GROUP_CREATE_ERROR);
+                return ResponseVO.errorResponse(FriendshipErrorCode.FRIEND_SHIP_GROUP_CREATE_ERROR);
             }
             if (insert1 == 1 && CollectionUtil.isNotEmpty(req.getToIds())) {
                 AddFriendShipGroupMemberReq addFriendShipGroupMemberReq = new AddFriendShipGroupMemberReq();
@@ -87,7 +87,7 @@ public class ImFriendShipGroupServiceImpl implements ImFriendShipGroupService {
             }
         } catch (DuplicateKeyException e) {
             e.getStackTrace();
-            return ResponseVO.errorResponse(FriendShipErrorCode.FRIEND_SHIP_GROUP_IS_EXIST);
+            return ResponseVO.errorResponse(FriendshipErrorCode.FRIEND_SHIP_GROUP_IS_EXIST);
         }
 
         AddFriendGroupPack addFriendGroupPack = new AddFriendGroupPack();
@@ -111,7 +111,7 @@ public class ImFriendShipGroupServiceImpl implements ImFriendShipGroupService {
             query.eq("group_name", groupName);
             query.eq("app_id", req.getAppId());
             query.eq("from_id", req.getFromId());
-            query.eq("del_flag", DelFlagEnum.NORMAL.getCode());
+            query.eq("del_flag", DeleteFlag.NORMAL.getCode());
 
             ImFriendShipGroupEntity entity = imFriendShipGroupMapper.selectOne(query);
 
@@ -120,7 +120,7 @@ public class ImFriendShipGroupServiceImpl implements ImFriendShipGroupService {
                 ImFriendShipGroupEntity update = new ImFriendShipGroupEntity();
                 update.setSequence(seq);
                 update.setGroupId(entity.getGroupId());
-                update.setDelFlag(DelFlagEnum.DELETE.getCode());
+                update.setDelFlag(DeleteFlag.DELETE.getCode());
                 imFriendShipGroupMapper.updateById(update);
                 imFriendShipGroupMemberService.clearGroupMember(entity.getGroupId());
                 DeleteFriendGroupPack deleteFriendGroupPack = new DeleteFriendGroupPack();
@@ -143,11 +143,11 @@ public class ImFriendShipGroupServiceImpl implements ImFriendShipGroupService {
         query.eq("group_name", groupName);
         query.eq("app_id", appId);
         query.eq("from_id", fromId);
-        query.eq("del_flag", DelFlagEnum.NORMAL.getCode());
+        query.eq("del_flag", DeleteFlag.NORMAL.getCode());
 
         ImFriendShipGroupEntity entity = imFriendShipGroupMapper.selectOne(query);
         if (entity == null) {
-            return ResponseVO.errorResponse(FriendShipErrorCode.FRIEND_SHIP_GROUP_IS_NOT_EXIST);
+            return ResponseVO.errorResponse(FriendshipErrorCode.FRIEND_SHIP_GROUP_IS_NOT_EXIST);
         }
         return ResponseVO.successResponse(entity);
     }

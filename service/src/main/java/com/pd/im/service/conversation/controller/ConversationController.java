@@ -1,7 +1,7 @@
 package com.pd.im.service.conversation.controller;
 
 import com.pd.im.common.ResponseVO;
-import com.pd.im.common.model.SyncReq;
+import com.pd.im.common.model.SyncRequest;
 import com.pd.im.service.conversation.model.*;
 import com.pd.im.service.conversation.service.ConversationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +31,7 @@ public class ConversationController {
     }
 
     @RequestMapping("/syncConversationList")
-    public ResponseVO syncFriendShipList(@RequestBody @Validated SyncReq req) {
+    public ResponseVO syncFriendShipList(@RequestBody @Validated SyncRequest req) {
         return conversationService.syncConversationSet(req);
     }
 }

@@ -1,7 +1,7 @@
 package com.pd.im.service.exception;
 
-import com.pd.im.common.BaseErrorCode;
 import com.pd.im.common.ResponseVO;
+import com.pd.im.common.enums.BaseErrorCode;
 import com.pd.im.common.exception.ApplicationException;
 import org.hibernate.validator.internal.engine.path.PathImpl;
 import org.springframework.validation.BindException;

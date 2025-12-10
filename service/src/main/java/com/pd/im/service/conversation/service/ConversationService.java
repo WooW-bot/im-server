@@ -1,7 +1,7 @@
 package com.pd.im.service.conversation.service;
 
 import com.pd.im.common.ResponseVO;
-import com.pd.im.common.model.SyncReq;
+import com.pd.im.common.model.SyncRequest;
 import com.pd.im.common.model.message.MessageReadContent;
 import com.pd.im.service.conversation.model.*;
 
@@ -45,5 +45,5 @@ public interface ConversationService {
      * @param req 数据结构为{客户端最大 Seq，服务端一次响应的最大次数}
      * @return
      */
-    ResponseVO syncConversationSet(SyncReq req);
+    ResponseVO syncConversationSet(SyncRequest req);
 }

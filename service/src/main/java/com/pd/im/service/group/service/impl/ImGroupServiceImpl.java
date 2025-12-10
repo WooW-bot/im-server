@@ -3,7 +3,6 @@ package com.pd.im.service.group.service.impl;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.pd.im.codec.pack.group.CreateGroupPack;
@@ -19,8 +18,8 @@ import com.pd.im.common.enums.group.GroupStatus;
 import com.pd.im.common.enums.group.GroupType;
 import com.pd.im.common.exception.ApplicationException;
 import com.pd.im.common.model.ClientInfo;
-import com.pd.im.common.model.SyncReq;
-import com.pd.im.common.model.SyncResp;
+import com.pd.im.common.model.SyncRequest;
+import com.pd.im.common.model.SyncResponse;
 import com.pd.im.service.callback.CallbackService;
 import com.pd.im.service.group.dao.ImGroupEntity;
 import com.pd.im.service.group.dao.mapper.ImGroupMapper;
@@ -392,12 +391,12 @@ public class ImGroupServiceImpl implements ImGroupService {
     }
 
     @Override
-    public ResponseVO syncJoinedGroupList(SyncReq req) {
+    public ResponseVO syncJoinedGroupList(SyncRequest req) {
         if (req.getMaxLimit() > appConfig.getJoinGroupMaxCount()) {
             // 前端传输限制，保证一次增量拉取数据量不超过配置文件的值
             req.setMaxLimit(appConfig.getJoinGroupMaxCount());
         }
-        SyncResp<ImGroupEntity> resp = new SyncResp<>();
+        SyncResponse<ImGroupEntity> resp = new SyncResponse<>();
         ResponseVO<Collection<String>> memberJoinedGroup = groupMemberService
                 .syncMemberJoinedGroup(req.getOperator(), req.getAppId());
         if (memberJoinedGroup.isSuccess()) {

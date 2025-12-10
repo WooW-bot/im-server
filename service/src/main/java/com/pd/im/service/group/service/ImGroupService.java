@@ -1,7 +1,7 @@
 package com.pd.im.service.group.service;
 
 import com.pd.im.common.ResponseVO;
-import com.pd.im.common.model.SyncReq;
+import com.pd.im.common.model.SyncRequest;
 import com.pd.im.service.group.dao.ImGroupEntity;
 import com.pd.im.service.group.model.req.*;
 
@@ -28,7 +28,7 @@ public interface ImGroupService {
 
     ResponseVO muteGroup(MuteGroupReq req);
 
-    ResponseVO syncJoinedGroupList(SyncReq req);
+    ResponseVO syncJoinedGroupList(SyncRequest req);
 
     Long getUserGroupMaxSeq(String userId, Integer appId);
 }
