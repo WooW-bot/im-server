@@ -18,9 +18,9 @@ public class ImConversationSetEntity {
     /** 目标对象 Id 或者群组 Id */
     private String toId;
     /** 是否禁言 */
-    private int isMute;
+    private Integer isMute;
     /** 是否置顶消息 */
-    private int isTop;
+    private Integer isTop;
     private Long sequence;
     /** 消息已读偏序 */
     private Long readSequence;

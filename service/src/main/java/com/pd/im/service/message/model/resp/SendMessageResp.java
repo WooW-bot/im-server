@@ -9,5 +9,6 @@ import lombok.Data;
 @Data
 public class SendMessageResp {
     private String messageId;
+    private Long messageKey;
     private Long messageTime;
 }

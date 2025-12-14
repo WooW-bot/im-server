@@ -8,17 +8,19 @@ import com.pd.im.common.exception.ApplicationExceptionEnum;
  */
 public enum ConversationErrorCode implements ApplicationExceptionEnum {
 
-    CONVERSATION_UPDATE_PARAM_ERROR(50000,"會話修改參數錯誤"),
+    CONVERSATION_UPDATE_PARAM_ERROR(50000, "會話修改參數錯誤"),
     CONVERSATION_CREATE_FAIL(50001, "会话创建失败"),
+    CONVERSATION_UPDATE_FAIL(50002, "会话更新失败"),
     ;
 
     private int code;
     private String error;
 
-    ConversationErrorCode(int code, String error){
+    ConversationErrorCode(int code, String error) {
         this.code = code;
         this.error = error;
     }
+
     public int getCode() {
         return this.code;
     }

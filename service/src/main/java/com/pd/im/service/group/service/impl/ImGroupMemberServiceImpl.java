@@ -186,43 +186,41 @@ public class ImGroupMemberServiceImpl implements ImGroupMemberService {
         ImGroupEntity group = groupResp.getData();
 
         if (!isAdmin) {
+            //获取操作人的权限 是管理员or群主or群成员
+            ResponseVO<GetRoleInGroupResp> role = getRoleInGroupOne(req.getGroupId(), req.getOperator(), req.getAppId());
+            if (!role.isSuccess()) {
+                return role;
+            }
+
+            GetRoleInGroupResp data = role.getData();
+            Integer roleInfo = data.getRole();
+
+            boolean isOwner = roleInfo.equals(GroupMemberRole.OWNER.getCode());
+            boolean isManager = roleInfo.equals(GroupMemberRole.MANAGER.getCode());
+
+            if (!isOwner && !isManager) {
+                throw new ApplicationException(GroupErrorCode.THIS_OPERATE_NEED_MANAGER_ROLE);
+            }
+
+            //私有群必须是群主才能踢人
+            if (!isOwner && GroupType.PRIVATE.getCode() == group.getGroupType()) {
+                throw new ApplicationException(GroupErrorCode.THIS_OPERATE_NEED_OWNER_ROLE);
+            }
+
+            //公开群管理员和群主可踢人，但管理员只能踢普通群成员
             if (GroupType.PUBLIC.getCode() == group.getGroupType()) {
-                //获取操作人的权限 是管理员or群主or群成员
-                ResponseVO<GetRoleInGroupResp> role = getRoleInGroupOne(req.getGroupId(), req.getOperator(), req.getAppId());
-                if (!role.isSuccess()) {
-                    return role;
+                //获取被踢人的权限
+                ResponseVO<GetRoleInGroupResp> roleInGroupOne = getRoleInGroupOne(req.getGroupId(), req.getMemberId(), req.getAppId());
+                if (!roleInGroupOne.isSuccess()) {
+                    return roleInGroupOne;
                 }
-
-                GetRoleInGroupResp data = role.getData();
-                Integer roleInfo = data.getRole();
-
-                boolean isOwner = roleInfo.equals(GroupMemberRole.OWNER.getCode());
-                boolean isManager = roleInfo.equals(GroupMemberRole.MANAGER.getCode());
-
-                if (!isOwner && !isManager) {
-                    throw new ApplicationException(GroupErrorCode.THIS_OPERATE_NEED_MANAGER_ROLE);
+                GetRoleInGroupResp memberRole = roleInGroupOne.getData();
+                if (memberRole.getRole().equals(GroupMemberRole.OWNER.getCode())) {
+                    throw new ApplicationException(GroupErrorCode.GROUP_OWNER_IS_NOT_REMOVE);
                 }
-
-                //私有群必须是群主才能踢人
-                if (!isOwner && GroupType.PRIVATE.getCode() == group.getGroupType()) {
+                //是管理员并且被踢人不是群成员，无法操作
+                if (isManager && !memberRole.getRole().equals(GroupMemberRole.ORDINARY.getCode())) {
                     throw new ApplicationException(GroupErrorCode.THIS_OPERATE_NEED_OWNER_ROLE);
-                }
-
-                //公开群管理员和群主可踢人，但管理员只能踢普通群成员
-                if (GroupType.PUBLIC.getCode() == group.getGroupType()) {
-                    //获取被踢人的权限
-                    ResponseVO<GetRoleInGroupResp> roleInGroupOne = getRoleInGroupOne(req.getGroupId(), req.getMemberId(), req.getAppId());
-                    if (!roleInGroupOne.isSuccess()) {
-                        return roleInGroupOne;
-                    }
-                    GetRoleInGroupResp memberRole = roleInGroupOne.getData();
-                    if (memberRole.getRole().equals(GroupMemberRole.OWNER.getCode())) {
-                        throw new ApplicationException(GroupErrorCode.GROUP_OWNER_IS_NOT_REMOVE);
-                    }
-                    //是管理员并且被踢人不是群成员，无法操作
-                    if (isManager && !memberRole.getRole().equals(GroupMemberRole.ORDINARY.getCode())) {
-                        throw new ApplicationException(GroupErrorCode.THIS_OPERATE_NEED_OWNER_ROLE);
-                    }
                 }
             }
         }

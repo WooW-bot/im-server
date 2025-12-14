@@ -76,17 +76,16 @@ public class ImFriendShipGroupServiceImpl implements ImFriendShipGroupService {
             if (insert1 != 1) {
                 return ResponseVO.errorResponse(FriendshipErrorCode.FRIEND_SHIP_GROUP_CREATE_ERROR);
             }
-            if (insert1 == 1 && CollectionUtil.isNotEmpty(req.getToIds())) {
+            if (CollectionUtil.isNotEmpty(req.getToIds())) {
                 AddFriendShipGroupMemberReq addFriendShipGroupMemberReq = new AddFriendShipGroupMemberReq();
                 addFriendShipGroupMemberReq.setFromId(req.getFromId());
                 addFriendShipGroupMemberReq.setGroupName(req.getGroupName());
                 addFriendShipGroupMemberReq.setToIds(req.getToIds());
                 addFriendShipGroupMemberReq.setAppId(req.getAppId());
                 imFriendShipGroupMemberService.addGroupMember(addFriendShipGroupMemberReq);
-                return ResponseVO.successResponse();
             }
         } catch (DuplicateKeyException e) {
-            e.getStackTrace();
+            e.printStackTrace();
             return ResponseVO.errorResponse(FriendshipErrorCode.FRIEND_SHIP_GROUP_IS_EXIST);
         }
 

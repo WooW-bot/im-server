@@ -258,14 +258,12 @@ public class ImFriendServiceImpl implements ImFriendService {
             messageProducer.sendToClients(fromId, FriendshipEventCommand.FRIEND_ADD, addFriendPack,
                     requestBase.getAppId(), requestBase.getClientType(), requestBase.getImei());
         } else {
-            messageProducer.sendToAllClients(fromId, FriendshipEventCommand.FRIEND_ADD, addFriendPack,
-                    requestBase.getAppId());
+            messageProducer.sendToAllClients(fromId, FriendshipEventCommand.FRIEND_ADD, addFriendPack, appId);
         }
 
         AddFriendPack addFriendToPack = new AddFriendPack();
-        BeanUtils.copyProperties(toItem, addFriendPack);
-        messageProducer.sendToAllClients(toItem.getFromId(), FriendshipEventCommand.FRIEND_ADD, addFriendToPack,
-                requestBase.getAppId());
+        BeanUtils.copyProperties(toItem, addFriendToPack);
+        messageProducer.sendToAllClients(toItem.getFromId(), FriendshipEventCommand.FRIEND_ADD, addFriendToPack, appId);
 
         //之后回调
         if (appConfig.isAddFriendAfterCallback()) {
@@ -529,6 +527,9 @@ public class ImFriendServiceImpl implements ImFriendService {
                 .eq("app_id", req.getAppId())
                 .eq("to_id", req.getToId());
         ImFriendShipEntity fromItem = imFriendShipMapper.selectOne(queryFrom);
+        if (fromItem == null) {
+            throw new ApplicationException(FriendshipErrorCode.FRIEND_IS_NOT_YOUR_BLACK);
+        }
         if (fromItem.getBlack() != null && fromItem.getBlack().equals(FriendshipStatus.BLACK_STATUS_NORMAL.getCode())) {
             throw new ApplicationException(FriendshipErrorCode.FRIEND_IS_NOT_YOUR_BLACK);
         }

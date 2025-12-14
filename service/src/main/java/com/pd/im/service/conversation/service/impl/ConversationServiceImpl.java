@@ -127,10 +127,12 @@ public class ConversationServiceImpl implements ConversationService {
         if (imConversationSetEntity != null) {
             long seq = redisSequence.doGetSeq(req.getAppId() + ":" + Constants.SeqConstants.CONVERSATION_SEQ);
 
-            if (req.getIsMute() != null) {
+            if (req.getIsTop() != null) {
+                // 更新置顶状态
                 imConversationSetEntity.setIsTop(req.getIsTop());
             }
             if (req.getIsMute() != null) {
+                // 更新禁言状态
                 imConversationSetEntity.setIsMute(req.getIsMute());
             }
             imConversationSetEntity.setSequence(seq);
@@ -146,8 +148,9 @@ public class ConversationServiceImpl implements ConversationService {
             pack.setConversationType(imConversationSetEntity.getConversationType());
             messageProducer.sendToOtherClients(req.getFromId(), ConversationEventCommand.CONVERSATION_UPDATE, pack,
                     new ClientInfo(req.getAppId(), req.getClientType(), req.getImei()));
+            return ResponseVO.successResponse();
         }
-        return ResponseVO.successResponse();
+        return ResponseVO.errorResponse(ConversationErrorCode.CONVERSATION_UPDATE_FAIL);
     }
 
     @Override

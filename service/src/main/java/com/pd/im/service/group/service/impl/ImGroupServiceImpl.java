@@ -137,9 +137,9 @@ public class ImGroupServiceImpl implements ImGroupService {
 
         Optional.ofNullable(imGroupEntity)
                 .orElseThrow(() -> new ApplicationException(GroupErrorCode.GROUP_IS_NOT_EXIST));
-        Optional.ofNullable(imGroupEntity.getStatus())
-                .filter(status -> status.equals(GroupStatus.DESTROY.getCode()))
-                .orElseThrow(() -> new ApplicationException(GroupErrorCode.GROUP_IS_DESTROY));
+        if (imGroupEntity.getStatus() != null && imGroupEntity.getStatus().equals(GroupStatus.DESTROY.getCode())) {
+            throw new ApplicationException(GroupErrorCode.GROUP_IS_DESTROY);
+        }
 
         boolean isAdmin = false;
 
@@ -242,7 +242,7 @@ public class ImGroupServiceImpl implements ImGroupService {
                 .eq(ImGroupEntity::getAppId, req.getAppId());
         ImGroupEntity imGroupEntity = imGroupMapper.selectOne(queryWrapper);
         if (imGroupEntity == null) {
-            throw new ApplicationException(GroupErrorCode.PRIVATE_GROUP_CAN_NOT_DESTORY);
+            throw new ApplicationException(GroupErrorCode.GROUP_IS_NOT_EXIST);
         }
         if (imGroupEntity.getStatus() == GroupStatus.DESTROY.getCode()) {
             throw new ApplicationException(GroupErrorCode.GROUP_IS_DESTROY);
@@ -319,8 +319,10 @@ public class ImGroupServiceImpl implements ImGroupService {
             if (nums > 0) {
                 throw new ApplicationException(GroupErrorCode.GROUP_IS_EXIST);
             }
+            // groupId 不为空且数据库中不存在，返回该 groupId
+            return groupId;
         }
-        // 如果数据库没有则代表该群是导入的，需要重新生成 groupId 覆盖，或者 groupId 为空生成随机 groupId
+        // groupId 为空，生成随机 groupId
         return UUID.randomUUID().toString().replace("-", "");
     }
 

@@ -315,6 +315,7 @@ public class GroupMessageService {
         BeanUtils.copyProperties(messageContent, offlineMessage);
         offlineMessage.setToId(messageContent.getGroupId());
         offlineMessage.setConversationType(ConversationType.GROUP.getCode());
+        offlineMessage.setMessageKey(messageContent.getMessageKey());
         messageStoreService.storeGroupOfflineMessage(offlineMessage, groupMemberIds);
     }
 
@@ -380,9 +381,24 @@ public class GroupMessageService {
         GroupChatMessageContent message = new GroupChatMessageContent();
         BeanUtils.copyProperties(req, message);
 
+        // 生成消息序列号
+        long seq = generateMessageSequence(message);
+        message.setMessageSequence(seq);
+
+        // 持久化消息
         messageStoreService.storeGroupMessage(message);
 
+        // 获取群成员列表
+        List<String> groupMemberIds = imGroupMemberService.getGroupMemberIds(
+                message.getGroupId(),
+                message.getAppId());
+        message.setMemberIds(groupMemberIds);
+
+        // 存储离线消息
+        storeOfflineMessage(message, groupMemberIds);
+
         sendMessageResp.setMessageId(message.getMessageId());
+        sendMessageResp.setMessageKey(message.getMessageKey());
         sendMessageResp.setMessageTime(System.currentTimeMillis());
         //2.发消息给同步在线端
         syncToSender(message);

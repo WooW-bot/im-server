@@ -305,6 +305,7 @@ public class P2PMessageService {
         OfflineMessageContent offlineMessage = new OfflineMessageContent();
         BeanUtils.copyProperties(messageContent, offlineMessage);
         offlineMessage.setConversationType(ConversationType.P2P.getCode());
+        offlineMessage.setMessageKey(messageContent.getMessageKey());
         messageStoreService.storeOfflineMessage(offlineMessage);
     }
 
@@ -427,9 +428,18 @@ public class P2PMessageService {
         message.setMessageBody(req.getMessageBody());
         message.setMessageTime(req.getMessageTime());
 
+        // 生成消息序列号
+        long seq = generateMessageSequence(message);
+        message.setMessageSequence(seq);
+
         //插入数据
         messageStoreService.storeP2PMessage(message);
+
+        // 存储离线消息
+        storeOfflineMessage(message);
+
         sendMessageResp.setMessageId(message.getMessageId());
+        sendMessageResp.setMessageKey(message.getMessageKey());
         sendMessageResp.setMessageTime(System.currentTimeMillis());
 
         //2.发消息给同步在线端

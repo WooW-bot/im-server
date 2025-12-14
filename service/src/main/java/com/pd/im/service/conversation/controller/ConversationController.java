@@ -31,7 +31,7 @@ public class ConversationController {
     }
 
     @RequestMapping("/syncConversationList")
-    public ResponseVO syncFriendShipList(@RequestBody @Validated SyncRequest req) {
+    public ResponseVO syncConversationList(@RequestBody @Validated SyncRequest req) {
         return conversationService.syncConversationSet(req);
     }
 }

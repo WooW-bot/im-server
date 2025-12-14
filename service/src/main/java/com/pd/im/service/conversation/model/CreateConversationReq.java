@@ -4,6 +4,7 @@ import com.pd.im.common.model.RequestBase;
 import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 /**
  * @author Parker
@@ -15,7 +16,7 @@ public class CreateConversationReq extends RequestBase {
     /**
      * 会话类型
      */
-    @NotBlank(message = "会话类型不能为空")
+    @NotNull(message = "会话类型不能为空")
     private Integer conversationType;
 
     @NotBlank(message = "fromId 不能为空")
