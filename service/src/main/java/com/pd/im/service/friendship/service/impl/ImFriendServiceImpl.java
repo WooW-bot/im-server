@@ -2,7 +2,6 @@ package com.pd.im.service.friendship.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.pd.im.codec.pack.friendship.*;
@@ -40,6 +39,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,6 +52,7 @@ import java.util.stream.Collectors;
  * @date 12/7/25
  */
 @Service
+@Slf4j
 public class ImFriendServiceImpl implements ImFriendService {
     @Autowired
     ImFriendShipMapper imFriendShipMapper;
@@ -108,7 +109,7 @@ public class ImFriendServiceImpl implements ImFriendService {
                     errorId.add(dto.getToId());
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error("Import Friendship failed: {}", dto.getToId(), e);
                 errorId.add(dto.getToId());
             }
         }
@@ -173,10 +174,10 @@ public class ImFriendServiceImpl implements ImFriendService {
         //A-B
         //Friend表插入A 和 B 两条记录
         //查询是否有记录存在，如果存在则判断状态，如果是已添加，则提示已添加，如果是未添加，则修改状态
-        QueryWrapper<ImFriendShipEntity> query = new QueryWrapper<>();
-        query.eq("app_id", appId);
-        query.eq("from_id", fromId);
-        query.eq("to_id", dto.getToId());
+        LambdaQueryWrapper<ImFriendShipEntity> query = new LambdaQueryWrapper<>();
+        query.eq(ImFriendShipEntity::getAppId, appId);
+        query.eq(ImFriendShipEntity::getFromId, fromId);
+        query.eq(ImFriendShipEntity::getToId, dto.getToId());
         ImFriendShipEntity fromItem = imFriendShipMapper.selectOne(query);
         long seq = 0L;
         if (fromItem == null) {
@@ -222,10 +223,10 @@ public class ImFriendServiceImpl implements ImFriendService {
             }
         }
 
-        QueryWrapper<ImFriendShipEntity> toQuery = new QueryWrapper<>();
-        toQuery.eq("app_id", appId);
-        toQuery.eq("from_id", dto.getToId());
-        toQuery.eq("to_id", fromId);
+        LambdaQueryWrapper<ImFriendShipEntity> toQuery = new LambdaQueryWrapper<>();
+        toQuery.eq(ImFriendShipEntity::getAppId, appId);
+        toQuery.eq(ImFriendShipEntity::getFromId, dto.getToId());
+        toQuery.eq(ImFriendShipEntity::getToId, fromId);
         ImFriendShipEntity toItem = imFriendShipMapper.selectOne(toQuery);
 
         if (toItem == null) {
@@ -270,7 +271,7 @@ public class ImFriendServiceImpl implements ImFriendService {
             AddFriendAfterCallbackDto callbackDto = new AddFriendAfterCallbackDto();
             callbackDto.setFromId(fromId);
             callbackDto.setToItem(dto);
-            callbackService.beforeCallback(appId, Constants.CallbackCommand.ADD_FRIEND_AFTER,
+            callbackService.afterCallback(appId, Constants.CallbackCommand.ADD_FRIEND_AFTER,
                     JSONObject.toJSONString(callbackDto));
         }
 
@@ -340,10 +341,10 @@ public class ImFriendServiceImpl implements ImFriendService {
 
     @Override
     public ResponseVO deleteFriend(DeleteFriendReq req) {
-        QueryWrapper<ImFriendShipEntity> query = new QueryWrapper<>();
-        query.eq("app_id", req.getAppId());
-        query.eq("from_id", req.getFromId());
-        query.eq("to_id", req.getToId());
+        LambdaQueryWrapper<ImFriendShipEntity> query = new LambdaQueryWrapper<>();
+        query.eq(ImFriendShipEntity::getAppId, req.getAppId());
+        query.eq(ImFriendShipEntity::getFromId, req.getFromId());
+        query.eq(ImFriendShipEntity::getToId, req.getToId());
         ImFriendShipEntity fromItem = imFriendShipMapper.selectOne(query);
         if (fromItem == null) {
             return ResponseVO.errorResponse(FriendshipErrorCode.TO_IS_NOT_YOUR_FRIEND);
@@ -363,11 +364,11 @@ public class ImFriendServiceImpl implements ImFriendService {
                         req.getAppId(), req.getClientType(), req.getImei());
 
                 //之后回调
-                if (appConfig.isAddFriendAfterCallback()) {
+                if (appConfig.isDeleteFriendAfterCallback()) {
                     DeleteFriendAfterCallbackDto callbackDto = new DeleteFriendAfterCallbackDto();
                     callbackDto.setFromId(req.getFromId());
                     callbackDto.setToId(req.getToId());
-                    callbackService.beforeCallback(req.getAppId(), Constants.CallbackCommand.DELETE_FRIEND_AFTER,
+                    callbackService.afterCallback(req.getAppId(), Constants.CallbackCommand.DELETE_FRIEND_AFTER,
                             JSONObject.toJSONString(callbackDto));
                 }
             } else {
@@ -380,10 +381,10 @@ public class ImFriendServiceImpl implements ImFriendService {
 
     @Override
     public ResponseVO deleteAllFriend(DeleteFriendReq req) {
-        QueryWrapper<ImFriendShipEntity> query = new QueryWrapper<>();
-        query.eq("app_id", req.getAppId());
-        query.eq("from_id", req.getFromId());
-        query.eq("status", FriendshipStatus.FRIEND_STATUS_NORMAL.getCode());
+        LambdaQueryWrapper<ImFriendShipEntity> query = new LambdaQueryWrapper<>();
+        query.eq(ImFriendShipEntity::getAppId, req.getAppId());
+        query.eq(ImFriendShipEntity::getFromId, req.getFromId());
+        query.eq(ImFriendShipEntity::getStatus, FriendshipStatus.FRIEND_STATUS_NORMAL.getCode());
 
         ImFriendShipEntity update = new ImFriendShipEntity();
         update.setStatus(FriendshipStatus.FRIEND_STATUS_DELETE.getCode());
@@ -399,18 +400,18 @@ public class ImFriendServiceImpl implements ImFriendService {
 
     @Override
     public ResponseVO getAllFriendShip(GetAllFriendShipReq req) {
-        QueryWrapper<ImFriendShipEntity> query = new QueryWrapper<>();
-        query.eq("app_id", req.getAppId());
-        query.eq("from_id", req.getFromId());
+        LambdaQueryWrapper<ImFriendShipEntity> query = new LambdaQueryWrapper<>();
+        query.eq(ImFriendShipEntity::getAppId, req.getAppId());
+        query.eq(ImFriendShipEntity::getFromId, req.getFromId());
         return ResponseVO.successResponse(imFriendShipMapper.selectList(query));
     }
 
     @Override
     public ResponseVO getRelation(GetRelationReq req) {
-        QueryWrapper<ImFriendShipEntity> query = new QueryWrapper<>();
-        query.eq("app_id", req.getAppId());
-        query.eq("from_id", req.getFromId());
-        query.eq("to_id", req.getToId());
+        LambdaQueryWrapper<ImFriendShipEntity> query = new LambdaQueryWrapper<>();
+        query.eq(ImFriendShipEntity::getAppId, req.getAppId());
+        query.eq(ImFriendShipEntity::getFromId, req.getFromId());
+        query.eq(ImFriendShipEntity::getToId, req.getToId());
 
         ImFriendShipEntity entity = imFriendShipMapper.selectOne(query);
         if (entity == null) {
@@ -462,10 +463,10 @@ public class ImFriendServiceImpl implements ImFriendService {
         if (!toInfo.isSuccess()) {
             return toInfo;
         }
-        QueryWrapper<ImFriendShipEntity> query = new QueryWrapper<>();
-        query.eq("app_id", req.getAppId());
-        query.eq("from_id", req.getFromId());
-        query.eq("to_id", req.getToId());
+        LambdaQueryWrapper<ImFriendShipEntity> query = new LambdaQueryWrapper<>();
+        query.eq(ImFriendShipEntity::getAppId, req.getAppId());
+        query.eq(ImFriendShipEntity::getFromId, req.getFromId());
+        query.eq(ImFriendShipEntity::getToId, req.getToId());
         ImFriendShipEntity fromItem = imFriendShipMapper.selectOne(query);
         Long seq = 0L;
         if (fromItem == null) {
@@ -522,10 +523,10 @@ public class ImFriendServiceImpl implements ImFriendService {
 
     @Override
     public ResponseVO deleteBlack(DeleteBlackReq req) {
-        QueryWrapper queryFrom = new QueryWrapper<>()
-                .eq("from_id", req.getFromId())
-                .eq("app_id", req.getAppId())
-                .eq("to_id", req.getToId());
+        LambdaQueryWrapper<ImFriendShipEntity> queryFrom = new LambdaQueryWrapper<>();
+        queryFrom.eq(ImFriendShipEntity::getFromId, req.getFromId())
+                .eq(ImFriendShipEntity::getAppId, req.getAppId())
+                .eq(ImFriendShipEntity::getToId, req.getToId());
         ImFriendShipEntity fromItem = imFriendShipMapper.selectOne(queryFrom);
         if (fromItem == null) {
             throw new ApplicationException(FriendshipErrorCode.FRIEND_IS_NOT_YOUR_BLACK);
@@ -593,12 +594,12 @@ public class ImFriendServiceImpl implements ImFriendService {
 
         SyncResponse<ImFriendShipEntity> resp = new SyncResponse<>();
         // seq > req.getseq limit maxLimit
-        QueryWrapper<ImFriendShipEntity> query = new QueryWrapper<>();
-        query.eq("from_id", req.getOperator());
-        query.gt("friend_sequence", req.getLastSequence());
-        query.eq("app_id", req.getAppId());
+        LambdaQueryWrapper<ImFriendShipEntity> query = new LambdaQueryWrapper<>();
+        query.eq(ImFriendShipEntity::getFromId, req.getOperator());
+        query.gt(ImFriendShipEntity::getFriendSequence, req.getLastSequence());
+        query.eq(ImFriendShipEntity::getAppId, req.getAppId());
         query.last("limit " + req.getMaxLimit());
-        query.orderByAsc("friend_sequence");
+        query.orderByAsc(ImFriendShipEntity::getFriendSequence);
         List<ImFriendShipEntity> list = imFriendShipMapper.selectList(query);
 
         if (!CollectionUtils.isEmpty(list)) {

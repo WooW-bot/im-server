@@ -1,6 +1,6 @@
 package com.pd.im.service.friendship.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.pd.im.codec.pack.friendship.AddFriendGroupMemberPack;
 import com.pd.im.codec.pack.friendship.DeleteFriendGroupMemberPack;
 import com.pd.im.common.ResponseVO;
@@ -18,11 +18,13 @@ import com.pd.im.service.utils.MessageProducer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.List;
 
 
+@Slf4j
 @Service
 public class ImFriendShipGroupMemberServiceImpl implements ImFriendShipGroupMemberService {
 
@@ -111,30 +113,29 @@ public class ImFriendShipGroupMemberServiceImpl implements ImFriendShipGroupMemb
             int insert = imFriendShipGroupMemberMapper.insert(imFriendShipGroupMemberEntity);
             return insert;
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Failed to add group member: groupId={}, toId={}", groupId, toId, e);
             return 0;
         }
     }
 
     public int deleteGroupMember(Long groupId, String toId) {
-        QueryWrapper<ImFriendShipGroupMemberEntity> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("group_id", groupId);
-        queryWrapper.eq("to_id", toId);
+        LambdaQueryWrapper<ImFriendShipGroupMemberEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(ImFriendShipGroupMemberEntity::getGroupId, groupId)
+                .eq(ImFriendShipGroupMemberEntity::getToId, toId);
 
         try {
             int delete = imFriendShipGroupMemberMapper.delete(queryWrapper);
-//            int insert = imFriendShipGroupMemberMapper.insert(imFriendShipGroupMemberEntity);
             return delete;
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Failed to delete group member: groupId={}, toId={}", groupId, toId, e);
             return 0;
         }
     }
 
     @Override
     public int clearGroupMember(Long groupId) {
-        QueryWrapper<ImFriendShipGroupMemberEntity> query = new QueryWrapper<>();
-        query.eq("group_id", groupId);
+        LambdaQueryWrapper<ImFriendShipGroupMemberEntity> query = new LambdaQueryWrapper<>();
+        query.eq(ImFriendShipGroupMemberEntity::getGroupId, groupId);
         int delete = imFriendShipGroupMemberMapper.delete(query);
         return delete;
     }

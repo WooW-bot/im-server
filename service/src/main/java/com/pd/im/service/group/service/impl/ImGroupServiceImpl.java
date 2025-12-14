@@ -32,6 +32,8 @@ import com.pd.im.service.group.service.ImGroupMemberService;
 import com.pd.im.service.group.service.ImGroupService;
 import com.pd.im.service.seq.RedisSequence;
 import com.pd.im.service.utils.GroupMessageProducer;
+import com.pd.im.service.interceptor.RequestHolder;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +48,7 @@ import java.util.*;
  * @date 12/7/25
  */
 @Service
+@Slf4j
 public class ImGroupServiceImpl implements ImGroupService {
     @Autowired
     ImGroupMapper imGroupMapper;
@@ -84,7 +87,8 @@ public class ImGroupServiceImpl implements ImGroupService {
     @Override
     @Transactional
     public ResponseVO createGroup(CreateGroupReq req) {
-        boolean isAdmin = false;
+        Boolean isAdminObj = RequestHolder.get();
+        boolean isAdmin = isAdminObj != null && isAdminObj;
         if (!isAdmin) {
             req.setOwnerId(req.getOperator());
         }
@@ -141,7 +145,8 @@ public class ImGroupServiceImpl implements ImGroupService {
             throw new ApplicationException(GroupErrorCode.GROUP_IS_DESTROY);
         }
 
-        boolean isAdmin = false;
+        Boolean isAdminObj = RequestHolder.get();
+        boolean isAdmin = isAdminObj != null && isAdminObj;
 
         if (!isAdmin) {
             //不是后台调用需要检查权限
@@ -236,7 +241,8 @@ public class ImGroupServiceImpl implements ImGroupService {
 
     @Override
     public ResponseVO destroyGroup(DestroyGroupReq req) {
-        boolean isAdmin = false;
+        Boolean isAdminObj = RequestHolder.get();
+        boolean isAdmin = isAdminObj != null && isAdminObj;
         LambdaQueryWrapper<ImGroupEntity> queryWrapper = new LambdaQueryWrapper<ImGroupEntity>()
                 .eq(ImGroupEntity::getGroupId, req.getGroupId())
                 .eq(ImGroupEntity::getAppId, req.getAppId());
@@ -354,7 +360,7 @@ public class ImGroupServiceImpl implements ImGroupService {
                 getGroupResp.setMemberList(groupMember.getData());
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("getGroup member failed", e);
         }
         return ResponseVO.successResponse(getGroupResp);
     }
@@ -368,7 +374,8 @@ public class ImGroupServiceImpl implements ImGroupService {
         if (groupResp.getData().getStatus() == GroupStatus.DESTROY.getCode()) {
             throw new ApplicationException(GroupErrorCode.GROUP_IS_DESTROY);
         }
-        boolean isAdmin = false;
+        Boolean isAdminObj = RequestHolder.get();
+        boolean isAdmin = isAdminObj != null && isAdminObj;
         if (!isAdmin) {
             //不是后台调用需要检查权限
             ResponseVO<GetRoleInGroupResp> role = groupMemberService

@@ -1,7 +1,7 @@
 package com.pd.im.service.friendship.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.pd.im.codec.pack.friendship.AddFriendGroupPack;
 import com.pd.im.codec.pack.friendship.DeleteFriendGroupPack;
 import com.pd.im.common.ResponseVO;
@@ -23,7 +23,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 public class ImFriendShipGroupServiceImpl implements ImFriendShipGroupService {
 
@@ -49,11 +51,11 @@ public class ImFriendShipGroupServiceImpl implements ImFriendShipGroupService {
     @Transactional
     public ResponseVO addGroup(AddFriendShipGroupReq req) {
 
-        QueryWrapper<ImFriendShipGroupEntity> query = new QueryWrapper<>();
-        query.eq("group_name", req.getGroupName());
-        query.eq("app_id", req.getAppId());
-        query.eq("from_id", req.getFromId());
-        query.eq("del_flag", DeleteFlag.NORMAL.getCode());
+        LambdaQueryWrapper<ImFriendShipGroupEntity> query = new LambdaQueryWrapper<>();
+        query.eq(ImFriendShipGroupEntity::getGroupName, req.getGroupName())
+                .eq(ImFriendShipGroupEntity::getAppId, req.getAppId())
+                .eq(ImFriendShipGroupEntity::getFromId, req.getFromId())
+                .eq(ImFriendShipGroupEntity::getDelFlag, DeleteFlag.NORMAL.getCode());
 
         ImFriendShipGroupEntity entity = imFriendShipGroupMapper.selectOne(query);
 
@@ -85,7 +87,8 @@ public class ImFriendShipGroupServiceImpl implements ImFriendShipGroupService {
                 imFriendShipGroupMemberService.addGroupMember(addFriendShipGroupMemberReq);
             }
         } catch (DuplicateKeyException e) {
-            e.printStackTrace();
+            log.error("Failed to add friend group: duplicate key for groupName={}, fromId={}, appId={}", 
+                    req.getGroupName(), req.getFromId(), req.getAppId(), e);
             return ResponseVO.errorResponse(FriendshipErrorCode.FRIEND_SHIP_GROUP_IS_EXIST);
         }
 
@@ -106,11 +109,11 @@ public class ImFriendShipGroupServiceImpl implements ImFriendShipGroupService {
     public ResponseVO deleteGroup(DeleteFriendShipGroupReq req) {
 
         for (String groupName : req.getGroupName()) {
-            QueryWrapper<ImFriendShipGroupEntity> query = new QueryWrapper<>();
-            query.eq("group_name", groupName);
-            query.eq("app_id", req.getAppId());
-            query.eq("from_id", req.getFromId());
-            query.eq("del_flag", DeleteFlag.NORMAL.getCode());
+            LambdaQueryWrapper<ImFriendShipGroupEntity> query = new LambdaQueryWrapper<>();
+            query.eq(ImFriendShipGroupEntity::getGroupName, groupName)
+                    .eq(ImFriendShipGroupEntity::getAppId, req.getAppId())
+                    .eq(ImFriendShipGroupEntity::getFromId, req.getFromId())
+                    .eq(ImFriendShipGroupEntity::getDelFlag, DeleteFlag.NORMAL.getCode());
 
             ImFriendShipGroupEntity entity = imFriendShipGroupMapper.selectOne(query);
 
@@ -138,11 +141,11 @@ public class ImFriendShipGroupServiceImpl implements ImFriendShipGroupService {
 
     @Override
     public ResponseVO getGroup(String fromId, String groupName, Integer appId) {
-        QueryWrapper<ImFriendShipGroupEntity> query = new QueryWrapper<>();
-        query.eq("group_name", groupName);
-        query.eq("app_id", appId);
-        query.eq("from_id", fromId);
-        query.eq("del_flag", DeleteFlag.NORMAL.getCode());
+        LambdaQueryWrapper<ImFriendShipGroupEntity> query = new LambdaQueryWrapper<>();
+        query.eq(ImFriendShipGroupEntity::getGroupName, groupName)
+                .eq(ImFriendShipGroupEntity::getAppId, appId)
+                .eq(ImFriendShipGroupEntity::getFromId, fromId)
+                .eq(ImFriendShipGroupEntity::getDelFlag, DeleteFlag.NORMAL.getCode());
 
         ImFriendShipGroupEntity entity = imFriendShipGroupMapper.selectOne(query);
         if (entity == null) {
@@ -153,10 +156,10 @@ public class ImFriendShipGroupServiceImpl implements ImFriendShipGroupService {
 
     @Override
     public Long updateSeq(String fromId, String groupName, Integer appId) {
-        QueryWrapper<ImFriendShipGroupEntity> query = new QueryWrapper<>();
-        query.eq("group_name", groupName);
-        query.eq("app_id", appId);
-        query.eq("from_id", fromId);
+        LambdaQueryWrapper<ImFriendShipGroupEntity> query = new LambdaQueryWrapper<>();
+        query.eq(ImFriendShipGroupEntity::getGroupName, groupName)
+                .eq(ImFriendShipGroupEntity::getAppId, appId)
+                .eq(ImFriendShipGroupEntity::getFromId, fromId);
 
         ImFriendShipGroupEntity entity = imFriendShipGroupMapper.selectOne(query);
 

@@ -5,6 +5,7 @@ import com.pd.im.common.enums.BaseErrorCode;
 import com.pd.im.common.ResponseVO;
 import com.pd.im.common.enums.GatewayErrorCode;
 import com.pd.im.common.exception.ApplicationExceptionEnum;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -20,6 +21,7 @@ import java.io.PrintWriter;
  * @description GateWayInterceptor类
  */
 @Component
+@Slf4j
 public class GateWayInterceptor implements HandlerInterceptor {
     @Autowired
     IdentityCheck identityCheck;
@@ -57,12 +59,10 @@ public class GateWayInterceptor implements HandlerInterceptor {
 
     private void resp(ResponseVO respVo, HttpServletResponse response) {
         PrintWriter writer = null;
-        response.setCharacterEncoding("UTF-8");
-        response.setContentType("text/html; charset=utf-8");
         try {
             String resp = JSONObject.toJSONString(respVo);
             response.setCharacterEncoding("UTF-8");
-            response.setHeader("Content-type", "application/json;charset=UTF-8");
+            response.setContentType("application/json;charset=UTF-8");
             response.setHeader("Access-Control-Allow-Origin", "*");
             response.setHeader("Access-Control-Allow-Credentials", "true");
             response.setHeader("Access-Control-Allow-Methods", "*");
@@ -71,10 +71,10 @@ public class GateWayInterceptor implements HandlerInterceptor {
             writer = response.getWriter();
             writer.write(resp);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("GateWayInterceptor Exception", e);
         } finally {
             if (writer != null) {
-                writer.checkError();
+                writer.close();
             }
         }
     }

@@ -36,8 +36,9 @@ public class MqMessageReceiver {
             channel.basicConsume(Constants.RabbitmqConstants.MESSAGE_SERVICE_TO_IM + brokerId, false, new DefaultConsumer(channel) {
                 @Override
                 public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
+                    String msgStr = "";
                     try {
-                        String msgStr = new String(body);
+                        msgStr = new String(body);
                         log.info("服务端监听消息信息为 {} ", msgStr);
 
                         // 消息写入数据通道
@@ -49,7 +50,7 @@ public class MqMessageReceiver {
                         channel.basicAck(envelope.getDeliveryTag(), false);
 
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        log.error("Failed to process message from MQ: {}", msgStr, e);
 
                         // 消息不能正常写入通道，发送失败应答 NAck
                         channel.basicNack(envelope.getDeliveryTag(), false, false);
@@ -57,7 +58,7 @@ public class MqMessageReceiver {
                 }
             });
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Failed to start receiving messages for brokerId: {}", brokerId, e);
         }
     }
 

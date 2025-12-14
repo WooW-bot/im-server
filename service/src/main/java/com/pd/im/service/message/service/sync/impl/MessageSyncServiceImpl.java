@@ -1,7 +1,7 @@
 package com.pd.im.service.message.service.sync.impl;
 
 import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.pd.im.codec.pack.message.MessageReadPack;
 import com.pd.im.codec.pack.message.RecallMessageNotifyPack;
@@ -155,9 +155,9 @@ public class MessageSyncServiceImpl implements MessageSyncService {
             return;
         }
 
-        QueryWrapper<ImMessageBodyEntity> query = new QueryWrapper<>();
-        query.eq("app_id", content.getAppId());
-        query.eq("message_key", content.getMessageKey());
+        LambdaQueryWrapper<ImMessageBodyEntity> query = new LambdaQueryWrapper<>();
+        query.eq(ImMessageBodyEntity::getAppId, content.getAppId())
+                .eq(ImMessageBodyEntity::getMessageKey, content.getMessageKey());
         ImMessageBodyEntity body = imMessageBodyMapper.selectOne(query);
 
         if (body == null) {

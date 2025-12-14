@@ -14,11 +14,13 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author Parker
  * @date 12/9/25
  */
+@Slf4j
 public class SigAPI {
     final private long appId;
     final private String key;
@@ -56,7 +58,7 @@ public class SigAPI {
             }
 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log.error("Failed to decode userSig", ex);
         }
 
         return sigDoc;
@@ -85,12 +87,12 @@ public class SigAPI {
             output = o.toByteArray();
         } catch (Exception e) {
             output = data;
-            e.printStackTrace();
+            log.error("Failed to decompress data", e);
         } finally {
             try {
                 o.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                log.error("Failed to close ByteArrayOutputStream", e);
             }
         }
 

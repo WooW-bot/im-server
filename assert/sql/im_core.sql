@@ -66,9 +66,9 @@ CREATE TABLE im_friendship_group
 
 CREATE TABLE im_friendship_group_member
 (
-    group_id BIGINT      NOT NULL
-        PRIMARY KEY,
-    to_id    VARCHAR(50) NULL
+    group_id BIGINT      NOT NULL,
+    to_id    VARCHAR(50) NOT NULL,
+    PRIMARY KEY (group_id, to_id)
 );
 
 CREATE TABLE im_friendship_request

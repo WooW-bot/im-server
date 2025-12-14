@@ -99,6 +99,7 @@ public class MessageProducer {
             messagePack.setClientType(session.getClientType());
             messagePack.setAppId(session.getAppId());
             messagePack.setImei(session.getImei());
+            messagePack.setTimestamp(System.currentTimeMillis());  // 设置消息时间戳
 
             // 直接设置数据，避免多余的序列化/反序列化
             if (msg instanceof JSONObject) {

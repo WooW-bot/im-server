@@ -16,19 +16,21 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import java.util.Set;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author Parker
  * @date 12/2/25
  * @description GlobalExceptionHandler类
  */
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(value = Exception.class)
     @ResponseBody
     public ResponseVO unknownException(Exception e) {
-        e.printStackTrace();
+        log.error("Unknown exception occurred", e);
         ResponseVO resultBean = new ResponseVO();
         resultBean.setCode(BaseErrorCode.SYSTEM_ERROR.getCode());
         resultBean.setMsg(BaseErrorCode.SYSTEM_ERROR.getError());

@@ -2,6 +2,7 @@ package com.pd.im.common.util;
 
 import com.alibaba.fastjson.JSON;
 import com.pd.im.common.config.GlobalHttpClientConfig;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -22,6 +23,7 @@ import java.util.Map;
  * @date 12/5/25
  */
 @Component
+@Slf4j
 public class HttpRequestUtils {
 
     @Autowired
@@ -80,7 +82,7 @@ public class HttpRequestUtils {
             }
 
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("request failed", e);
             throw new RuntimeException(e);
         }
         return result;
@@ -169,7 +171,7 @@ public class HttpRequestUtils {
             }
 
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("request failed", e);
             throw new RuntimeException(e);
         }
         return result;

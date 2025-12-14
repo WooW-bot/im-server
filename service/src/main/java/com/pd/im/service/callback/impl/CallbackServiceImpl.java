@@ -66,8 +66,8 @@ public class CallbackServiceImpl implements CallbackService {
         });
     }
 
-    public Map builderUrlParams(Integer appId, String command) {
-        Map map = new HashMap();
+    public Map<String, Object> builderUrlParams(Integer appId, String command) {
+        Map<String, Object> map = new HashMap<>();
         map.put("appId", appId);
         map.put("command", command);
         return map;

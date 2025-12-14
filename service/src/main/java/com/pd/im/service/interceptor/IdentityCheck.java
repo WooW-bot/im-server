@@ -67,8 +67,7 @@ public class IdentityCheck {
             expireSec = Long.valueOf(expireStr);
             expireTime = Long.valueOf(expireTimeStr) + expireSec;
         } catch (Exception e) {
-            e.printStackTrace();
-            log.error("checkUserSig-error:{}", e.getMessage());
+            log.error("checkUserSig error: failed to decode userSig for identifier={}, appId={}", identifier, appId, e);
         }
 
         if (!decoderIdentifier.equals(identifier)) {

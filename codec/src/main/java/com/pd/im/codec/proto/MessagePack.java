@@ -32,6 +32,10 @@ public class MessagePack<T> implements Serializable {
     private String imei;
     private Integer command;
     /**
+     * 消息时间戳（毫秒），用于消息排序和超时检测
+     */
+    private Long timestamp;
+    /**
      * 业务数据对象，如果是聊天消息则不需要解析直接透传
      */
     private T data;

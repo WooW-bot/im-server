@@ -1,6 +1,7 @@
 package com.pd.im.service.conversation.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import lombok.extern.slf4j.Slf4j;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.pd.im.codec.pack.conversation.DeleteConversationPack;
 import com.pd.im.codec.pack.conversation.UpdateConversationPack;
@@ -34,6 +35,7 @@ import java.util.List;
  * @date 12/5/25
  */
 @Service
+@Slf4j
 public class ConversationServiceImpl implements ConversationService {
     @Autowired
     ImConversationSetMapper imConversationSetMapper;
@@ -74,9 +76,9 @@ public class ConversationServiceImpl implements ConversationService {
         String conversationId = ConversationService.convertConversationId(
                 messageReadContent.getConversationType(), messageReadContent.getFromId(), toId);
 
-        QueryWrapper<ImConversationSetEntity> query = new QueryWrapper<>();
-        query.eq("conversation_id", conversationId);
-        query.eq("app_id", messageReadContent.getAppId());
+        LambdaQueryWrapper<ImConversationSetEntity> query = new LambdaQueryWrapper<>();
+        query.eq(ImConversationSetEntity::getConversationId, conversationId);
+        query.eq(ImConversationSetEntity::getAppId, messageReadContent.getAppId());
         ImConversationSetEntity imConversationSetEntity = imConversationSetMapper.selectOne(query);
 
         /* key：appid + Seq
@@ -120,9 +122,9 @@ public class ConversationServiceImpl implements ConversationService {
         if (req.getIsTop() == null && req.getIsMute() == null) {
             return ResponseVO.errorResponse(ConversationErrorCode.CONVERSATION_UPDATE_PARAM_ERROR);
         }
-        QueryWrapper<ImConversationSetEntity> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("conversation_id", req.getConversationId());
-        queryWrapper.eq("app_id", req.getAppId());
+        LambdaQueryWrapper<ImConversationSetEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(ImConversationSetEntity::getConversationId, req.getConversationId());
+        queryWrapper.eq(ImConversationSetEntity::getAppId, req.getAppId());
         ImConversationSetEntity imConversationSetEntity = imConversationSetMapper.selectOne(queryWrapper);
         if (imConversationSetEntity != null) {
             long seq = redisSequence.doGetSeq(req.getAppId() + ":" + Constants.SeqConstants.CONVERSATION_SEQ);
@@ -160,13 +162,12 @@ public class ConversationServiceImpl implements ConversationService {
         }
         SyncResponse<ImConversationSetEntity> resp = new SyncResponse<>();
         //seq > req.getseq limit maxLimit
-        QueryWrapper<ImConversationSetEntity> queryWrapper =
-                new QueryWrapper<>();
-        queryWrapper.eq("from_id", req.getOperator());
-        queryWrapper.gt("sequence", req.getLastSequence());
-        queryWrapper.eq("app_id", req.getAppId());
+        LambdaQueryWrapper<ImConversationSetEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(ImConversationSetEntity::getFromId, req.getOperator());
+        queryWrapper.gt(ImConversationSetEntity::getSequence, req.getLastSequence());
+        queryWrapper.eq(ImConversationSetEntity::getAppId, req.getAppId());
         queryWrapper.last(" limit " + req.getMaxLimit());
-        queryWrapper.orderByAsc("sequence");
+        queryWrapper.orderByAsc(ImConversationSetEntity::getSequence);
         List<ImConversationSetEntity> list = imConversationSetMapper
                 .selectList(queryWrapper);
 

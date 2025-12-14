@@ -81,10 +81,9 @@ public enum GroupEventCommand implements Command {
     MSG_GROUP_READ_RECEIPT(0x806),
 
     /**
-     * 群聊消息 ack 2047 --> 0x7ff
+     * 群聊消息 ack 2047 -> 0x7ff
      */
-    GROUP_MSG_ACK(0x7ff),
-    ;
+    GROUP_MSG_ACK(0x7ff);  // 2047
 
     private Integer command;
 

@@ -1,6 +1,6 @@
 package com.pd.im.service.friendship.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.pd.im.codec.pack.friendship.ApproveFriendRequestPack;
 import com.pd.im.codec.pack.friendship.ReadAllFriendRequestPack;
 import com.pd.im.common.ResponseVO;
@@ -25,11 +25,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author Parker
  * @date 12/9/25
  */
+@Slf4j
 @Service
 public class ImFriendShipRequestServiceImpl implements ImFriendShipRequestService {
     @Autowired
@@ -49,10 +51,10 @@ public class ImFriendShipRequestServiceImpl implements ImFriendShipRequestServic
 
     @Override
     public ResponseVO addFriendshipRequest(String fromId, FriendDto dto, Integer appId) {
-        QueryWrapper<ImFriendShipRequestEntity> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("app_id", appId);
-        queryWrapper.eq("from_id", fromId);
-        queryWrapper.eq("to_id", dto.getToId());
+        LambdaQueryWrapper<ImFriendShipRequestEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(ImFriendShipRequestEntity::getAppId, appId);
+        queryWrapper.eq(ImFriendShipRequestEntity::getFromId, fromId);
+        queryWrapper.eq(ImFriendShipRequestEntity::getToId, dto.getToId());
         ImFriendShipRequestEntity request = imFriendShipRequestMapper.selectOne(queryWrapper);
         long seq = redisSequence.doGetSeq(appId + ":" + Constants.SeqConstants.FRIENDSHIP_REQUEST);
 
@@ -143,9 +145,9 @@ public class ImFriendShipRequestServiceImpl implements ImFriendShipRequestServic
 
     @Override
     public ResponseVO readFriendShipRequestReq(ReadFriendShipRequestReq req) {
-        QueryWrapper<ImFriendShipRequestEntity> query = new QueryWrapper<>();
-        query.eq("app_id", req.getAppId());
-        query.eq("to_id", req.getFromId());
+        LambdaQueryWrapper<ImFriendShipRequestEntity> query = new LambdaQueryWrapper<>();
+        query.eq(ImFriendShipRequestEntity::getAppId, req.getAppId());
+        query.eq(ImFriendShipRequestEntity::getToId, req.getFromId());
 
         long seq = redisSequence.doGetSeq(req.getAppId() + ":" + Constants.SeqConstants.FRIENDSHIP_REQUEST);
         ImFriendShipRequestEntity update = new ImFriendShipRequestEntity();
@@ -167,9 +169,9 @@ public class ImFriendShipRequestServiceImpl implements ImFriendShipRequestServic
 
     @Override
     public ResponseVO getFriendRequest(String fromId, Integer appId) {
-        QueryWrapper<ImFriendShipRequestEntity> query = new QueryWrapper();
-        query.eq("app_id", appId);
-        query.eq("to_id", fromId);
+        LambdaQueryWrapper<ImFriendShipRequestEntity> query = new LambdaQueryWrapper<>();
+        query.eq(ImFriendShipRequestEntity::getAppId, appId);
+        query.eq(ImFriendShipRequestEntity::getToId, fromId);
 
         List<ImFriendShipRequestEntity> requestList = imFriendShipRequestMapper.selectList(query);
 

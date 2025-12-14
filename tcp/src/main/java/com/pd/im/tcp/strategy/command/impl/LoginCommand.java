@@ -139,6 +139,7 @@ public class LoginCommand implements CommandStrategy {
             MessagePack<String> loginFail = new MessagePack<>();
             loginFail.setCommand(SystemCommand.LOGINACK.getCommand());
             loginFail.setData(errorMsg);
+            loginFail.setTimestamp(System.currentTimeMillis());  // 设置消息时间戳
 
             context.getCtx().channel().writeAndFlush(loginFail);
         } catch (Exception e) {
@@ -217,6 +218,7 @@ public class LoginCommand implements CommandStrategy {
         MessagePack<LoginAckPack> loginSuccess = new MessagePack<>();
         loginSuccess.setCommand(SystemCommand.LOGINACK.getCommand());
         loginSuccess.setData(loginAckPack);
+        loginSuccess.setTimestamp(System.currentTimeMillis());  // 设置消息时间戳
         loginSuccess.setImei(msg.getMessageHeader().getImei());
         loginSuccess.setAppId(msg.getMessageHeader().getAppId());
 

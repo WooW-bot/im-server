@@ -96,8 +96,9 @@ public abstract class AbstractMessageCommand implements CommandStrategy {
         responseVO.setData(chatMessageAck);
 
         MessagePack<ResponseVO> ack = new MessagePack<>();
-        ack.setData(responseVO);
+        ack.setData(ResponseVO.successResponse());
         ack.setCommand(getAckCommand());
+        ack.setTimestamp(System.currentTimeMillis());  // 设置消息时间戳
 
         ctx.channel().writeAndFlush(ack);
     }

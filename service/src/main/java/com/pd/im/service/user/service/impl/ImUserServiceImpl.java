@@ -1,7 +1,7 @@
 package com.pd.im.service.user.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.pd.im.codec.pack.user.UserModifyPack;
 import com.pd.im.common.ResponseVO;
 import com.pd.im.common.config.AppConfig;
@@ -89,8 +89,8 @@ public class ImUserServiceImpl implements ImUserService {
 
     @Override
     public ResponseVO<GetUserInfoResp> getUserInfo(GetUserInfoReq req) {
-        QueryWrapper<ImUserDataEntity> queryWrapper = new QueryWrapper<>();
-        queryWrapper.lambda().eq(ImUserDataEntity::getAppId, req.getAppId())
+        LambdaQueryWrapper<ImUserDataEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(ImUserDataEntity::getAppId, req.getAppId())
                 .in(ImUserDataEntity::getUserId, req.getUserIds())
                 .eq(ImUserDataEntity::getDelFlag, DeleteFlag.NORMAL.getCode());
 
@@ -123,8 +123,8 @@ public class ImUserServiceImpl implements ImUserService {
         List<String> successId = new ArrayList<>();
 
         for (String userId : req.getUserId()) {
-            QueryWrapper<ImUserDataEntity> wrapper = new QueryWrapper<>();
-            wrapper.lambda().eq(ImUserDataEntity::getAppId, req.getAppId())
+            LambdaQueryWrapper<ImUserDataEntity> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(ImUserDataEntity::getAppId, req.getAppId())
                     .eq(ImUserDataEntity::getUserId, userId)
                     .eq(ImUserDataEntity::getDelFlag, DeleteFlag.NORMAL.getCode());
             int update = 0;
@@ -149,8 +149,8 @@ public class ImUserServiceImpl implements ImUserService {
 
     @Override
     public ResponseVO modifyUserInfo(ModifyUserInfoReq req) {
-        QueryWrapper<ImUserDataEntity> query = new QueryWrapper<>();
-        query.lambda().eq(ImUserDataEntity::getAppId, req.getAppId())
+        LambdaQueryWrapper<ImUserDataEntity> query = new LambdaQueryWrapper<>();
+        query.eq(ImUserDataEntity::getAppId, req.getAppId())
                 .eq(ImUserDataEntity::getUserId, req.getUserId())
                 .eq(ImUserDataEntity::getDelFlag, DeleteFlag.NORMAL.getCode());
         ImUserDataEntity user = imUserDataMapper.selectOne(query);
@@ -184,8 +184,8 @@ public class ImUserServiceImpl implements ImUserService {
 
     @Override
     public ResponseVO<ImUserDataEntity> getSingleUserInfo(String userId, Integer appId) {
-        QueryWrapper<ImUserDataEntity> wrapper = new QueryWrapper<>();
-        wrapper.lambda().eq(ImUserDataEntity::getAppId, appId)
+        LambdaQueryWrapper<ImUserDataEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ImUserDataEntity::getAppId, appId)
                 .eq(ImUserDataEntity::getUserId, userId)
                 .eq(ImUserDataEntity::getDelFlag, DeleteFlag.NORMAL.getCode());
 

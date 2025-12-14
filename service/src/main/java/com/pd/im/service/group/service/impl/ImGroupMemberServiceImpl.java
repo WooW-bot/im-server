@@ -2,8 +2,8 @@ package com.pd.im.service.group.service.impl;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.pd.im.codec.pack.group.AddGroupMemberPack;
@@ -32,6 +32,7 @@ import com.pd.im.service.group.service.ImGroupService;
 import com.pd.im.service.user.dao.ImUserDataEntity;
 import com.pd.im.service.user.service.ImUserService;
 import com.pd.im.service.utils.GroupMessageProducer;
+import com.pd.im.service.utils.RequestHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -77,7 +78,7 @@ public class ImGroupMemberServiceImpl implements ImGroupMemberService {
             try {
                 responseVO = addGroupMember(req.getGroupId(), req.getAppId(), memberId);
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error("Import GroupMember failed: {}", memberId.getMemberId(), e);
                 responseVO = ResponseVO.errorResponse();
             }
             AddMemberResp addMemberResp = new AddMemberResp();
@@ -98,7 +99,8 @@ public class ImGroupMemberServiceImpl implements ImGroupMemberService {
     public ResponseVO addMember(AddGroupMemberReq req) {
         List<AddMemberResp> resp = new ArrayList<>();
 
-        boolean isAdmin = false;
+        Boolean isAdminObj = RequestHolder.get();
+        boolean isAdmin = isAdminObj != null && isAdminObj;
         ResponseVO<ImGroupEntity> groupResp = groupService.getGroup(req.getGroupId(), req.getAppId());
         if (!groupResp.isSuccess()) {
             return groupResp;
@@ -113,8 +115,7 @@ public class ImGroupMemberServiceImpl implements ImGroupMemberService {
             try {
                 memberDtos = JSONArray.parseArray(JSONObject.toJSONString(responseVO.getData()), GroupMemberDto.class);
             } catch (Exception e) {
-                e.printStackTrace();
-                log.error("GroupMemberAddBefore 回调失败：{}", req.getAppId());
+                log.error("GroupMemberAddBefore 回调失败：{}", req.getAppId(), e);
             }
         }
 
@@ -138,7 +139,7 @@ public class ImGroupMemberServiceImpl implements ImGroupMemberService {
             try {
                 responseVO = addGroupMember(req.getGroupId(), req.getAppId(), memberId);
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error("Add GroupMember failed: {}", memberId.getMemberId(), e);
                 responseVO = ResponseVO.errorResponse();
             }
             AddMemberResp addMemberResp = new AddMemberResp();
@@ -177,7 +178,8 @@ public class ImGroupMemberServiceImpl implements ImGroupMemberService {
     @Override
     public ResponseVO removeMember(RemoveGroupMemberReq req) {
         List<AddMemberResp> resp = new ArrayList<>();
-        boolean isAdmin = false;
+        Boolean isAdminObj = RequestHolder.get();
+        boolean isAdmin = isAdminObj != null && isAdminObj;
         ResponseVO<ImGroupEntity> groupResp = groupService.getGroup(req.getGroupId(), req.getAppId());
         if (!groupResp.isSuccess()) {
             return groupResp;
@@ -248,20 +250,20 @@ public class ImGroupMemberServiceImpl implements ImGroupMemberService {
         }
 
         if (dto.getRole() != null && GroupMemberRole.OWNER.getCode().equals(dto.getRole())) {
-            QueryWrapper<ImGroupMemberEntity> queryOwner = new QueryWrapper<>();
-            queryOwner.eq("group_id", groupId);
-            queryOwner.eq("app_id", appId);
-            queryOwner.eq("role", GroupMemberRole.OWNER.getCode());
+            LambdaQueryWrapper<ImGroupMemberEntity> queryOwner = new LambdaQueryWrapper<>();
+            queryOwner.eq(ImGroupMemberEntity::getGroupId, groupId);
+            queryOwner.eq(ImGroupMemberEntity::getAppId, appId);
+            queryOwner.eq(ImGroupMemberEntity::getRole, GroupMemberRole.OWNER.getCode());
             Integer ownerNum = imGroupMemberMapper.selectCount(queryOwner);
             if (ownerNum > 0) {
                 return ResponseVO.errorResponse(GroupErrorCode.GROUP_IS_HAVE_OWNER);
             }
         }
 
-        QueryWrapper<ImGroupMemberEntity> query = new QueryWrapper<>();
-        query.eq("group_id", groupId);
-        query.eq("app_id", appId);
-        query.eq("member_id", dto.getMemberId());
+        LambdaQueryWrapper<ImGroupMemberEntity> query = new LambdaQueryWrapper<>();
+        query.eq(ImGroupMemberEntity::getGroupId, groupId);
+        query.eq(ImGroupMemberEntity::getAppId, appId);
+        query.eq(ImGroupMemberEntity::getMemberId, dto.getMemberId());
         ImGroupMemberEntity memberDto = imGroupMemberMapper.selectOne(query);
 
         long now = System.currentTimeMillis();
@@ -317,10 +319,10 @@ public class ImGroupMemberServiceImpl implements ImGroupMemberService {
     public ResponseVO<GetRoleInGroupResp> getRoleInGroupOne(String groupId, String memberId, Integer appId) {
         GetRoleInGroupResp resp = new GetRoleInGroupResp();
 
-        QueryWrapper<ImGroupMemberEntity> queryOwner = new QueryWrapper<>();
-        queryOwner.eq("group_id", groupId);
-        queryOwner.eq("app_id", appId);
-        queryOwner.eq("member_id", memberId);
+        LambdaQueryWrapper<ImGroupMemberEntity> queryOwner = new LambdaQueryWrapper<>();
+        queryOwner.eq(ImGroupMemberEntity::getGroupId, groupId);
+        queryOwner.eq(ImGroupMemberEntity::getAppId, appId);
+        queryOwner.eq(ImGroupMemberEntity::getMemberId, memberId);
 
         ImGroupMemberEntity imGroupMemberEntity = imGroupMemberMapper.selectOne(queryOwner);
         if (imGroupMemberEntity == null || imGroupMemberEntity.getRole().equals(GroupMemberRole.LEAVE.getCode())) {
@@ -338,9 +340,9 @@ public class ImGroupMemberServiceImpl implements ImGroupMemberService {
     public ResponseVO<Collection<String>> getMemberJoinedGroup(GetJoinedGroupReq req) {
         if (req.getLimit() != null) {
             Page<ImGroupMemberEntity> objectPage = new Page<>(req.getOffset(), req.getLimit());
-            QueryWrapper<ImGroupMemberEntity> query = new QueryWrapper<>();
-            query.eq("app_id", req.getAppId());
-            query.eq("member_id", req.getMemberId());
+            LambdaQueryWrapper<ImGroupMemberEntity> query = new LambdaQueryWrapper<>();
+            query.eq(ImGroupMemberEntity::getAppId, req.getAppId());
+            query.eq(ImGroupMemberEntity::getMemberId, req.getMemberId());
             IPage<ImGroupMemberEntity> imGroupMemberEntityPage = imGroupMemberMapper.selectPage(objectPage, query);
 
             Set<String> groupId = new HashSet<>();
@@ -376,19 +378,19 @@ public class ImGroupMemberServiceImpl implements ImGroupMemberService {
         //更新旧群主
         ImGroupMemberEntity imGroupMemberEntity = new ImGroupMemberEntity();
         imGroupMemberEntity.setRole(GroupMemberRole.ORDINARY.getCode());
-        UpdateWrapper<ImGroupMemberEntity> updateWrapper = new UpdateWrapper<>();
-        updateWrapper.eq("app_id", appId);
-        updateWrapper.eq("group_id", groupId);
-        updateWrapper.eq("role", GroupMemberRole.OWNER.getCode());
+        LambdaUpdateWrapper<ImGroupMemberEntity> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(ImGroupMemberEntity::getAppId, appId);
+        updateWrapper.eq(ImGroupMemberEntity::getGroupId, groupId);
+        updateWrapper.eq(ImGroupMemberEntity::getRole, GroupMemberRole.OWNER.getCode());
         imGroupMemberMapper.update(imGroupMemberEntity, updateWrapper);
 
         //更新新群主
         ImGroupMemberEntity newOwner = new ImGroupMemberEntity();
         newOwner.setRole(GroupMemberRole.OWNER.getCode());
-        UpdateWrapper<ImGroupMemberEntity> ownerWrapper = new UpdateWrapper<>();
-        ownerWrapper.eq("app_id", appId);
-        ownerWrapper.eq("group_id", groupId);
-        ownerWrapper.eq("member_id", owner);
+        LambdaUpdateWrapper<ImGroupMemberEntity> ownerWrapper = new LambdaUpdateWrapper<>();
+        ownerWrapper.eq(ImGroupMemberEntity::getAppId, appId);
+        ownerWrapper.eq(ImGroupMemberEntity::getGroupId, groupId);
+        ownerWrapper.eq(ImGroupMemberEntity::getMemberId, owner);
         imGroupMemberMapper.update(newOwner, ownerWrapper);
 
         return ResponseVO.successResponse();
@@ -400,7 +402,8 @@ public class ImGroupMemberServiceImpl implements ImGroupMemberService {
         if (!groupResp.isSuccess()) {
             return groupResp;
         }
-        boolean isAdmin = false;
+        Boolean isAdminObj = RequestHolder.get();
+        boolean isAdmin = isAdminObj != null && isAdminObj;
         boolean isOwner = false;
         boolean isManager = false;
         GetRoleInGroupResp memberRole = null;
@@ -435,7 +438,8 @@ public class ImGroupMemberServiceImpl implements ImGroupMemberService {
         }
         ImGroupMemberEntity imGroupMemberEntity = new ImGroupMemberEntity();
         if (memberRole == null) {
-            //获取被操作的权限
+            // 管理员场景：isAdmin=true时，上面的if块不执行，memberRole为null
+            // 需要获取被操作人的权限
             ResponseVO<GetRoleInGroupResp> roleInGroupOne = this.getRoleInGroupOne(req.getGroupId(), req.getMemberId(), req.getAppId());
             if (!roleInGroupOne.isSuccess()) {
                 return roleInGroupOne;
@@ -460,7 +464,8 @@ public class ImGroupMemberServiceImpl implements ImGroupMemberService {
 
     @Override
     public ResponseVO updateGroupMember(UpdateGroupMemberReq req) {
-        boolean isAdmin = false;
+        Boolean isAdminObj = RequestHolder.get();
+        boolean isAdmin = isAdminObj != null && isAdminObj;
         ResponseVO<ImGroupEntity> group = groupService.getGroup(req.getGroupId(), req.getAppId());
         if (!group.isSuccess()) {
             return group;
@@ -473,7 +478,7 @@ public class ImGroupMemberServiceImpl implements ImGroupMemberService {
         boolean isMeOperate = req.getOperator().equals(req.getMemberId());
         if (!isAdmin) {
             //昵称只能自己修改 权限只能群主或管理员修改
-            if (StringUtils.isBlank(req.getAlias()) && !isMeOperate) {
+            if (StringUtils.isNotBlank(req.getAlias()) && !isMeOperate) {
                 return ResponseVO.errorResponse(GroupErrorCode.THIS_OPERATE_NEED_ONESELF);
             }
             //私有群不能设置管理员
@@ -518,10 +523,10 @@ public class ImGroupMemberServiceImpl implements ImGroupMemberService {
             update.setRole(req.getRole());
         }
 
-        UpdateWrapper<ImGroupMemberEntity> objectUpdateWrapper = new UpdateWrapper<>();
-        objectUpdateWrapper.eq("app_id", req.getAppId());
-        objectUpdateWrapper.eq("member_id", req.getMemberId());
-        objectUpdateWrapper.eq("group_id", req.getGroupId());
+        LambdaUpdateWrapper<ImGroupMemberEntity> objectUpdateWrapper = new LambdaUpdateWrapper<>();
+        objectUpdateWrapper.eq(ImGroupMemberEntity::getAppId, req.getAppId());
+        objectUpdateWrapper.eq(ImGroupMemberEntity::getMemberId, req.getMemberId());
+        objectUpdateWrapper.eq(ImGroupMemberEntity::getGroupId, req.getGroupId());
         imGroupMemberMapper.update(update, objectUpdateWrapper);
 
         UpdateGroupMemberPack pack = new UpdateGroupMemberPack();

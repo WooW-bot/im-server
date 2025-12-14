@@ -68,6 +68,7 @@ public class LoginStrategyUtils {
         pack.setToId((String) oldChannel.attr(AttributeKey.valueOf(Constants.ChannelConstants.USER_ID)).get());
         pack.setUserId((String) oldChannel.attr(AttributeKey.valueOf(Constants.ChannelConstants.USER_ID)).get());
         pack.setCommand(SystemCommand.MUTALOGIN.getCommand());
+        pack.setTimestamp(System.currentTimeMillis());  // 设置消息时间戳
         oldChannel.writeAndFlush(pack);
     }
 

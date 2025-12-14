@@ -46,22 +46,22 @@ public class AppConfig {
     /**
      * 离线消息最大条数
      */
-    private Integer offlineMessageCount;
+    private Integer offlineMessageCount = 100;
 
     /**
      * 好友关系每次增量拉取最大条目数
      */
-    private Integer friendShipMaxCount;
+    private Integer friendShipMaxCount = 50;
 
     /**
      * 会话消息每次递增拉取最大条目数
      */
-    private Integer conversationMaxCount;
+    private Integer conversationMaxCount = 100;
 
     /**
      * 用户被拉入群通知每次递增拉取最大条目数
      */
-    private Integer joinGroupMaxCount;
+    private Integer joinGroupMaxCount = 100;
 
     /**
      * 发送消息是否校验关系链 TODO 需要持久化到数据库表

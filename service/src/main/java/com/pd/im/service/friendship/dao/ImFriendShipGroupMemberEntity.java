@@ -11,7 +11,7 @@ import lombok.Data;
 @Data
 @TableName("im_friendship_group_member")
 public class ImFriendShipGroupMemberEntity {
-    @TableId(value = "group_id")
+    // 使用组合主键：group_id + to_id
     private Long groupId;
     private String toId;
 }
