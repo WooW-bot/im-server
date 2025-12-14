@@ -427,6 +427,7 @@ public class P2PMessageService {
         message.setToId(req.getToId());
         message.setMessageBody(req.getMessageBody());
         message.setMessageTime(req.getMessageTime());
+        message.setMessageRandom(req.getMessageRandom());
 
         // 生成消息序列号
         long seq = generateMessageSequence(message);

@@ -132,6 +132,7 @@ public class StoreMessageService {
         entity.setMessageTime(messageContent.getMessageTime());
         entity.setSequence(messageContent.getMessageSequence());
         entity.setMessageKey(messageBodyEntity.getMessageKey());
+        entity.setMessageRandom(messageContent.getMessageRandom());
         entity.setCreateTime(System.currentTimeMillis());
 
         return entity;
@@ -157,6 +158,7 @@ public class StoreMessageService {
         entity.setOwnerId(ownerId);
         entity.setMessageKey(messageBodyEntity.getMessageKey());
         entity.setSequence(messageContent.getMessageSequence());
+        entity.setMessageRandom(messageContent.getMessageRandom());
         entity.setCreateTime(System.currentTimeMillis());
 
         return entity;

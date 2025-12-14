@@ -172,4 +172,16 @@ public class Constants {
 
         public static final String MSG_ID = "messageId";
     }
+
+    public static class MessageConstants {
+        /**
+         * 消息缓存过期时间（秒）
+         */
+        public static final long MESSAGE_CACHE_EXPIRE_SECONDS = 300L;
+
+        /**
+         * 消息撤回超时时间（毫秒），默认2分钟
+         */
+        public static final long MSG_RECALL_TIME_OUT = 120000L;
+    }
 }

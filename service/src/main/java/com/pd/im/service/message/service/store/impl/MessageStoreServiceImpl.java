@@ -33,10 +33,7 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class MessageStoreServiceImpl implements MessageStoreService {
 
-    /**
-     * 消息缓存过期时间（秒）
-     */
-    private static final long MESSAGE_CACHE_EXPIRE_SECONDS = 300L;
+
 
     private final RabbitTemplate rabbitTemplate;
     private final AppConfig appConfig;
@@ -118,7 +115,7 @@ public class MessageStoreServiceImpl implements MessageStoreService {
             String key = appId + Constants.RedisConstants.CACHE_MESSAGE + messageId;
             String value = JSONObject.toJSONString(messageContent);
 
-            stringRedisTemplate.opsForValue().set(key, value, MESSAGE_CACHE_EXPIRE_SECONDS, TimeUnit.SECONDS);
+            stringRedisTemplate.opsForValue().set(key, value, Constants.MessageConstants.MESSAGE_CACHE_EXPIRE_SECONDS, TimeUnit.SECONDS);
 
             log.debug("消息缓存设置成功: appId={}, messageId={}", appId, messageId);
         } catch (Exception e) {

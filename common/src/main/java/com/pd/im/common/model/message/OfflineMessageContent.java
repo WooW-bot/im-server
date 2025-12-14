@@ -26,7 +26,7 @@ public class OfflineMessageContent {
      * 序列号
      */
     private Long messageSequence;
-    private String messageRandom;
+    private Integer messageRandom;
     private Integer conversationType;
     private String conversationId;
 }

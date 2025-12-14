@@ -31,7 +31,7 @@ public class ImMessageHistoryEntity {
      */
     private Long sequence;
 
-    private String messageRandom;
+    private Integer messageRandom;
 
     private Long messageTime;
 

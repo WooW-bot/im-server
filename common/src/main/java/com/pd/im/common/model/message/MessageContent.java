@@ -26,5 +26,7 @@ public class MessageContent extends ClientInfo {
 
     private Long messageKey;
 
+    private Integer messageRandom;
+
     private long messageSequence;
 }

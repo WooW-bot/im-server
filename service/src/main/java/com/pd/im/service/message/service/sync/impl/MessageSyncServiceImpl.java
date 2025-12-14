@@ -150,7 +150,7 @@ public class MessageSyncServiceImpl implements MessageSyncService {
         RecallMessageNotifyPack pack = new RecallMessageNotifyPack();
         BeanUtils.copyProperties(content, pack);
 
-        if (120000L < now - messageTime) {
+        if (Constants.MessageConstants.MSG_RECALL_TIME_OUT < now - messageTime) {
             recallAck(pack, ResponseVO.errorResponse(MessageErrorCode.MESSAGE_RECALL_TIME_OUT), content);
             return;
         }

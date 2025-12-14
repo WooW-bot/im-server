@@ -21,6 +21,7 @@ import com.pd.im.service.user.model.resp.GetUserInfoResp;
 import com.pd.im.service.user.model.resp.ImportUserResp;
 import com.pd.im.service.user.service.ImUserService;
 import com.pd.im.service.utils.MessageProducer;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +38,7 @@ import java.util.Map;
  * @date 12/3/25
  * @description ImUserviceImpl类
  */
+@Slf4j
 @Service
 public class ImUserServiceImpl implements ImUserService {
     @Autowired
@@ -75,7 +77,7 @@ public class ImUserServiceImpl implements ImUserService {
                     successId.add(data.getUserId());
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error("Import User failed: {}", data.getUserId(), e);
                 errorId.add(data.getUserId());
             }
         }
@@ -88,9 +90,9 @@ public class ImUserServiceImpl implements ImUserService {
     @Override
     public ResponseVO<GetUserInfoResp> getUserInfo(GetUserInfoReq req) {
         QueryWrapper<ImUserDataEntity> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("app_id", req.getAppId());
-        queryWrapper.in("user_id", req.getUserIds());
-        queryWrapper.eq("del_flag", DeleteFlag.NORMAL.getCode());
+        queryWrapper.lambda().eq(ImUserDataEntity::getAppId, req.getAppId())
+                .in(ImUserDataEntity::getUserId, req.getUserIds())
+                .eq(ImUserDataEntity::getDelFlag, DeleteFlag.NORMAL.getCode());
 
         List<ImUserDataEntity> userDataEntities = imUserDataMapper.selectList(queryWrapper);
         HashMap<String, ImUserDataEntity> map = new HashMap<>();
@@ -117,14 +119,14 @@ public class ImUserServiceImpl implements ImUserService {
         ImUserDataEntity entity = new ImUserDataEntity();
         entity.setDelFlag(DeleteFlag.DELETE.getCode());
 
-        List<String> errorId = new ArrayList();
-        List<String> successId = new ArrayList();
+        List<String> errorId = new ArrayList<>();
+        List<String> successId = new ArrayList<>();
 
         for (String userId : req.getUserId()) {
-            QueryWrapper wrapper = new QueryWrapper();
-            wrapper.eq("app_id", req.getAppId());
-            wrapper.eq("user_id", userId);
-            wrapper.eq("del_flag", DeleteFlag.NORMAL.getCode());
+            QueryWrapper<ImUserDataEntity> wrapper = new QueryWrapper<>();
+            wrapper.lambda().eq(ImUserDataEntity::getAppId, req.getAppId())
+                    .eq(ImUserDataEntity::getUserId, userId)
+                    .eq(ImUserDataEntity::getDelFlag, DeleteFlag.NORMAL.getCode());
             int update = 0;
             try {
                 update = imUserDataMapper.update(entity, wrapper);
@@ -134,6 +136,7 @@ public class ImUserServiceImpl implements ImUserService {
                     errorId.add(userId);
                 }
             } catch (Exception e) {
+                log.error("Delete User failed: {}", userId, e);
                 errorId.add(userId);
             }
         }
@@ -146,10 +149,10 @@ public class ImUserServiceImpl implements ImUserService {
 
     @Override
     public ResponseVO modifyUserInfo(ModifyUserInfoReq req) {
-        QueryWrapper query = new QueryWrapper<>();
-        query.eq("app_id", req.getAppId());
-        query.eq("user_id", req.getUserId());
-        query.eq("del_flag", DeleteFlag.NORMAL.getCode());
+        QueryWrapper<ImUserDataEntity> query = new QueryWrapper<>();
+        query.lambda().eq(ImUserDataEntity::getAppId, req.getAppId())
+                .eq(ImUserDataEntity::getUserId, req.getUserId())
+                .eq(ImUserDataEntity::getDelFlag, DeleteFlag.NORMAL.getCode());
         ImUserDataEntity user = imUserDataMapper.selectOne(query);
         if (user == null) {
             throw new ApplicationException(UserErrorCode.USER_IS_NOT_EXIST);
@@ -181,10 +184,10 @@ public class ImUserServiceImpl implements ImUserService {
 
     @Override
     public ResponseVO<ImUserDataEntity> getSingleUserInfo(String userId, Integer appId) {
-        QueryWrapper wrapper = new QueryWrapper<>();
-        wrapper.eq("app_id", appId);
-        wrapper.eq("user_id", userId);
-        wrapper.eq("del_flag", DeleteFlag.NORMAL.getCode());
+        QueryWrapper<ImUserDataEntity> wrapper = new QueryWrapper<>();
+        wrapper.lambda().eq(ImUserDataEntity::getAppId, appId)
+                .eq(ImUserDataEntity::getUserId, userId)
+                .eq(ImUserDataEntity::getDelFlag, DeleteFlag.NORMAL.getCode());
 
         ImUserDataEntity imUserDataEntity = imUserDataMapper.selectOne(wrapper);
         if (imUserDataEntity == null) {

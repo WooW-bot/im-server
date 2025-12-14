@@ -21,7 +21,7 @@ public class ImGroupMessageHistoryEntity {
     /** 序列号*/
     private Long sequence;
 
-    private String messageRandom;
+    private Integer messageRandom;
 
     private Long messageTime;
 
