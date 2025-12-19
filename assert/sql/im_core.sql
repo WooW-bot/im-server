@@ -27,23 +27,23 @@ CREATE TABLE im_conversation_set
     PRIMARY KEY (app_id, conversation_id)
 );
 
-CREATE TABLE `im_friendship`
+CREATE TABLE im_friendship
 (
-    `app_id`          int(11) NOT NULL COMMENT '应用ID',
-    `from_id`         varchar(50) NOT NULL COMMENT '用户ID',
-    `to_id`           varchar(50) NOT NULL COMMENT '好友用户ID',
-    `remark`          varchar(100)  DEFAULT NULL COMMENT '备注',
-    `status`          tinyint(5) DEFAULT NULL COMMENT '0未添加 1正常 2已删除',
-    `black`           tinyint(5) DEFAULT NULL COMMENT '0正常 1已拉黑',
-    `black_sequence`  bigint        DEFAULT NULL COMMENT '拉黑序列号',
-    `create_time`     bigint        DEFAULT NULL COMMENT '创建时间',
-    `friend_sequence` bigint        DEFAULT NULL COMMENT 'seq',
-    `add_source`      varchar(20)   DEFAULT NULL COMMENT '来源',
-    `extra`           varchar(1000) DEFAULT NULL COMMENT '扩展字段',
-    PRIMARY KEY (`app_id`, `from_id`, `to_id`),
-    KEY               `idx_app_from` (`app_id`, `from_id`),
-    KEY               `idx_app_to` (`app_id`, `to_id`),
-    KEY               `idx_app_from_sequence` (`app_id`, `from_id`, `friend_sequence`)
+    app_id          int(11) NOT NULL COMMENT '应用ID',
+    from_id         varchar(50) NOT NULL COMMENT '用户ID',
+    to_id           varchar(50) NOT NULL COMMENT '好友用户ID',
+    remark          varchar(100)  DEFAULT NULL COMMENT '备注',
+    status          tinyint(5) DEFAULT NULL COMMENT '0未添加 1正常 2已删除',
+    black           tinyint(5) DEFAULT NULL COMMENT '0正常 1已拉黑',
+    black_sequence  bigint        DEFAULT NULL COMMENT '拉黑序列号',
+    create_time     bigint        DEFAULT NULL COMMENT '创建时间',
+    friend_sequence bigint        DEFAULT NULL COMMENT 'seq',
+    add_source      varchar(20)   DEFAULT NULL COMMENT '来源',
+    extra           varchar(1000) DEFAULT NULL COMMENT '扩展字段',
+    PRIMARY KEY (app_id, from_id, to_id),
+    KEY             idx_app_from (app_id, from_id),
+    KEY             idx_app_to (app_id, to_id),
+    KEY             idx_app_from_sequence (app_id, from_id, friend_sequence)
 );
 
 INSERT INTO im_core.im_friendship (app_id, from_id, to_id, remark, status, black, create_time, friend_sequence,
@@ -228,24 +228,24 @@ CREATE TABLE im_message_history
 
 CREATE TABLE im_user_data
 (
-    user_id            VARCHAR(50) NOT NULL,
-    app_id             INT         NOT NULL,
-    nick_name          VARCHAR(100) NULL COMMENT '昵称',
-    password           VARCHAR(255) NULL,
-    photo              VARCHAR(255) NULL,
-    user_sex           INT(10) NULL,
-    birth_day          VARCHAR(50) NULL COMMENT '生日',
-    location           VARCHAR(50) NULL COMMENT '地址',
-    self_signature     VARCHAR(255) NULL COMMENT '个性签名',
-    friend_allow_type  INT(10) DEFAULT 1 NOT NULL COMMENT '加好友验证类型（Friend_AllowType） 1无需验证 2需要验证',
-    forbidden_flag     INT(10) DEFAULT 0 NOT NULL COMMENT '禁用标识 1禁用',
-    disable_add_friend INT(10) DEFAULT 0 NOT NULL COMMENT '管理员禁止用户添加加好友：0 未禁用 1 已禁用',
-    silent_flag        INT(10) DEFAULT 0 NOT NULL COMMENT '禁言标识 1禁言',
-    user_type          INT(10) DEFAULT 1 NOT NULL COMMENT '用户类型 1普通用户 2客服 3机器人',
-    del_flag           INT(20) DEFAULT 0 NOT NULL,
-    extra              VARCHAR(1000) NULL,
+    user_id            VARCHAR(50) NOT NULL COMMENT '用户id',
+    app_id             INT         NOT NULL COMMENT '应用id',
+    nick_name          VARCHAR(100)         DEFAULT NULL COMMENT '昵称',
+    user_sex           TINYINT              DEFAULT NULL COMMENT '性别 1男 2女 0未设置/未知',
+    birth_day          VARCHAR(50)          DEFAULT NULL COMMENT '生日',
+    location           VARCHAR(50)          DEFAULT NULL COMMENT '所在地',
+    self_signature     VARCHAR(255)         DEFAULT NULL COMMENT '个性签名',
+    friend_allow_type  TINYINT     NOT NULL DEFAULT 1 COMMENT '添加好友方式 1无需验证 2需要验证',
+    photo              VARCHAR(255)         DEFAULT NULL COMMENT '头像地址',
+    password           VARCHAR(255)         DEFAULT NULL COMMENT '密码',
+    disable_add_friend TINYINT     NOT NULL DEFAULT 0 COMMENT '管理员禁止用户添加好友：0未禁用 1已禁用',
+    silent_flag        TINYINT     NOT NULL DEFAULT 0 COMMENT '禁言标识 1禁言',
+    forbidden_flag     TINYINT     NOT NULL DEFAULT 0 COMMENT '禁用标识 1禁用',
+    user_type          TINYINT     NOT NULL DEFAULT 1 COMMENT '用户类型 1普通用户 2客服 3机器人',
+    del_flag           TINYINT     NOT NULL DEFAULT 0 COMMENT '删除标识 1删除',
+    extra              VARCHAR(1000)        DEFAULT NULL COMMENT '拓展',
     PRIMARY KEY (app_id, user_id)
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户表';
 
 INSERT INTO im_core.im_user_data (user_id, app_id, nick_name, password, photo, user_sex, birth_day, location,
                                   self_signature, friend_allow_type, forbidden_flag, disable_add_friend, silent_flag,
