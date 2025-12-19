@@ -49,6 +49,11 @@ public class AppConfig {
     private Integer offlineMessageCount = 100;
 
     /**
+     * 一次导入好友关系最大上限
+     */
+    private Integer friendShipMaxImportSize = 100;
+
+    /**
      * 好友关系每次增量拉取最大条目数
      */
     private Integer friendShipMaxCount = 50;

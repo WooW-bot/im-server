@@ -6,7 +6,8 @@ package com.pd.im.common.enums.friend;
  */
 public enum FriendshipStatus {
     /**
-     * 0未添加 1正常 2删除
+     * 好友关系状态
+     * 0-未添加 1-正常 2-已删除
      */
     FRIEND_STATUS_NO_FRIEND(0),
 
@@ -15,11 +16,12 @@ public enum FriendshipStatus {
     FRIEND_STATUS_DELETE(2),
 
     /**
-     * 0未添加 1正常 2拉黑
+     * 黑名单状态
+     * 0-正常(未拉黑) 1-已拉黑
      */
-    BLACK_STATUS_NORMAL(1),
+    BLACK_STATUS_NORMAL(0),
 
-    BLACK_STATUS_BLACKED(2),
+    BLACK_STATUS_BLACKED(1),
     ;
 
     private Integer code;

@@ -14,27 +14,35 @@ public class CheckFriendShipResp {
     private String toId;
 
     /**
-     * 校验状态，根据双向校验和单向校验有不同的status
-     * <p>
-     * 单向校验：
-     * 1 from 添加了 to，不确定 to 是否添加了 from --> CheckResult_single_Type_AWithB；
-     * 0 from 没有添加 to，也不确定 to 有没有添加 from --> CheckResult_single_Type_NoRelation
-     * <p>
-     * 双向校验
-     * 1 from 添加了 to，to 也添加了 from --> CheckResult_Type_BothWay
-     * 2 from 添加了 to，to 没有添加 from --> CheckResult_Both_Type_AWithB
-     * 3 from 没有添加 to，to 添加了 from --> CheckResult_Both_Type_BWithA
-     * 4 双方都没有添加 --> CheckResult_Both_Type_NoRelation
-     * <p>
-     * 单向校验黑名单：
-     * 1 from 没有拉黑 to，不确定 to 是否拉黑了 from --> CheckResult_singe_Type_AWithB；
-     * 0 from 拉黑 to，不确定 to 是佛拉黑 from --> CheckResult_singe_Type_NoRelation
-     * <p>
-     * 双向校验黑名单
-     * 1 from 没有拉黑 to，to 也没有拉黑 from --> CheckResult_Type_BothWay
-     * 2 from 没有拉黑 to，to 拉黑 from --> CheckResult_Both_Type_AWithB
-     * 3 from 拉黑了 to，to 没有拉黑 from --> CheckResult_Both_Type_BWithA
-     * 4 双方都拉黑 --> CheckResult_Both_Type_NoRelation
+     * 校验状态，根据双向校验和单向校验有不同的status值
+     *
+     * <p><b>【好友关系】单向校验：</b>
+     * <ul>
+     *   <li>1 - from添加了to（不确定to是否添加了from）</li>
+     *   <li>0 - from没有添加to（不确定to是否添加了from）</li>
+     * </ul>
+     *
+     * <p><b>【好友关系】双向校验：</b>
+     * <ul>
+     *   <li>1 - 双向好友（from添加了to，to也添加了from）</li>
+     *   <li>2 - 单向好友A→B（from添加了to，to没有添加from）</li>
+     *   <li>3 - 单向好友B→A（from没有添加to，to添加了from）</li>
+     *   <li>4 - 无好友关系（双方都没有添加）</li>
+     * </ul>
+     *
+     * <p><b>【黑名单】单向校验：</b>
+     * <ul>
+     *   <li>1 - from拉黑了to（不确定to是否拉黑了from）</li>
+     *   <li>0 - from没有拉黑to（不确定to是否拉黑了from）</li>
+     * </ul>
+     *
+     * <p><b>【黑名单】双向校验：</b>
+     * <ul>
+     *   <li>1 - 互相拉黑（from拉黑了to，to也拉黑了from）</li>
+     *   <li>2 - 单向拉黑A→B（from拉黑了to，to没有拉黑from）</li>
+     *   <li>3 - 单向拉黑B→A（from没有拉黑to，to拉黑了from）</li>
+     *   <li>4 - 无拉黑关系（双方都没有拉黑）</li>
+     * </ul>
      */
     private Integer status;
 }

@@ -9,7 +9,10 @@
       "Bash(mvn compile:*)",
       "Bash(rm:*)",
       "Bash(mvn clean install:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(mvn compiler:compile:*)",
+      "WebSearch",
+      "WebFetch(domain:cloud.tencent.com)"
     ],
     "deny": [],
     "ask": []

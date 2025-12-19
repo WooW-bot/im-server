@@ -32,7 +32,7 @@ import com.pd.im.service.group.service.ImGroupService;
 import com.pd.im.service.user.dao.ImUserDataEntity;
 import com.pd.im.service.user.service.ImUserService;
 import com.pd.im.service.utils.GroupMessageProducer;
-import com.pd.im.service.utils.RequestHolder;
+import com.pd.im.service.interceptor.RequestHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
