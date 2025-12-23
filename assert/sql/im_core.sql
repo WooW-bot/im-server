@@ -19,15 +19,16 @@ USE
 DROP TABLE IF EXISTS `app_user`;
 CREATE TABLE `app_user`
 (
-    `user_id`     VARCHAR(50) NOT NULL COMMENT '用户ID',
-    `user_name`   VARCHAR(100) DEFAULT NULL COMMENT '用户名',
-    `password`    VARCHAR(255) DEFAULT NULL COMMENT '密码(加密)',
-    `mobile`      VARCHAR(20)  DEFAULT NULL COMMENT '手机号',
-    `create_time` BIGINT      NOT NULL COMMENT '创建时间(毫秒时间戳)',
-    `update_time` BIGINT       DEFAULT NULL COMMENT '更新时间(毫秒时间戳)',
+    `user_id`      VARCHAR(50) NOT NULL COMMENT '用户ID',
+    `user_name`    VARCHAR(100) DEFAULT NULL COMMENT '用户名',
+    `password`     VARCHAR(255) DEFAULT NULL COMMENT '密码(加密)',
+    `country_code` VARCHAR(10)  DEFAULT NULL COMMENT '国家码（e.g., +86, +1, +44, +84）',
+    `mobile`       VARCHAR(20)  DEFAULT NULL COMMENT '手机号',
+    `create_time`  BIGINT      NOT NULL COMMENT '创建时间(毫秒时间戳)',
+    `update_time`  BIGINT       DEFAULT NULL COMMENT '更新时间(毫秒时间戳)',
     PRIMARY KEY (`user_id`),
-    KEY           `idx_mobile` (`mobile`),
-    KEY           `idx_create_time` (`create_time`)
+    KEY            `idx_country_mobile` (`country_code`, `mobile`),
+    KEY            `idx_create_time` (`create_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='应用用户表';
 
 -- ========================================
