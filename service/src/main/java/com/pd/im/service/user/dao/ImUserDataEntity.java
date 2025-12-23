@@ -1,10 +1,13 @@
 package com.pd.im.service.user.dao;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 /**
  * 数据库用户数据实体类
+ *
  * @author Parker
  * @date 12/7/25
  */
@@ -41,4 +44,12 @@ public class ImUserDataEntity {
     private Integer appId;
     private Integer delFlag;
     private String extra;
+
+    // 创建时间(毫秒时间戳) - 插入时自动填充
+    @TableField(fill = FieldFill.INSERT)
+    private Long createTime;
+
+    // 更新时间(毫秒时间戳) - 插入和更新时自动填充
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    private Long updateTime;
 }
