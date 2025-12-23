@@ -40,12 +40,14 @@ public class ImUserController {
     ZKit zKit;
 
     @RequestMapping("importUser")
-    public ResponseVO importUser(@RequestBody ImportUserReq req) {
+    public ResponseVO importUser(@RequestBody ImportUserReq req, Integer appId) {
+        req.setAppId(appId);
         return imUserService.importUser(req);
     }
 
     @RequestMapping("/deleteUser")
-    public ResponseVO deleteUser(@RequestBody @Validated DeleteUserReq req) {
+    public ResponseVO deleteUser(@RequestBody @Validated DeleteUserReq req, Integer appId) {
+        req.setAppId(appId);
         return imUserService.deleteUser(req);
     }
 
@@ -54,7 +56,8 @@ public class ImUserController {
      * @return im的登录接口，返回im地址
      */
     @RequestMapping("/login")
-    public ResponseVO login(@RequestBody @Validated LoginReq req) {
+    public ResponseVO login(@RequestBody @Validated LoginReq req, Integer appId) {
+        req.setAppId(appId);
         ResponseVO login = imUserService.login(req);
         if (login.isSuccess()) {
             // 从 Zk 获取 im 地址，返回给 sdk
@@ -72,29 +75,42 @@ public class ImUserController {
     }
 
     @RequestMapping("/getUserSequence")
-    public ResponseVO getUserSequence(@RequestBody @Validated GetUserSequenceReq req) {
+    public ResponseVO getUserSequence(@RequestBody @Validated GetUserSequenceReq req, Integer appId) {
+        req.setAppId(appId);
         return imUserService.getUserSequence(req);
     }
 
     @RequestMapping("/subscribeUserOnlineStatus")
-    public ResponseVO subscribeUserOnlineStatus(@RequestBody @Validated SubscribeUserOnlineStatusReq req) {
+    public ResponseVO subscribeUserOnlineStatus(@RequestBody @Validated SubscribeUserOnlineStatusReq req, Integer appId,
+                                                String identifier) {
+        req.setAppId(appId);
+        req.setOperator(identifier);
         imUserStatusService.subscribeUserOnlineStatus(req);
         return ResponseVO.successResponse();
     }
 
     @RequestMapping("/setUserCustomerStatus")
-    public ResponseVO setUserCustomerStatus(@RequestBody @Validated SetUserCustomerStatusReq req) {
+    public ResponseVO setUserCustomerStatus(@RequestBody @Validated SetUserCustomerStatusReq req, Integer appId,
+                                            String identifier) {
+        req.setAppId(appId);
+        req.setOperator(identifier);
         imUserStatusService.setUserCustomerStatus(req);
         return ResponseVO.successResponse();
     }
 
     @RequestMapping("/queryFriendOnlineStatus")
-    public ResponseVO queryFriendOnlineStatus(@RequestBody @Validated PullFriendOnlineStatusReq req) {
+    public ResponseVO queryFriendOnlineStatus(@RequestBody @Validated PullFriendOnlineStatusReq req, Integer appId,
+                                              String identifier) {
+        req.setAppId(appId);
+        req.setOperator(identifier);
         return ResponseVO.successResponse(imUserStatusService.queryFriendOnlineStatus(req));
     }
 
     @RequestMapping("/queryUserOnlineStatus")
-    public ResponseVO queryUserOnlineStatus(@RequestBody @Validated PullUserOnlineStatusReq req) {
+    public ResponseVO queryUserOnlineStatus(@RequestBody @Validated PullUserOnlineStatusReq req, Integer appId,
+                                            String identifier) {
+        req.setAppId(appId);
+        req.setOperator(identifier);
         return ResponseVO.successResponse(imUserStatusService.queryUserOnlineStatus(req));
     }
 }
