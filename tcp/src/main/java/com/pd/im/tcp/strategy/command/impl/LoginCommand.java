@@ -160,8 +160,9 @@ public class LoginCommand implements CommandStrategy {
         userSession.setBrokerId(brokeId);
 
         try {
-            InetAddress localHost = InetAddress.getLocalHost();
-            userSession.setBrokerHost(localHost.getHostAddress());
+            // 使用NetworkUtils获取局域网IP地址
+            String hostAddress = com.pd.im.tcp.utils.NetworkUtils.getLocalIpAddress();
+            userSession.setBrokerHost(hostAddress);
         } catch (Exception e) {
             log.error("获取本机IP地址失败", e);
         }

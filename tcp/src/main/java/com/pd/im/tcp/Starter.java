@@ -129,7 +129,14 @@ public class Starter {
      * @throws UnknownHostException 获取本机地址失败
      */
     private static void registerZK(ImBootstrapConfig config) throws UnknownHostException {
-        String hostAddress = InetAddress.getLocalHost().getHostAddress();
+        // 使用NetworkUtils获取局域网IP地址，而不是InetAddress.getLocalHost()
+        // InetAddress.getLocalHost()在Mac上通常返回127.0.0.1
+        String hostAddress = com.pd.im.tcp.utils.NetworkUtils.getLocalIpAddress();
+
+        log.info("TCP网关注册IP地址: {}", hostAddress);
+        log.info("TCP端口: {}, WebSocket端口: {}",
+                config.getIm().getTcpPort(),
+                config.getIm().getWebSocketPort());
 
         ZkClient zkClient = new ZkClient(
                 config.getIm().getZkConfig().getZkAddr(),
