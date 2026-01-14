@@ -24,17 +24,20 @@ public class ImUserDataController {
     ImUserService imUserService;
 
     @RequestMapping("/getUserInfo")
-    public ResponseVO getUserInfo(@RequestBody GetUserInfoReq req) {
+    public ResponseVO getUserInfo(@RequestBody GetUserInfoReq req, Integer appId) {
+        req.setAppId(appId);
         return imUserService.getUserInfo(req);
     }
 
     @RequestMapping("/getSingleUserInfo")
-    public ResponseVO getSingleUserInfo(@RequestBody @Validated UserId req) {
+    public ResponseVO getSingleUserInfo(@RequestBody @Validated UserId req, Integer appId) {
+        req.setAppId(appId);
         return imUserService.getSingleUserInfo(req.getUserId(), req.getAppId());
     }
 
     @RequestMapping("/modifyUserInfo")
     public ResponseVO modifyUserInfo(@RequestBody @Validated ModifyUserInfoReq req, Integer appId) {
+        req.setAppId(appId);
         return imUserService.modifyUserInfo(req);
     }
 }
