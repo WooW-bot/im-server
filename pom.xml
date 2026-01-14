@@ -16,6 +16,14 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
+    <modules>
+        <module>common</module>
+        <module>codec</module>
+        <module>message-store</module>
+        <module>service</module>
+        <module>tcp</module>
+    </modules>
+
     <properties>
         <java.version>1.8</java.version>
         <mybatis-plus.version>3.4.2</mybatis-plus.version>
