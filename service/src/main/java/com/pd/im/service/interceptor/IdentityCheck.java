@@ -94,6 +94,16 @@ public class IdentityCheck {
             log.error("Failed to decode userSig for identifier={}, appId={}", identifier, appId);
             return GatewayErrorCode.USERSIGN_IS_ERROR;
         }
+        // 重新生成签名并比对 HMAC (TLS.sig)
+        String generatedSig = sigAPI.genUserSig(identifier, sigDoc.getLongValue("TLS.expire"), sigDoc.getLongValue("TLS.time"), null);
+        JSONObject generatedSigDoc = SigAPI.decodeUserSig(generatedSig);
+        String generatedHMAC = generatedSigDoc.getString("TLS.sig");
+        String originalHMAC = sigDoc.getString("TLS.sig");
+
+        if (!originalHMAC.equals(generatedHMAC)) {
+            log.warn("Signature verification failed for identifier={}, appId={}", identifier, appId);
+            return GatewayErrorCode.USERSIGN_IS_ERROR;
+        }
 
         log.info("解析后的签名文档: {}", sigDoc.toJSONString());
 
@@ -147,25 +157,6 @@ public class IdentityCheck {
             return GatewayErrorCode.USERSIGN_IS_EXPIRED;
         }
 
-        // 重新生成签名并比对
-        log.info("========== 重新生成签名进行比对 ==========");
-        log.info("生成参数: identifier={}, expireSec={}, time={}", identifier, expireSec, time);
-
-        String generatedSig = sigAPI.genUserSig(identifier, expireSec, time, null);
-
-        log.info("客户端 userSign: {}", userSig);
-        log.info("服务端生成签名: {}", generatedSig);
-        log.info("签名是否匹配: {}", userSig.equalsIgnoreCase(generatedSig));
-
-        if (!userSig.equalsIgnoreCase(generatedSig)) {
-            log.warn("签名验证失败 for identifier={}, appId={}", identifier, appId);
-            log.warn("可能原因:");
-            log.warn("  1. privateKey 不匹配");
-            log.warn("  2. 签名算法实现不一致");
-            log.warn("  3. 时间戳或过期时间参数不一致");
-            log.info("========== UserSign 验证结束 (失败) ==========");
-            return GatewayErrorCode.USERSIGN_IS_ERROR;
-        }
 
         // 签名验证成功，缓存结果
         long remainingTime = expireTime - currentTime;
