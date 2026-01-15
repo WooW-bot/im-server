@@ -23,22 +23,26 @@ public class ImFriendShipGroupController {
     ImFriendShipGroupMemberService imFriendShipGroupMemberService;
 
     @RequestMapping("/add")
-    public ResponseVO add(@RequestBody @Validated AddFriendShipGroupReq req)  {
+    public ResponseVO add(@RequestBody @Validated AddFriendShipGroupReq req, Integer appId)  {
+        req.setAppId(appId);
         return imFriendShipGroupService.addGroup(req);
     }
 
     @RequestMapping("/del")
-    public ResponseVO del(@RequestBody @Validated DeleteFriendShipGroupReq req)  {
+    public ResponseVO del(@RequestBody @Validated DeleteFriendShipGroupReq req, Integer appId)  {
+        req.setAppId(appId);
         return imFriendShipGroupService.deleteGroup(req);
     }
 
     @RequestMapping("/member/add")
-    public ResponseVO memberAdd(@RequestBody @Validated AddFriendShipGroupMemberReq req)  {
+    public ResponseVO memberAdd(@RequestBody @Validated AddFriendShipGroupMemberReq req, Integer appId)  {
+        req.setAppId(appId);
         return imFriendShipGroupMemberService.addGroupMember(req);
     }
 
     @RequestMapping("/member/del")
-    public ResponseVO memberDel(@RequestBody @Validated DeleteFriendShipGroupMemberReq req)  {
+    public ResponseVO memberDel(@RequestBody @Validated DeleteFriendShipGroupMemberReq req, Integer appId)  {
+        req.setAppId(appId);
         return imFriendShipGroupMemberService.delGroupMember(req);
     }
 }
