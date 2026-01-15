@@ -55,10 +55,6 @@ public class IdentityCheck {
             return GatewayErrorCode.USERSIGN_IS_ERROR;
         }
 
-        log.info("========== UserSign 验证开始 ==========");
-        log.info("客户端参数: appId={}, identifier={}", appId, identifier);
-        log.info("客户端 userSign: {}", userSig);
-
         // 检查缓存，格式: appId:userSign:identifier#userSig
         String cacheKey = buildCacheKey(appId, identifier, userSig);
         String cachedExpireTime = stringRedisTemplate.opsForValue().get(cacheKey);
@@ -67,7 +63,6 @@ public class IdentityCheck {
                 long expireTime = Long.parseLong(cachedExpireTime);
                 long currentTime = System.currentTimeMillis() / 1000;
                 if (expireTime > currentTime) {
-                    log.info("缓存命中，签名有效");
                     setIsAdmin(identifier, Integer.parseInt(appId));
                     return BaseErrorCode.SUCCESS;
                 }
@@ -83,8 +78,6 @@ public class IdentityCheck {
             return GatewayErrorCode.USERSIGN_IS_ERROR;
         }
 
-        log.info("服务端 privateKey: {}", privateKey);
-
         // 创建SigAPI
         SigAPI sigAPI = new SigAPI(Long.parseLong(appId), privateKey);
 
@@ -94,6 +87,7 @@ public class IdentityCheck {
             log.error("Failed to decode userSig for identifier={}, appId={}", identifier, appId);
             return GatewayErrorCode.USERSIGN_IS_ERROR;
         }
+
         // 重新生成签名并比对 HMAC (TLS.sig)
         String generatedSig = sigAPI.genUserSig(identifier, sigDoc.getLongValue("TLS.expire"), sigDoc.getLongValue("TLS.time"), null);
         JSONObject generatedSigDoc = SigAPI.decodeUserSig(generatedSig);
@@ -104,8 +98,6 @@ public class IdentityCheck {
             log.warn("Signature verification failed for identifier={}, appId={}", identifier, appId);
             return GatewayErrorCode.USERSIGN_IS_ERROR;
         }
-
-        log.info("解析后的签名文档: {}", sigDoc.toJSONString());
 
         // 解析签名文档
         String decoderAppId;
@@ -120,13 +112,6 @@ public class IdentityCheck {
             time = sigDoc.getLongValue("TLS.time");
             expireSec = sigDoc.getLongValue("TLS.expire");
             expireTime = time + expireSec;
-
-            log.info("签名文档字段:");
-            log.info("  - TLS.appId: {}", decoderAppId);
-            log.info("  - TLS.identifier: {}", decoderIdentifier);
-            log.info("  - TLS.time: {}", time);
-            log.info("  - TLS.expire: {} 秒", expireSec);
-            log.info("  - expireTime: {}", expireTime);
         } catch (Exception e) {
             log.error("Failed to parse userSig fields for identifier={}, appId={}", identifier, appId, e);
             return GatewayErrorCode.USERSIGN_IS_ERROR;
@@ -134,29 +119,27 @@ public class IdentityCheck {
 
         // 验证标识符
         if (!identifier.equals(decoderIdentifier)) {
-            log.warn("标识符不匹配: 期望={}, 实际={}", identifier, decoderIdentifier);
+            log.warn("Identifier mismatch: expected={}, actual={}", identifier, decoderIdentifier);
             return GatewayErrorCode.USERSIGN_OPERATE_NOT_MATE;
         }
 
         // 验证AppId
         if (!appId.equals(decoderAppId)) {
-            log.warn("AppId不匹配: 期望={}, 实际={}", appId, decoderAppId);
+            log.warn("AppId mismatch: expected={}, actual={}", appId, decoderAppId);
             return GatewayErrorCode.USERSIGN_IS_ERROR;
         }
 
         // 验证过期时间
         if (expireSec <= 0) {
-            log.warn("无效的过期时间: {}", expireSec);
+            log.warn("Invalid expire seconds: {}", expireSec);
             return GatewayErrorCode.USERSIGN_IS_EXPIRED;
         }
 
         long currentTime = System.currentTimeMillis() / 1000;
         if (expireTime < currentTime) {
-            log.warn("UserSig已过期: expireTime={}, currentTime={}, 差值={} 秒",
-                    expireTime, currentTime, (currentTime - expireTime));
+            log.warn("UserSig expired: expireTime={}, currentTime={}", expireTime, currentTime);
             return GatewayErrorCode.USERSIGN_IS_EXPIRED;
         }
-
 
         // 签名验证成功，缓存结果
         long remainingTime = expireTime - currentTime;
@@ -166,9 +149,6 @@ public class IdentityCheck {
                 remainingTime,
                 TimeUnit.SECONDS
         );
-
-        log.info("签名验证成功！缓存有效期: {} 秒", remainingTime);
-        log.info("========== UserSign 验证结束 (成功) ==========");
 
         setIsAdmin(identifier, Integer.parseInt(appId));
         return BaseErrorCode.SUCCESS;
