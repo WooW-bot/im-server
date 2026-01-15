@@ -51,4 +51,9 @@ public class ImUserDataVO {
      * 1: 需要验证
      */
     private Integer friendAllowType;
+
+    /**
+     * 扩展字段 (JSON)
+     */
+    private String extra;
 }
