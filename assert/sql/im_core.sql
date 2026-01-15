@@ -253,9 +253,9 @@ CREATE TABLE `im_user_data`
     `user_id`            VARCHAR(50) NOT NULL COMMENT '用户ID',
     `nick_name`          VARCHAR(100)         DEFAULT NULL COMMENT '昵称',
     `password`           VARCHAR(255)         DEFAULT NULL COMMENT '密码(加密)',
-    `photo`              VARCHAR(500)         DEFAULT NULL COMMENT '头像URL',
-    `user_sex`           TINYINT              DEFAULT NULL COMMENT '性别: 0-未知 1-男 2-女',
-    `birth_day`          VARCHAR(20)          DEFAULT NULL COMMENT '生日(格式: YYYY-MM-DD)',
+    `face_url`           VARCHAR(500)         DEFAULT NULL COMMENT '头像URL',
+    `gender`             TINYINT              DEFAULT NULL COMMENT '性别: 0-未知 1-男 2-女',
+    `birthday`           VARCHAR(20)          DEFAULT NULL COMMENT '生日(格式: YYYY-MM-DD)',
     `location`           VARCHAR(100)         DEFAULT NULL COMMENT '地址',
     `self_signature`     VARCHAR(500)         DEFAULT NULL COMMENT '个性签名',
     `friend_allow_type`  TINYINT     NOT NULL DEFAULT 1 COMMENT '加好友验证类型: 1-无需验证 2-需要验证',
@@ -277,7 +277,7 @@ CREATE TABLE `im_user_data`
 -- ========================================
 
 -- 用户数据
-INSERT INTO `im_user_data` (`app_id`, `user_id`, `nick_name`, `password`, `photo`, `user_sex`, `birth_day`, `location`,
+INSERT INTO `im_user_data` (`app_id`, `user_id`, `nick_name`, `password`, `face_url`, `gender`, `birthday`, `location`,
                             `self_signature`, `friend_allow_type`, `forbidden_flag`, `disable_add_friend`,
                             `silent_flag`,
                             `user_type`, `del_flag`, `extra`, `create_time`, `update_time`)

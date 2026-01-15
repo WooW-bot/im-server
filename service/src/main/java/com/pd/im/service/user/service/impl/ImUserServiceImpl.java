@@ -19,6 +19,7 @@ import com.pd.im.service.user.dao.mapper.ImUserDataMapper;
 import com.pd.im.service.user.model.req.*;
 import com.pd.im.service.user.model.resp.GetUserInfoResp;
 import com.pd.im.service.user.model.resp.ImportUserResp;
+import com.pd.im.service.user.model.resp.ImUserDataVO;
 import com.pd.im.service.user.service.ImUserService;
 import com.pd.im.service.utils.MessageProducer;
 import lombok.extern.slf4j.Slf4j;
@@ -108,8 +109,15 @@ public class ImUserServiceImpl implements ImUserService {
             }
         }
 
+        List<ImUserDataVO> voList = new ArrayList<>();
+        for (ImUserDataEntity entity : userDataEntities) {
+            ImUserDataVO vo = new ImUserDataVO();
+            BeanUtils.copyProperties(entity, vo);
+            voList.add(vo);
+        }
+
         GetUserInfoResp resp = new GetUserInfoResp();
-        resp.setUserDataItem(userDataEntities);
+        resp.setUserDataItem(voList);
         resp.setFailUser(failUser);
         return ResponseVO.successResponse(resp);
     }

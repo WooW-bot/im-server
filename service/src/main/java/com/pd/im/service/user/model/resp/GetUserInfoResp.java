@@ -11,6 +11,6 @@ import java.util.List;
  */
 @Data
 public class GetUserInfoResp {
-    private List<ImUserDataEntity> userDataItem;
+    private List<ImUserDataVO> userDataItem;
     private List<String> failUser;
 }

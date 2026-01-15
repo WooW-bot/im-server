@@ -1,17 +1,19 @@
-package com.pd.im.service.user.model.req;
+package com.pd.im.service.user.model.resp;
 
-import com.pd.im.common.model.RequestBase;
 import lombok.Data;
 
-import javax.validation.constraints.NotEmpty;
-
 /**
+ * 用户资料VO - 仅包含公开信息
+ * 参考 OpenIM 和 Tencent IM 字段设计
+ *
  * @author Parker
- * @date 12/8/25
+ * @date 1/15/26
  */
 @Data
-public class ModifyUserInfoReq extends RequestBase {
-    @NotEmpty(message = "用户id不能为空")
+public class ImUserDataVO {
+    /**
+     * 用户ID
+     */
     private String userId;
 
     /**
@@ -28,11 +30,6 @@ public class ModifyUserInfoReq extends RequestBase {
      * 生日 (YYYY-MM-DD)
      */
     private String birthday;
-
-    /**
-     * 密码
-     */
-    private String password;
 
     /**
      * 头像URL
@@ -54,9 +51,4 @@ public class ModifyUserInfoReq extends RequestBase {
      * 1: 需要验证
      */
     private Integer friendAllowType;
-
-    /**
-     * 扩展字段 (JSON)
-     */
-    private String extra;
 }
