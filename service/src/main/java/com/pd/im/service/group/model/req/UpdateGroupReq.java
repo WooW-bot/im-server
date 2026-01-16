@@ -25,7 +25,7 @@ public class UpdateGroupReq extends RequestBase {
 
     private String notification;//群公告
 
-    private String photo;//群头像
+    private String faceUrl;//群头像
 
     private Integer maxMemberCount;//群成员上限
 

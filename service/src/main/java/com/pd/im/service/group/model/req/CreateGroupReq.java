@@ -43,7 +43,7 @@ public class CreateGroupReq extends RequestBase {
     private String notification;
 
     //群头像
-    private String photo;
+    private String faceUrl;
 
     private Integer MaxMemberCount;
 

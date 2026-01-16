@@ -27,7 +27,7 @@ public class ImGroupEntity {
     private Integer applyJoinType;
     private String introduction;//群简介
     private String notification;//群公告
-    private String photo;//群头像
+    private String faceUrl;//群头像
     private Integer maxMemberCount;//群成员上限
     private Integer status;//群状态 0正常 1解散
     private Long sequence;

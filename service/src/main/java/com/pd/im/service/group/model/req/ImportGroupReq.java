@@ -48,7 +48,7 @@ public class ImportGroupReq extends RequestBase {
     /**
      * 群头像
      */
-    private String photo;
+    private String faceUrl;
     /**
      * 群成员上限
      */

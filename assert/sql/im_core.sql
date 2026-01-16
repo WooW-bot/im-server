@@ -146,7 +146,7 @@ CREATE TABLE `im_group`
     `owner_id`         VARCHAR(50)  NOT NULL COMMENT '群主用户ID',
     `group_type`       TINYINT      NOT NULL DEFAULT 1 COMMENT '群类型: 1-私有群(类似微信) 2-公开群(类似QQ)',
     `group_name`       VARCHAR(100) NOT NULL COMMENT '群名称',
-    `photo`            VARCHAR(500)          DEFAULT NULL COMMENT '群头像URL',
+    `face_url`         VARCHAR(500)          DEFAULT NULL COMMENT '群头像URL',
     `introduction`     VARCHAR(500)          DEFAULT NULL COMMENT '群简介',
     `notification`     VARCHAR(1024)         DEFAULT NULL COMMENT '群公告',
     `mute`             TINYINT      NOT NULL DEFAULT 0 COMMENT '全员禁言: 0-不禁言 1-全员禁言',
@@ -299,7 +299,7 @@ VALUES (10001, '10001', '10002', '好友备注1', 1, 0, 'search', NULL, 1, NULL,
        (10001, 'bantanger', '10001', '', 1, 0, 'qrcode', NULL, 2, NULL, 1680608016850, NULL);
 
 -- 群组数据
-INSERT INTO `im_group` (`app_id`, `group_id`, `owner_id`, `group_type`, `group_name`, `photo`, `introduction`,
+INSERT INTO `im_group` (`app_id`, `group_id`, `owner_id`, `group_type`, `group_name`, `face_url`, `introduction`,
                         `notification`, `mute`, `apply_join_type`, `max_member_count`, `status`, `sequence`,
                         `extra`, `create_time`, `update_time`)
 VALUES (10001, '27a35ff2f9be4cc9a8d3db1ad3322804', 'bantanger', 1, '半糖的IM小屋', 'http://example.com/group/001.jpg',

@@ -24,7 +24,7 @@ public class CreateGroupPack {
     private Integer privateChat; //是否禁止私聊，0 允许群成员发起私聊；1 不允许群成员发起私聊。
     private String introduction;//群简介
     private String notification;//群公告
-    private String photo;//群头像
+    private String faceUrl;//群头像
     private Integer status;//群状态 0正常 1解散
     private Long sequence;
     private Long createTime;
