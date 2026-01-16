@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
+ * 好友分组控制器
+ * 参考腾讯云文档: https://cloud.tencent.com/document/product/269/10107
+ *
  * @author Parker
  * @date 12/9/25
  */
@@ -22,26 +25,58 @@ public class ImFriendShipGroupController {
     @Autowired
     ImFriendShipGroupMemberService imFriendShipGroupMemberService;
 
+    /**
+     * 添加好友分组
+     * 参考: https://cloud.tencent.com/document/product/269/10107
+     *
+     * @param req   AddFriendShipGroupReq
+     * @param appId Integer
+     * @return ResponseVO
+     */
     @RequestMapping("/add")
-    public ResponseVO add(@RequestBody @Validated AddFriendShipGroupReq req, Integer appId)  {
+    public ResponseVO add(@RequestBody @Validated AddFriendShipGroupReq req, Integer appId) {
         req.setAppId(appId);
         return imFriendShipGroupService.addGroup(req);
     }
 
+    /**
+     * 删除好友分组
+     * 参考: https://cloud.tencent.com/document/product/269/10108
+     *
+     * @param req   DeleteFriendShipGroupReq
+     * @param appId Integer
+     * @return ResponseVO
+     */
     @RequestMapping("/del")
-    public ResponseVO del(@RequestBody @Validated DeleteFriendShipGroupReq req, Integer appId)  {
+    public ResponseVO del(@RequestBody @Validated DeleteFriendShipGroupReq req, Integer appId) {
         req.setAppId(appId);
         return imFriendShipGroupService.deleteGroup(req);
     }
 
+    /**
+     * 添加分组成员
+     * 参考: https://cloud.tencent.com/document/product/269/10107
+     *
+     * @param req   AddFriendShipGroupMemberReq
+     * @param appId Integer
+     * @return ResponseVO
+     */
     @RequestMapping("/member/add")
-    public ResponseVO memberAdd(@RequestBody @Validated AddFriendShipGroupMemberReq req, Integer appId)  {
+    public ResponseVO memberAdd(@RequestBody @Validated AddFriendShipGroupMemberReq req, Integer appId) {
         req.setAppId(appId);
         return imFriendShipGroupMemberService.addGroupMember(req);
     }
 
+    /**
+     * 删除分组成员
+     * 参考: https://cloud.tencent.com/document/product/269/10108
+     *
+     * @param req   DeleteFriendShipGroupMemberReq
+     * @param appId Integer
+     * @return ResponseVO
+     */
     @RequestMapping("/member/del")
-    public ResponseVO memberDel(@RequestBody @Validated DeleteFriendShipGroupMemberReq req, Integer appId)  {
+    public ResponseVO memberDel(@RequestBody @Validated DeleteFriendShipGroupMemberReq req, Integer appId) {
         req.setAppId(appId);
         return imFriendShipGroupMemberService.delGroupMember(req);
     }

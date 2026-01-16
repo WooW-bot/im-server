@@ -24,9 +24,9 @@ import java.util.List;
 public interface ImFriendService {
 
     /**
-     * 批量导入好友关系
+     * 批量导入好友关系 (仅管理员调用)
      * 用于数据迁移或批量初始化场景
-     * https://cloud.tencent.com/document/product/269/8301
+     * 参考: https://cloud.tencent.com/document/product/269/8301
      *
      * @param req 导入请求,包含批量好友数据
      * @return 导入结果, 包含成功和失败的ID列表
@@ -38,7 +38,7 @@ public interface ImFriendService {
      * 支持两种模式:
      * 1. 对方无需验证: 直接建立好友关系
      * 2. 对方需要验证: 创建好友申请记录
-     * https://cloud.tencent.com/document/product/269/1643
+     * 参考: https://cloud.tencent.com/document/product/269/1643
      *
      * @param req 添加好友请求
      * @return 操作结果
@@ -48,7 +48,7 @@ public interface ImFriendService {
     /**
      * 更新好友信息
      * 可更新备注、来源、扩展字段等
-     * https://cloud.tencent.com/document/product/269/12525
+     * 参考: https://cloud.tencent.com/document/product/269/12525
      *
      * @param req 更新请求
      * @return 操作结果
@@ -58,7 +58,7 @@ public interface ImFriendService {
     /**
      * 删除好友
      * 软删除,修改关系状态为已删除
-     * https://cloud.tencent.com/document/product/269/1644
+     * 参考: https://cloud.tencent.com/document/product/269/1644
      *
      * @param req 删除请求,包含fromId和toId
      * @return 操作结果
@@ -66,9 +66,9 @@ public interface ImFriendService {
     ResponseVO deleteFriend(DeleteFriendReq req);
 
     /**
-     * 删除所有好友
+     * 删除所有好友 (仅管理员调用)
      * 批量软删除当前用户的所有好友关系
-     * https://cloud.tencent.com/document/product/269/1645
+     * 参考: https://cloud.tencent.com/document/product/269/1645
      *
      * @param req 删除请求,包含fromId
      * @return 操作结果
@@ -108,7 +108,7 @@ public interface ImFriendService {
     /**
      * 校验好友关系
      * 支持单向和双向校验
-     * https://cloud.tencent.com/document/product/269/1646
+     * 参考: https://cloud.tencent.com/document/product/269/1646
      *
      * @param req 校验请求,包含checkType、fromId、toIds
      * @return 校验结果列表
@@ -118,6 +118,7 @@ public interface ImFriendService {
     /**
      * 添加黑名单
      * 将目标用户加入黑名单
+     * 参考: https://cloud.tencent.com/document/product/269/3718
      *
      * @param req 添加黑名单请求
      * @return 操作结果
@@ -127,6 +128,7 @@ public interface ImFriendService {
     /**
      * 移除黑名单
      * 将目标用户从黑名单移除
+     * 参考: https://cloud.tencent.com/document/product/269/3719
      *
      * @param req 删除黑名单请求
      * @return 操作结果
@@ -136,6 +138,7 @@ public interface ImFriendService {
     /**
      * 校验黑名单关系
      * 支持单向和双向校验
+     * 参考: https://cloud.tencent.com/document/product/269/3725
      *
      * @param req 校验请求,包含checkType、fromId、toIds
      * @return 校验结果列表
@@ -145,6 +148,7 @@ public interface ImFriendService {
     /**
      * 增量同步好友列表
      * 根据序列号拉取增量好友数据
+     * 参考: https://cloud.tencent.com/document/product/269/1647
      *
      * @param req 同步请求,包含lastSequence和maxLimit
      * @return 同步响应, 包含数据列表和是否完成标志
