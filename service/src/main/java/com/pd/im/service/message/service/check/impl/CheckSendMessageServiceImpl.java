@@ -134,8 +134,8 @@ public class CheckSendMessageServiceImpl implements CheckSendMessageService {
         }
 
         // 禁言过期时间大于当前时间
-        if (data.getSpeakDate() != null && data.getSpeakDate() > System.currentTimeMillis()) {
-            return ResponseVO.errorResponse(GroupErrorCode.GROUP_MEMBER_IS_SPEAK);
+        if (data.getMuteEndTime() != null && data.getMuteEndTime() > System.currentTimeMillis()) {
+            return ResponseVO.errorResponse(GroupErrorCode.GROUP_MEMBER_IS_MUTED);
         }
 
         return ResponseVO.successResponse();

@@ -42,7 +42,7 @@ public enum GroupErrorCode implements ApplicationExceptionEnum {
 
     PUBLIC_GROUP_MUST_HAVE_OWNER(40016,"公开群必须指定群主"),
 
-    GROUP_MEMBER_IS_SPEAK(40017,"群成员被禁言"),
+    GROUP_MEMBER_IS_MUTED(40017,"群成员被禁言"),
 
     GROUP_IS_DESTROY(40018,"群组已解散"),
 

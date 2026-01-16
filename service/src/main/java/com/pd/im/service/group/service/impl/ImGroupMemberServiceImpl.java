@@ -7,7 +7,7 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.pd.im.codec.pack.group.AddGroupMemberPack;
-import com.pd.im.codec.pack.group.GroupMemberSpeakPack;
+import com.pd.im.codec.pack.group.GroupMemberMutePack;
 import com.pd.im.codec.pack.group.RemoveGroupMemberPack;
 import com.pd.im.codec.pack.group.UpdateGroupMemberPack;
 import com.pd.im.common.ResponseVO;
@@ -329,7 +329,7 @@ public class ImGroupMemberServiceImpl implements ImGroupMemberService {
             return ResponseVO.errorResponse(GroupErrorCode.MEMBER_IS_NOT_JOINED_GROUP);
         }
 
-        resp.setSpeakDate(imGroupMemberEntity.getSpeakDate());
+        resp.setMuteEndTime(imGroupMemberEntity.getMuteEndTime());
         resp.setGroupMemberId(imGroupMemberEntity.getGroupMemberId());
         resp.setMemberId(imGroupMemberEntity.getMemberId());
         resp.setRole(imGroupMemberEntity.getRole());
@@ -397,7 +397,7 @@ public class ImGroupMemberServiceImpl implements ImGroupMemberService {
     }
 
     @Override
-    public ResponseVO speak(SpeakMemberReq req) {
+    public ResponseVO muteMember(MuteMemberReq req) {
         ResponseVO<ImGroupEntity> groupResp = groupService.getGroup(req.getGroupId(), req.getAppId());
         if (!groupResp.isSuccess()) {
             return groupResp;
@@ -447,16 +447,16 @@ public class ImGroupMemberServiceImpl implements ImGroupMemberService {
             memberRole = roleInGroupOne.getData();
         }
         imGroupMemberEntity.setGroupMemberId(memberRole.getGroupMemberId());
-        if (req.getSpeakDate() > 0) {
-            imGroupMemberEntity.setSpeakDate(System.currentTimeMillis() + req.getSpeakDate());
+        if (req.getMuteEndTime() > 0) {
+            imGroupMemberEntity.setMuteEndTime(System.currentTimeMillis() + req.getMuteEndTime());
         } else {
-            imGroupMemberEntity.setSpeakDate(req.getSpeakDate());
+            imGroupMemberEntity.setMuteEndTime(req.getMuteEndTime());
         }
         int i = imGroupMemberMapper.updateById(imGroupMemberEntity);
         if (i == 1) {
-            GroupMemberSpeakPack pack = new GroupMemberSpeakPack();
+            GroupMemberMutePack pack = new GroupMemberMutePack();
             BeanUtils.copyProperties(req, pack);
-            groupMessageProducer.producer(req.getOperator(), GroupEventCommand.SPEAK_GROUP_MEMBER, pack,
+            groupMessageProducer.producer(req.getOperator(), GroupEventCommand.MUTE_GROUP_MEMBER, pack,
                     new ClientInfo(req.getAppId(), req.getClientType(), req.getImei()));
         }
         return ResponseVO.successResponse();

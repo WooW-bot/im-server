@@ -19,8 +19,8 @@ public class GroupMemberDto {
      * 当修改群成员信息时，只能取值0/1，其他值由其他接口实现，暂不支持3
      */
     private Integer role;
-    //    private Integer speakFlag;
-    private Long speakDate;
+    //    private Integer muteFlag;
+    private Long muteEndTime;
     private String joinType;
     private Long joinTime;
 }

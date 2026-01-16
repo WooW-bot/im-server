@@ -25,7 +25,7 @@ public class ImGroupMemberEntity {
     //群成员类型，0 普通成员, 1 管理员, 2 群主， 3 禁言，4 已经移除的成员
     private Integer role;
 
-    private Long speakDate;
+    private Long muteEndTime;
 
     //群昵称
     private String alias;

@@ -175,7 +175,7 @@ CREATE TABLE `im_group_member`
     `role`            TINYINT     NOT NULL DEFAULT 0 COMMENT '群成员角色: 0-普通成员 1-管理员 2-群主 3-已禁言 4-已移除',
     `alias`           VARCHAR(100)         DEFAULT NULL COMMENT '群昵称',
     `mute`            TINYINT     NOT NULL DEFAULT 0 COMMENT '单人禁言: 0-不禁言 1-禁言',
-    `speak_date`      BIGINT               DEFAULT NULL COMMENT '禁言到期时间(毫秒时间戳, NULL表示永久)',
+    `mute_end_time`   BIGINT               DEFAULT NULL COMMENT '禁言到期时间(毫秒时间戳, NULL表示永久)',
     `join_type`       VARCHAR(50)          DEFAULT NULL COMMENT '加入类型',
     `join_time`       BIGINT      NOT NULL COMMENT '加入时间(毫秒时间戳)',
     `leave_time`      BIGINT               DEFAULT NULL COMMENT '离开时间(毫秒时间戳)',
@@ -307,7 +307,7 @@ VALUES (10001, '27a35ff2f9be4cc9a8d3db1ad3322804', 'bantanger', 1, '半糖的IM�
 
 -- 群成员数据
 INSERT INTO `im_group_member` (`group_member_id`, `app_id`, `group_id`, `member_id`, `role`, `alias`, `mute`,
-                               `speak_date`, `join_type`, `join_time`, `leave_time`, `extra`)
+                               `mute_end_time`, `join_type`, `join_time`, `leave_time`, `extra`)
 VALUES (1, 10001, '27a35ff2f9be4cc9a8d3db1ad3322804', 'bantanger', 2, '群主', 0, NULL, 'create', 1680055132161, NULL,
         NULL),
        (2, 10001, '27a35ff2f9be4cc9a8d3db1ad3322804', '10001', 0, NULL, 0, NULL, 'invite', 1679400643080, NULL, NULL),

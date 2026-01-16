@@ -7,7 +7,6 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Result;
 import org.apache.ibatis.annotations.Results;
 import org.apache.ibatis.annotations.Select;
-import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
@@ -26,8 +25,8 @@ public interface ImGroupMemberMapper extends BaseMapper<ImGroupMemberEntity> {
 
     @Results({
             @Result(column = "member_id", property = "memberId"),
-//            @Result(column = "speak_flag", property = "speakFlag"),
-            @Result(column = "speak_date", property = "speakDate"),
+//            @Result(column = "mute_flag", property = "muteFlag"),
+            @Result(column = "mute_end_time", property = "muteEndTime"),
             @Result(column = "role", property = "role"),
             @Result(column = "alias", property = "alias"),
             @Result(column = "join_time", property = "joinTime"),
@@ -35,8 +34,8 @@ public interface ImGroupMemberMapper extends BaseMapper<ImGroupMemberEntity> {
     })
     @Select("select " +
             " member_id, " +
-//            " speak_flag,  " +
-            " speak_date,  " +
+//            " mute_flag,  " +
+            " mute_end_time,  " +
             " role, " +
             " alias, " +
             " join_time ," +
@@ -51,7 +50,7 @@ public interface ImGroupMemberMapper extends BaseMapper<ImGroupMemberEntity> {
 
     @Results({
             @Result(column = "member_id", property = "memberId"),
-//            @Result(column = "speak_flag", property = "speakFlag"),
+//            @Result(column = "mute_flag", property = "muteFlag"),
             @Result(column = "role", property = "role")
 //            @Result(column = "alias", property = "alias"),
 //            @Result(column = "join_time", property = "joinTime"),
@@ -59,7 +58,7 @@ public interface ImGroupMemberMapper extends BaseMapper<ImGroupMemberEntity> {
     })
     @Select("select " +
             " member_id, " +
-//            " speak_flag,  " +
+//            " mute_flag,  " +
             " role " +
 //            " alias, " +
 //            " join_time ," +

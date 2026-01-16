@@ -58,7 +58,7 @@ public enum GroupEventCommand implements Command {
     /**
      * 禁言/解禁 群成员 2010 --> 0x7da，通知管理员和被操作人
      */
-    SPEAK_GROUP_MEMBER(0x7da),
+    MUTE_GROUP_MEMBER(0x7da),
 
     /**
      * 群聊消息收发 2104 --> 0x838

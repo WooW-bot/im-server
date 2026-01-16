@@ -11,7 +11,7 @@ import javax.validation.constraints.NotNull;
  * @date 12/9/25
  */
 @Data
-public class SpeakMemberReq extends RequestBase {
+public class MuteMemberReq extends RequestBase {
 
     @NotBlank(message = "群id不能为空")
     private String groupId;
@@ -21,5 +21,5 @@ public class SpeakMemberReq extends RequestBase {
 
     //禁言时间，单位毫秒
     @NotNull(message = "禁言时间不能为空")
-    private Long speakDate;
+    private Long muteEndTime;
 }

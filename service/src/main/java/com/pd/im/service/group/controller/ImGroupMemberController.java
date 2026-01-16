@@ -92,15 +92,15 @@ public class ImGroupMemberController {
      * <p>
      * Refer: https://cloud.tencent.com/document/product/269/1627
      *
-     * @param req        SpeakMemberReq
+     * @param req        MuteMemberReq
      * @param appId      Integer
      * @param identifier String
      * @return ResponseVO
      */
-    @RequestMapping("/speak")
-    public ResponseVO speak(@RequestBody @Validated SpeakMemberReq req, Integer appId, String identifier) {
+    @RequestMapping("/mute")
+    public ResponseVO muteMember(@RequestBody @Validated MuteMemberReq req, Integer appId, String identifier) {
         req.setAppId(appId);
         req.setOperator(identifier);
-        return groupMemberService.speak(req);
+        return groupMemberService.muteMember(req);
     }
 }

@@ -7,8 +7,8 @@ import lombok.Data;
  * @date 12/9/25
  */
 @Data
-public class GroupMemberSpeakPack {
+public class GroupMemberMutePack {
     private String groupId;
     private String memberId;
-    private Long speakDate;
+    private Long muteEndTime;
 }

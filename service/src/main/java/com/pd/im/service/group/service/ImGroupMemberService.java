@@ -106,10 +106,10 @@ public interface ImGroupMemberService {
      * <p>
      * Refer: https://cloud.tencent.com/document/product/269/1627
      *
-     * @param req SpeakMemberReq
+     * @param req MuteMemberReq
      * @return ResponseVO
      */
-    ResponseVO speak(SpeakMemberReq req);
+    ResponseVO muteMember(MuteMemberReq req);
 
     /**
      * 修改群成员资料
