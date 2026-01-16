@@ -19,28 +19,88 @@ public class ImGroupMemberController {
     @Autowired
     ImGroupMemberService groupMemberService;
 
+    /**
+     * 导入群成员
+     * <p>
+     * Refer: https://cloud.tencent.com/document/product/269/1618
+     *
+     * @param req        ImportGroupMemberReq
+     * @param appId      Integer
+     * @param identifier String
+     * @return ResponseVO
+     */
     @RequestMapping("/importGroupMember")
-    public ResponseVO importGroupMember(@RequestBody @Validated ImportGroupMemberReq req) {
+    public ResponseVO importGroupMember(@RequestBody @Validated ImportGroupMemberReq req, Integer appId, String identifier) {
+        req.setAppId(appId);
+        req.setOperator(identifier);
         return groupMemberService.importGroupMember(req);
     }
 
+    /**
+     * 增加群成员
+     * <p>
+     * Refer: https://cloud.tencent.com/document/product/269/1621
+     *
+     * @param req        AddGroupMemberReq
+     * @param appId      Integer
+     * @param identifier String
+     * @return ResponseVO
+     */
     @RequestMapping("/add")
-    public ResponseVO addMember(@RequestBody @Validated AddGroupMemberReq req) {
+    public ResponseVO addMember(@RequestBody @Validated AddGroupMemberReq req, Integer appId, String identifier) {
+        req.setAppId(appId);
+        req.setOperator(identifier);
         return groupMemberService.addMember(req);
     }
 
+    /**
+     * 删除群成员
+     * <p>
+     * Refer: https://cloud.tencent.com/document/product/269/1622
+     *
+     * @param req        RemoveGroupMemberReq
+     * @param appId      Integer
+     * @param identifier String
+     * @return ResponseVO
+     */
     @RequestMapping("/remove")
-    public ResponseVO removeMember(@RequestBody @Validated RemoveGroupMemberReq req) {
+    public ResponseVO removeMember(@RequestBody @Validated RemoveGroupMemberReq req, Integer appId, String identifier) {
+        req.setAppId(appId);
+        req.setOperator(identifier);
         return groupMemberService.removeMember(req);
     }
 
+    /**
+     * 修改群成员资料
+     * <p>
+     * Refer: https://cloud.tencent.com/document/product/269/1623
+     *
+     * @param req        UpdateGroupMemberReq
+     * @param appId      Integer
+     * @param identifier String
+     * @return ResponseVO
+     */
     @RequestMapping("/update")
-    public ResponseVO updateGroupMember(@RequestBody @Validated UpdateGroupMemberReq req) {
+    public ResponseVO updateGroupMember(@RequestBody @Validated UpdateGroupMemberReq req, Integer appId, String identifier) {
+        req.setAppId(appId);
+        req.setOperator(identifier);
         return groupMemberService.updateGroupMember(req);
     }
 
+    /**
+     * 批量禁言和取消禁言 (成员级别)
+     * <p>
+     * Refer: https://cloud.tencent.com/document/product/269/1627
+     *
+     * @param req        SpeakMemberReq
+     * @param appId      Integer
+     * @param identifier String
+     * @return ResponseVO
+     */
     @RequestMapping("/speak")
-    public ResponseVO speak(@RequestBody @Validated SpeakMemberReq req) {
+    public ResponseVO speak(@RequestBody @Validated SpeakMemberReq req, Integer appId, String identifier) {
+        req.setAppId(appId);
+        req.setOperator(identifier);
         return groupMemberService.speak(req);
     }
 }

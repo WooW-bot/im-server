@@ -106,6 +106,10 @@ public class ConversationServiceImpl implements ConversationService {
         }
     }
 
+    /**
+     * 删除会话
+     * 参考: https://cloud.tencent.com/document/product/269/62119
+     */
     @Override
     public ResponseVO deleteConversation(DeleteConversationReq req) {
         if (appConfig.getDeleteConversationSyncMode() == 1) {
@@ -117,6 +121,10 @@ public class ConversationServiceImpl implements ConversationService {
         return ResponseVO.successResponse();
     }
 
+    /**
+     * 更新会话 (置顶/免打扰/草稿)
+     * 对应 SDK 的 setConversationDraft/pinConversation 等操作
+     */
     @Override
     public ResponseVO updateConversation(UpdateConversationReq req) {
         if (req.getIsTop() == null && req.getIsMute() == null) {
@@ -155,6 +163,10 @@ public class ConversationServiceImpl implements ConversationService {
         return ResponseVO.errorResponse(ConversationErrorCode.CONVERSATION_UPDATE_FAIL);
     }
 
+    /**
+     * 同步/获取会话列表
+     * 参考: https://cloud.tencent.com/document/product/269/62118
+     */
     @Override
     public ResponseVO syncConversationSet(SyncRequest req) {
         if (req.getMaxLimit() > appConfig.getConversationMaxCount()) {
