@@ -176,7 +176,7 @@ public class ImGroupServiceImpl implements ImGroupService {
         update.setApplyJoinType(req.getApplyJoinType());
         update.setIntroduction(req.getIntroduction());
         update.setNotification(req.getNotification());
-        update.setPhoto(req.getPhoto());
+        update.setFaceUrl(req.getFaceUrl());
         update.setMaxMemberCount(req.getMaxMemberCount());
         update.setExtra(req.getExtra());
         update.setUpdateTime(System.currentTimeMillis());
@@ -193,7 +193,7 @@ public class ImGroupServiceImpl implements ImGroupService {
         pack.setMute(req.getMute());
         pack.setIntroduction(req.getIntroduction());
         pack.setNotification(req.getNotification());
-        pack.setPhoto(req.getPhoto());
+        pack.setFaceUrl(req.getFaceUrl());
         groupMessageProducer.producer(req.getOperator(), GroupEventCommand.UPDATED_GROUP, pack,
                 new ClientInfo(req.getAppId(), req.getClientType(), req.getImei()));
 
