@@ -23,18 +23,42 @@ public class ImUserDataController {
     @Autowired
     ImUserService imUserService;
 
+    /**
+     * 拉取用户资料
+     * 参考: https://cloud.tencent.com/document/product/269/1639
+     *
+     * @param req   GetUserInfoReq
+     * @param appId Integer
+     * @return ResponseVO
+     */
     @RequestMapping("/getUserInfo")
     public ResponseVO getUserInfo(@RequestBody GetUserInfoReq req, Integer appId) {
         req.setAppId(appId);
         return imUserService.getUserInfo(req);
     }
 
+    /**
+     * 拉取单个用户资料
+     * 参考: https://cloud.tencent.com/document/product/269/1639
+     *
+     * @param req   UserId
+     * @param appId Integer
+     * @return ResponseVO
+     */
     @RequestMapping("/getSingleUserInfo")
     public ResponseVO getSingleUserInfo(@RequestBody @Validated UserId req, Integer appId) {
         req.setAppId(appId);
         return imUserService.getSingleUserInfo(req.getUserId(), req.getAppId());
     }
 
+    /**
+     * 设置用户资料
+     * 参考: https://cloud.tencent.com/document/product/269/1640
+     *
+     * @param req   ModifyUserInfoReq
+     * @param appId Integer
+     * @return ResponseVO
+     */
     @RequestMapping("/modifyUserInfo")
     public ResponseVO modifyUserInfo(@RequestBody @Validated ModifyUserInfoReq req, Integer appId) {
         req.setAppId(appId);

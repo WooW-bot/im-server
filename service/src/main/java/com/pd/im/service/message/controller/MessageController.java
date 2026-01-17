@@ -33,9 +33,10 @@ public class MessageController {
 
     /**
      * 后台消息发送接口
+     * 参考: https://cloud.tencent.com/document/product/269/2282
      *
-     * @param req
-     * @return
+     * @param req SendMessageReq
+     * @return ResponseVO
      */
     @RequestMapping("/send")
     public ResponseVO send(@RequestBody @Validated SendMessageReq req) {
@@ -64,6 +65,13 @@ public class MessageController {
         return groupMessageService.serverPermissionCheck(req.getFromId(), req.getToId(), req.getAppId());
     }
 
+    /**
+     * 同步离线消息
+     * 参考: https://cloud.tencent.com/document/product/269/42794
+     *
+     * @param req SyncRequest
+     * @return ResponseVO
+     */
     @RequestMapping("/syncOfflineMessageList")
     public ResponseVO syncP2POfflineMessageList(@RequestBody @Validated SyncRequest req) {
         return messageSyncService.syncOfflineMessage(req);

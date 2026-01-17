@@ -39,12 +39,28 @@ public class ImUserController {
     @Autowired
     ZKit zKit;
 
+    /**
+     * 导入单个账号
+     * 参考: https://cloud.tencent.com/document/product/269/1608
+     *
+     * @param req   ImportUserReq
+     * @param appId Integer
+     * @return ResponseVO
+     */
     @RequestMapping("importUser")
     public ResponseVO importUser(@RequestBody ImportUserReq req, Integer appId) {
         req.setAppId(appId);
         return imUserService.importUser(req);
     }
 
+    /**
+     * 删除账号
+     * 参考: https://cloud.tencent.com/document/product/269/1609
+     *
+     * @param req   DeleteUserReq
+     * @param appId Integer
+     * @return ResponseVO
+     */
     @RequestMapping("/deleteUser")
     public ResponseVO deleteUser(@RequestBody @Validated DeleteUserReq req, Integer appId) {
         req.setAppId(appId);
@@ -52,8 +68,12 @@ public class ImUserController {
     }
 
     /**
-     * @param req
-     * @return im的登录接口，返回im地址
+     * 登录接口，返回im地址
+     * 参考: https://cloud.tencent.com/document/product/269/31999
+     *
+     * @param req   LoginReq
+     * @param appId Integer
+     * @return ResponseVO
      */
     @RequestMapping("/login")
     public ResponseVO login(@RequestBody @Validated LoginReq req, Integer appId) {
@@ -82,7 +102,7 @@ public class ImUserController {
 
     @RequestMapping("/subscribeUserOnlineStatus")
     public ResponseVO subscribeUserOnlineStatus(@RequestBody @Validated SubscribeUserOnlineStatusReq req, Integer appId,
-                                                String identifier) {
+            String identifier) {
         req.setAppId(appId);
         req.setOperator(identifier);
         imUserStatusService.subscribeUserOnlineStatus(req);
@@ -91,24 +111,42 @@ public class ImUserController {
 
     @RequestMapping("/setUserCustomerStatus")
     public ResponseVO setUserCustomerStatus(@RequestBody @Validated SetUserCustomerStatusReq req, Integer appId,
-                                            String identifier) {
+            String identifier) {
         req.setAppId(appId);
         req.setOperator(identifier);
         imUserStatusService.setUserCustomerStatus(req);
         return ResponseVO.successResponse();
     }
 
+    /**
+     * 仅支持查询好友的在线状态
+     * 参考: https://cloud.tencent.com/document/product/269/1643
+     *
+     * @param req        PullFriendOnlineStatusReq
+     * @param appId      Integer
+     * @param identifier String
+     * @return ResponseVO
+     */
     @RequestMapping("/queryFriendOnlineStatus")
     public ResponseVO queryFriendOnlineStatus(@RequestBody @Validated PullFriendOnlineStatusReq req, Integer appId,
-                                              String identifier) {
+            String identifier) {
         req.setAppId(appId);
         req.setOperator(identifier);
         return ResponseVO.successResponse(imUserStatusService.queryFriendOnlineStatus(req));
     }
 
+    /**
+     * 查询账户在线状态
+     * 参考: https://cloud.tencent.com/document/product/269/2566
+     *
+     * @param req        PullUserOnlineStatusReq
+     * @param appId      Integer
+     * @param identifier String
+     * @return ResponseVO
+     */
     @RequestMapping("/queryUserOnlineStatus")
     public ResponseVO queryUserOnlineStatus(@RequestBody @Validated PullUserOnlineStatusReq req, Integer appId,
-                                            String identifier) {
+            String identifier) {
         req.setAppId(appId);
         req.setOperator(identifier);
         return ResponseVO.successResponse(imUserStatusService.queryUserOnlineStatus(req));
