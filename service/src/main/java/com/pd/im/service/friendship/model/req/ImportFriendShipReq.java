@@ -4,7 +4,7 @@ import com.pd.im.common.enums.friend.FriendshipStatus;
 import com.pd.im.common.model.RequestBase;
 import lombok.Data;
 
-import javax.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotBlank;
 import java.util.List;
 
 /**

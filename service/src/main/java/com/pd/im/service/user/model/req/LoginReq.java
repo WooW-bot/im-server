@@ -2,7 +2,7 @@ package com.pd.im.service.user.model.req;
 
 import lombok.Data;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * @author Parker

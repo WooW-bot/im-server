@@ -1,5 +1,6 @@
 package com.pd.im.service.message.dao;
 
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
@@ -13,6 +14,7 @@ public class ImMessageBodyEntity {
     private Integer appId;
 
     /** messageBody 消息实体唯一 ID 标识 */
+    @TableId
     private Long messageKey;
     
     private String messageBody;

@@ -78,6 +78,7 @@ public class Starter {
 
             // 5. 初始化MQ
             MqFactory.init(config.getIm().getRabbitmq());
+            MqFactory.createExchange();
             MqMessageReceiver.init(String.valueOf(config.getIm().getBrokerId()));
             log.info("RabbitMQ初始化成功");
 

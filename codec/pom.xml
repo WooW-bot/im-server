@@ -12,9 +12,7 @@
     <version>1.0.0-SNAPSHOT</version>
     <artifactId>codec</artifactId>
 
-    <properties>
-        <java.version>1.8</java.version>
-    </properties>
+
 
     <dependencies>
         <!-- netty -->

@@ -2,7 +2,7 @@ package com.pd.im.service.friendship.dao;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.github.jeffreyning.mybatisplus.anno.AutoMap;
+
 import com.pd.im.common.enums.friend.FriendshipStatus;
 import lombok.Data;
 
@@ -19,7 +19,6 @@ import lombok.Data;
  */
 @Data
 @TableName("im_friendship")
-@AutoMap
 public class ImFriendShipEntity {
 
     /**
@@ -48,6 +47,7 @@ public class ImFriendShipEntity {
     /**
      * 好友关系状态
      * 0-未添加 1-正常 2-已删除
+     * 
      * @see FriendshipStatus
      */
     private Integer status;
@@ -55,6 +55,7 @@ public class ImFriendShipEntity {
     /**
      * 黑名单状态
      * 0-正常(未拉黑) 1-已拉黑
+     * 
      * @see FriendshipStatus
      */
     private Integer black;

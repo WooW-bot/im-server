@@ -3,7 +3,7 @@ package com.pd.im.service.friendship.model.req;
 import com.pd.im.common.model.RequestBase;
 import lombok.Data;
 
-import javax.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotBlank;
 import java.util.List;
 
 /**

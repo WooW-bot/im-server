@@ -3,7 +3,7 @@ package com.pd.im.service.group.model.req;
 import com.pd.im.common.model.RequestBase;
 import lombok.Data;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * @author Parker

@@ -40,7 +40,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.*;
 
 /**
@@ -114,7 +114,7 @@ public class ImGroupServiceImpl implements ImGroupService {
         groupMemberDto.setJoinTime(System.currentTimeMillis());
         groupMemberService.addGroupMember(req.getGroupId(), req.getAppId(), groupMemberDto);
 
-        //插入群成员
+        // 插入群成员
         for (GroupMemberDto dto : req.getMember()) {
             groupMemberService.addGroupMember(req.getGroupId(), req.getAppId(), dto);
         }
@@ -133,7 +133,7 @@ public class ImGroupServiceImpl implements ImGroupService {
 
     @Override
     public ResponseVO updateBaseGroupInfo(UpdateGroupReq req) {
-        //1.判断群id是否存在
+        // 1.判断群id是否存在
         LambdaQueryWrapper<ImGroupEntity> queryWrapper = new LambdaQueryWrapper<ImGroupEntity>()
                 .eq(ImGroupEntity::getGroupId, req.getGroupId())
                 .eq(ImGroupEntity::getAppId, req.getAppId());
@@ -149,7 +149,7 @@ public class ImGroupServiceImpl implements ImGroupService {
         boolean isAdmin = isAdminObj != null && isAdminObj;
 
         if (!isAdmin) {
-            //不是后台调用需要检查权限
+            // 不是后台调用需要检查权限
             ResponseVO<GetRoleInGroupResp> role = groupMemberService.getRoleInGroupOne(req.getGroupId(),
                     req.getOperator(), req.getAppId());
             if (!role.isSuccess()) {
@@ -160,7 +160,7 @@ public class ImGroupServiceImpl implements ImGroupService {
             Integer roleInfo = data.getRole();
             boolean isManager = Objects.equals(roleInfo, GroupMemberRole.MANAGER.getCode())
                     || Objects.equals(roleInfo, GroupMemberRole.OWNER.getCode());
-            //公开群只能群主修改资料
+            // 公开群只能群主修改资料
             if (!isManager && GroupType.PUBLIC.getCode() == imGroupEntity.getGroupType()) {
                 throw new ApplicationException(GroupErrorCode.THIS_OPERATE_NEED_MANAGER_ROLE);
             }
@@ -231,7 +231,7 @@ public class ImGroupServiceImpl implements ImGroupService {
                     // 当前用户所有群组
                     ? groupList.size()
                     // 传入的 groupId 中，有效的 group 数量
-                    : imGroupMapper.selectCount(query);
+                    : imGroupMapper.selectCount(query).intValue();
             resp.setTotalCount(totalCount);
             return ResponseVO.successResponse(resp);
         } else {
@@ -321,7 +321,8 @@ public class ImGroupServiceImpl implements ImGroupService {
             Integer nums = imGroupMapper.selectCount(
                     new LambdaQueryWrapper<ImGroupEntity>()
                             .eq(ImGroupEntity::getGroupId, groupId)
-                            .eq(ImGroupEntity::getAppId, appId));
+                            .eq(ImGroupEntity::getAppId, appId))
+                    .intValue();
             if (nums > 0) {
                 throw new ApplicationException(GroupErrorCode.GROUP_IS_EXIST);
             }
@@ -377,7 +378,7 @@ public class ImGroupServiceImpl implements ImGroupService {
         Boolean isAdminObj = RequestHolder.get();
         boolean isAdmin = isAdminObj != null && isAdminObj;
         if (!isAdmin) {
-            //不是后台调用需要检查权限
+            // 不是后台调用需要检查权限
             ResponseVO<GetRoleInGroupResp> role = groupMemberService
                     .getRoleInGroupOne(req.getGroupId(), req.getOperator(), req.getAppId());
             if (!role.isSuccess()) {
@@ -385,8 +386,9 @@ public class ImGroupServiceImpl implements ImGroupService {
             }
             GetRoleInGroupResp data = role.getData();
             Integer roleInfo = data.getRole();
-            boolean isManager = Objects.equals(roleInfo, GroupMemberRole.MANAGER.getCode()) || Objects.equals(roleInfo, GroupMemberRole.OWNER.getCode());
-            //公开群只能群主修改资料
+            boolean isManager = Objects.equals(roleInfo, GroupMemberRole.MANAGER.getCode())
+                    || Objects.equals(roleInfo, GroupMemberRole.OWNER.getCode());
+            // 公开群只能群主修改资料
             if (!isManager) {
                 throw new ApplicationException(GroupErrorCode.THIS_OPERATE_NEED_MANAGER_ROLE);
             }
@@ -422,10 +424,10 @@ public class ImGroupServiceImpl implements ImGroupService {
             if (!CollectionUtils.isEmpty(list)) {
                 ImGroupEntity maxSeqEntity = list.get(list.size() - 1);
                 resp.setDataList(list);
-                //设置最大seq
+                // 设置最大seq
                 Long maxSeq = imGroupMapper.getJoinGroupMaxSeq(data, req.getAppId());
                 resp.setMaxSequence(maxSeq);
-                //设置是否拉取完毕
+                // 设置是否拉取完毕
                 resp.setCompleted(maxSeqEntity.getSequence() >= maxSeq);
                 return ResponseVO.successResponse(resp);
             }
