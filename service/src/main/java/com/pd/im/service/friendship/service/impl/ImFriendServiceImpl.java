@@ -25,6 +25,7 @@ import com.pd.im.service.friendship.model.callback.AddFriendBlackAfterCallbackDt
 import com.pd.im.service.friendship.model.callback.DeleteFriendAfterCallbackDto;
 import com.pd.im.service.friendship.model.req.*;
 import com.pd.im.service.friendship.model.resp.CheckFriendShipResp;
+import com.pd.im.service.friendship.model.resp.GetFriendInfoResp;
 import com.pd.im.service.friendship.model.resp.ImportFriendShipResp;
 import com.pd.im.service.friendship.service.ImFriendService;
 import com.pd.im.service.friendship.service.ImFriendShipRequestService;
@@ -43,7 +44,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -114,7 +114,8 @@ public class ImFriendServiceImpl implements ImFriendService {
                 long seq = redisSequence.doGetSeq(req.getAppId() + ":" + Constants.SeqConstants.FRIENDSHIP);
 
                 // ========== 处理 A -> B 的好友关系 ==========
-                LambdaQueryWrapper<ImFriendShipEntity> fromQuery = buildFriendshipQuery(req.getAppId(), req.getFromId(), dto.getToId());
+                LambdaQueryWrapper<ImFriendShipEntity> fromQuery = buildFriendshipQuery(req.getAppId(), req.getFromId(),
+                        dto.getToId());
                 ImFriendShipEntity fromEntity = imFriendShipMapper.selectOne(fromQuery);
 
                 if (fromEntity == null) {
@@ -135,7 +136,8 @@ public class ImFriendServiceImpl implements ImFriendService {
                         errorIds.add(dto.getToId());
                         continue;
                     }
-                    userSequenceRepository.writeUserSeq(req.getAppId(), req.getFromId(), Constants.SeqConstants.FRIENDSHIP, seq);
+                    userSequenceRepository.writeUserSeq(req.getAppId(), req.getFromId(),
+                            Constants.SeqConstants.FRIENDSHIP, seq);
                 } else {
                     // 已存在，更新（导入操作通常会覆盖原有数据）
                     ImFriendShipEntity update = new ImFriendShipEntity();
@@ -158,11 +160,13 @@ public class ImFriendServiceImpl implements ImFriendService {
                         errorIds.add(dto.getToId());
                         continue;
                     }
-                    userSequenceRepository.writeUserSeq(req.getAppId(), req.getFromId(), Constants.SeqConstants.FRIENDSHIP, seq);
+                    userSequenceRepository.writeUserSeq(req.getAppId(), req.getFromId(),
+                            Constants.SeqConstants.FRIENDSHIP, seq);
                 }
 
                 // ========== 处理 B -> A 的反向好友关系（建立双向关系） ==========
-                LambdaQueryWrapper<ImFriendShipEntity> toQuery = buildFriendshipQuery(req.getAppId(), dto.getToId(), req.getFromId());
+                LambdaQueryWrapper<ImFriendShipEntity> toQuery = buildFriendshipQuery(req.getAppId(), dto.getToId(),
+                        req.getFromId());
                 ImFriendShipEntity toEntity = imFriendShipMapper.selectOne(toQuery);
 
                 if (toEntity == null) {
@@ -177,7 +181,8 @@ public class ImFriendServiceImpl implements ImFriendService {
                     toEntity.setCreateTime(System.currentTimeMillis());
 
                     imFriendShipMapper.insert(toEntity);
-                    userSequenceRepository.writeUserSeq(req.getAppId(), dto.getToId(), Constants.SeqConstants.FRIENDSHIP, seq);
+                    userSequenceRepository.writeUserSeq(req.getAppId(), dto.getToId(),
+                            Constants.SeqConstants.FRIENDSHIP, seq);
                 } else {
                     // 已存在，仅更新序列号和状态（确保是正常状态）
                     ImFriendShipEntity update = new ImFriendShipEntity();
@@ -185,7 +190,8 @@ public class ImFriendServiceImpl implements ImFriendService {
                     update.setFriendSequence(seq);
 
                     imFriendShipMapper.update(update, toQuery);
-                    userSequenceRepository.writeUserSeq(req.getAppId(), dto.getToId(), Constants.SeqConstants.FRIENDSHIP, seq);
+                    userSequenceRepository.writeUserSeq(req.getAppId(), dto.getToId(),
+                            Constants.SeqConstants.FRIENDSHIP, seq);
                 }
 
                 successIds.add(dto.getToId());
@@ -211,7 +217,8 @@ public class ImFriendServiceImpl implements ImFriendService {
         }
 
         // 校验目标方用户是否存在
-        ResponseVO<ImUserDataEntity> toInfo = imUserService.getSingleUserInfo(req.getToItem().getToId(), req.getAppId());
+        ResponseVO<ImUserDataEntity> toInfo = imUserService.getSingleUserInfo(req.getToItem().getToId(),
+                req.getAppId());
         if (!toInfo.isSuccess()) {
             return toInfo;
         }
@@ -243,8 +250,10 @@ public class ImFriendServiceImpl implements ImFriendService {
         ImFriendShipEntity toItem = imFriendShipMapper.selectOne(toQuery);
 
         // 检查双向关系状态
-        boolean fromIsNormal = fromItem != null && fromItem.getStatus().equals(FriendshipStatus.FRIEND_STATUS_NORMAL.getCode());
-        boolean toIsNormal = toItem != null && toItem.getStatus().equals(FriendshipStatus.FRIEND_STATUS_NORMAL.getCode());
+        boolean fromIsNormal = fromItem != null
+                && fromItem.getStatus().equals(FriendshipStatus.FRIEND_STATUS_NORMAL.getCode());
+        boolean toIsNormal = toItem != null
+                && toItem.getStatus().equals(FriendshipStatus.FRIEND_STATUS_NORMAL.getCode());
 
         if (fromIsNormal && toIsNormal) {
             // 双向都是好友,返回已经是好友错误
@@ -266,8 +275,10 @@ public class ImFriendServiceImpl implements ImFriendService {
         ImFriendShipEntity toItem = imFriendShipMapper.selectOne(toQuery);
 
         // 检查双向关系状态
-        boolean fromIsNormal = fromItem != null && fromItem.getStatus().equals(FriendshipStatus.FRIEND_STATUS_NORMAL.getCode());
-        boolean toIsNormal = toItem != null && toItem.getStatus().equals(FriendshipStatus.FRIEND_STATUS_NORMAL.getCode());
+        boolean fromIsNormal = fromItem != null
+                && fromItem.getStatus().equals(FriendshipStatus.FRIEND_STATUS_NORMAL.getCode());
+        boolean toIsNormal = toItem != null
+                && toItem.getStatus().equals(FriendshipStatus.FRIEND_STATUS_NORMAL.getCode());
 
         if (fromIsNormal && toIsNormal) {
             // 双向都已经是好友,返回错误
@@ -399,7 +410,8 @@ public class ImFriendServiceImpl implements ImFriendService {
             return fromInfo;
         }
 
-        ResponseVO<ImUserDataEntity> toInfo = imUserService.getSingleUserInfo(req.getToItem().getToId(), req.getAppId());
+        ResponseVO<ImUserDataEntity> toInfo = imUserService.getSingleUserInfo(req.getToItem().getToId(),
+                req.getAppId());
         if (!toInfo.isSuccess()) {
             return toInfo;
         }
@@ -444,14 +456,16 @@ public class ImFriendServiceImpl implements ImFriendService {
 
     @Override
     public ResponseVO deleteFriend(DeleteFriendReq req) {
-        LambdaQueryWrapper<ImFriendShipEntity> query = buildFriendshipQuery(req.getAppId(), req.getFromId(), req.getToId());
+        LambdaQueryWrapper<ImFriendShipEntity> query = buildFriendshipQuery(req.getAppId(), req.getFromId(),
+                req.getToId());
         ImFriendShipEntity fromItem = imFriendShipMapper.selectOne(query);
 
         if (fromItem == null) {
             return ResponseVO.errorResponse(FriendshipErrorCode.TO_IS_NOT_YOUR_FRIEND);
         }
 
-        if (fromItem.getStatus() == null || !fromItem.getStatus().equals(FriendshipStatus.FRIEND_STATUS_NORMAL.getCode())) {
+        if (fromItem.getStatus() == null
+                || !fromItem.getStatus().equals(FriendshipStatus.FRIEND_STATUS_NORMAL.getCode())) {
             return ResponseVO.errorResponse(FriendshipErrorCode.FRIEND_IS_DELETED);
         }
 
@@ -509,6 +523,57 @@ public class ImFriendServiceImpl implements ImFriendService {
         query.eq(ImFriendShipEntity::getAppId, req.getAppId())
                 .eq(ImFriendShipEntity::getFromId, req.getFromId());
         return ResponseVO.successResponse(imFriendShipMapper.selectList(query));
+    }
+
+    @Override
+    public ResponseVO getFriendsInfo(GetFriendsInfoReq req) {
+        log.info("[getFriendsInfo] fromId={}, toIds={}", req.getFromId(), req.getToIds());
+
+        // 限制单次查询数量
+        if (req.getToIds() == null || req.getToIds().isEmpty()) {
+            return ResponseVO.errorResponse();
+        }
+        if (req.getToIds().size() > 100) {
+            return ResponseVO.errorResponse(FriendshipErrorCode.GET_FRIEND_SHIP_SIZE_BEYOND);
+        }
+
+        // 校验发起方用户是否存在
+        ResponseVO<ImUserDataEntity> fromInfo = imUserService.getSingleUserInfo(req.getFromId(), req.getAppId());
+        if (!fromInfo.isSuccess()) {
+            return fromInfo;
+        }
+
+        // 批量查询好友关系，并为每个 toId 构建结果
+        List<GetFriendInfoResp> results = new ArrayList<>();
+
+        for (String toId : req.getToIds()) {
+            GetFriendInfoResp result = new GetFriendInfoResp();
+            result.setToId(toId);
+
+            LambdaQueryWrapper<ImFriendShipEntity> query = buildFriendshipQuery(
+                    req.getAppId(), req.getFromId(), toId);
+            ImFriendShipEntity entity = imFriendShipMapper.selectOne(query);
+
+            if (entity != null) {
+                // 找到好友关系
+                result.setResultCode(0);
+                result.setResultInfo("成功");
+                result.setFriendInfo(entity);
+            } else {
+                // 未找到好友关系
+                result.setResultCode(-1);
+                result.setResultInfo("好友关系不存在");
+                result.setFriendInfo(null);
+            }
+
+            results.add(result);
+        }
+
+        log.info("[getFriendsInfo] 返回 {} 个结果，其中 {} 个找到好友关系",
+                results.size(),
+                results.stream().filter(r -> r.getResultCode() == 0).count());
+
+        return ResponseVO.successResponse(results);
     }
 
     @Override
@@ -571,7 +636,8 @@ public class ImFriendServiceImpl implements ImFriendService {
             return toInfo;
         }
 
-        LambdaQueryWrapper<ImFriendShipEntity> query = buildFriendshipQuery(req.getAppId(), req.getFromId(), req.getToId());
+        LambdaQueryWrapper<ImFriendShipEntity> query = buildFriendshipQuery(req.getAppId(), req.getFromId(),
+                req.getToId());
         ImFriendShipEntity fromItem = imFriendShipMapper.selectOne(query);
         long seq;
 
@@ -589,10 +655,12 @@ public class ImFriendServiceImpl implements ImFriendService {
             if (insert != 1) {
                 return ResponseVO.errorResponse(FriendshipErrorCode.ADD_FRIEND_ERROR);
             }
-            userSequenceRepository.writeUserSeq(req.getAppId(), req.getFromId(), Constants.SeqConstants.FRIENDSHIP, seq);
+            userSequenceRepository.writeUserSeq(req.getAppId(), req.getFromId(), Constants.SeqConstants.FRIENDSHIP,
+                    seq);
         } else {
             // 已存在关系,检查黑名单状态
-            if (fromItem.getBlack() != null && fromItem.getBlack().equals(FriendshipStatus.BLACK_STATUS_BLACKED.getCode())) {
+            if (fromItem.getBlack() != null
+                    && fromItem.getBlack().equals(FriendshipStatus.BLACK_STATUS_BLACKED.getCode())) {
                 return ResponseVO.errorResponse(FriendshipErrorCode.FRIEND_IS_BLACK);
             }
             seq = redisSequence.doGetSeq(req.getAppId() + ":" + Constants.SeqConstants.FRIENDSHIP);
@@ -603,7 +671,8 @@ public class ImFriendServiceImpl implements ImFriendService {
             if (result != 1) {
                 return ResponseVO.errorResponse(FriendshipErrorCode.ADD_BLACK_ERROR);
             }
-            userSequenceRepository.writeUserSeq(req.getAppId(), req.getFromId(), Constants.SeqConstants.FRIENDSHIP, seq);
+            userSequenceRepository.writeUserSeq(req.getAppId(), req.getFromId(), Constants.SeqConstants.FRIENDSHIP,
+                    seq);
         }
 
         // 发送TCP通知

@@ -85,6 +85,16 @@ public interface ImFriendService {
     ResponseVO getAllFriendShip(GetAllFriendShipReq req);
 
     /**
+     * 拉取指定好友信息
+     * 批量获取多个好友的详细信息
+     * 参考: https://cloud.tencent.com/document/product/269/8609
+     *
+     * @param req 请求参数,包含fromId和toIds列表
+     * @return 好友信息结果列表
+     */
+    ResponseVO getFriendsInfo(GetFriendsInfoReq req);
+
+    /**
      * 查询指定的好友关系
      * 检查数据库中是否存在fromId到toId的关系记录
      *

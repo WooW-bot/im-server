@@ -108,6 +108,20 @@ public class ImFriendShipController {
     }
 
     /**
+     * 拉取指定好友
+     * 参考: https://cloud.tencent.com/document/product/269/8609
+     *
+     * @param req   GetFriendsInfoReq
+     * @param appId Integer
+     * @return ResponseVO
+     */
+    @RequestMapping("/getFriendsInfo")
+    public ResponseVO getFriendsInfo(@RequestBody @Validated GetFriendsInfoReq req, Integer appId) {
+        req.setAppId(appId);
+        return imFriendShipService.getFriendsInfo(req);
+    }
+
+    /**
      * 获取好友关系状态
      * 参考: https://cloud.tencent.com/document/product/269/1646
      *
