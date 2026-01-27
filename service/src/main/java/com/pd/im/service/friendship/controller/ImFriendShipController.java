@@ -138,6 +138,28 @@ public class ImFriendShipController {
     /**
      * 校验好友关系
      * 参考: https://cloud.tencent.com/document/product/269/1646
+     * <p>
+     * <b>校验类型(CheckType):</b>
+     * <ul>
+     * <li>1 - 单向校验好友关系</li>
+     * <li>2 - 双向校验好友关系</li>
+     * </ul>
+     * <p>
+     * <b>返回状态码(Status):</b>
+     * <p>
+     * <b>单向校验模式:</b>
+     * <ul>
+     * <li>1 - 是好友 (from添加了to)</li>
+     * <li>0 - 不是好友</li>
+     * </ul>
+     * <p>
+     * <b>双向校验模式:</b>
+     * <ul>
+     * <li>1 - 双向好友 (互为好友)</li>
+     * <li>2 - A单向B (from添加了to, to未添加from)</li>
+     * <li>3 - B单向A (from未添加to, to添加了from)</li>
+     * <li>4 - 无关系 (双方都未添加)</li>
+     * </ul>
      *
      * @param req   CheckFriendShipReq
      * @param appId Integer

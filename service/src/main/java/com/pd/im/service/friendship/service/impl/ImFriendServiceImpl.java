@@ -616,7 +616,14 @@ public class ImFriendServiceImpl implements ImFriendService {
                 CheckFriendShipResp checkResp = new CheckFriendShipResp();
                 checkResp.setFromId(req.getFromId());
                 checkResp.setToId(toId);
-                checkResp.setStatus(0);
+
+                // 单向校验：0-不是好友，双向校验：4-无关系
+                int status = 0;
+                if (req.getCheckType() != null && req.getCheckType() == CheckFriendshipType.BOTH.getType()) {
+                    status = 4;
+                }
+                checkResp.setStatus(status);
+
                 resp.add(checkResp);
             }
         }
