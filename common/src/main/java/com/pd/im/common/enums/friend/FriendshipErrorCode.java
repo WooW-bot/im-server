@@ -7,7 +7,7 @@ import com.pd.im.common.exception.ApplicationExceptionEnum;
  * @date 12/7/25
  */
 public enum FriendshipErrorCode implements ApplicationExceptionEnum {
-    IMPORT_SIZE_BEYOND(30000, "导入数量超出上限"),
+    OP_SIZE_BEYOND(30000, "操作数量超出上限"),
 
     ADD_FRIEND_ERROR(30001, "添加好友失败"),
 
@@ -38,8 +38,6 @@ public enum FriendshipErrorCode implements ApplicationExceptionEnum {
     FRIEND_SHIP_GROUP_IS_EXIST(30015, "好友分组已存在"),
 
     FRIEND_SHIP_GROUP_IS_NOT_EXIST(30016, "好友分组不存在"),
-
-    GET_FRIEND_SHIP_SIZE_BEYOND(30017, "单次查询好友数量超出上限"),
     ;
 
     private int code;

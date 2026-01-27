@@ -157,10 +157,10 @@ public class ImFriendShipController {
      * @param appId Integer
      * @return ResponseVO
      */
-    @RequestMapping("/addBlack")
-    public ResponseVO addBlack(@RequestBody @Validated AddFriendShipBlackReq req, Integer appId) {
+    @RequestMapping("/addBlackList")
+    public ResponseVO addBlackList(@RequestBody @Validated AddFriendShipBlackReq req, Integer appId) {
         req.setAppId(appId);
-        return imFriendShipService.addBlack(req);
+        return imFriendShipService.addBlackList(req);
     }
 
     /**
@@ -171,10 +171,10 @@ public class ImFriendShipController {
      * @param appId Integer
      * @return ResponseVO
      */
-    @RequestMapping("/deleteBlack")
-    public ResponseVO deleteBlack(@RequestBody @Validated DeleteBlackReq req, Integer appId) {
+    @RequestMapping("/deleteBlackList")
+    public ResponseVO deleteBlackList(@RequestBody @Validated DeleteBlackReq req, Integer appId) {
         req.setAppId(appId);
-        return imFriendShipService.deleteBlack(req);
+        return imFriendShipService.deleteBlackList(req);
     }
 
     /**
@@ -185,10 +185,10 @@ public class ImFriendShipController {
      * @param appId Integer
      * @return ResponseVO
      */
-    @RequestMapping("/checkBlack")
-    public ResponseVO checkBlack(@RequestBody @Validated CheckFriendShipReq req, Integer appId) {
+    @RequestMapping("/checkBlackList")
+    public ResponseVO checkBlackList(@RequestBody @Validated CheckFriendShipReq req, Integer appId) {
         req.setAppId(appId);
-        return imFriendShipService.checkBlack(req);
+        return imFriendShipService.checkBlackList(req);
     }
 
     /**

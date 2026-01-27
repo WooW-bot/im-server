@@ -133,7 +133,7 @@ public interface ImFriendService {
      * @param req 添加黑名单请求
      * @return 操作结果
      */
-    ResponseVO addBlack(AddFriendShipBlackReq req);
+    ResponseVO addBlackList(AddFriendShipBlackReq req);
 
     /**
      * 移除黑名单
@@ -143,7 +143,7 @@ public interface ImFriendService {
      * @param req 删除黑名单请求
      * @return 操作结果
      */
-    ResponseVO deleteBlack(DeleteBlackReq req);
+    ResponseVO deleteBlackList(DeleteBlackReq req);
 
     /**
      * 校验黑名单关系
@@ -153,7 +153,7 @@ public interface ImFriendService {
      * @param req 校验请求,包含checkType、fromId、toIds
      * @return 校验结果列表
      */
-    ResponseVO checkBlack(CheckFriendShipReq req);
+    ResponseVO checkBlackList(CheckFriendShipReq req);
 
     /**
      * 增量同步好友列表

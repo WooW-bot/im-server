@@ -24,6 +24,7 @@ import com.pd.im.service.friendship.model.callback.AddFriendAfterCallbackDto;
 import com.pd.im.service.friendship.model.callback.AddFriendBlackAfterCallbackDto;
 import com.pd.im.service.friendship.model.callback.DeleteFriendAfterCallbackDto;
 import com.pd.im.service.friendship.model.req.*;
+import com.pd.im.service.friendship.model.resp.BlackListOperationResp;
 import com.pd.im.service.friendship.model.resp.CheckFriendShipResp;
 import com.pd.im.service.friendship.model.resp.GetFriendInfoResp;
 import com.pd.im.service.friendship.model.resp.ImportFriendShipResp;
@@ -87,7 +88,7 @@ public class ImFriendServiceImpl implements ImFriendService {
     public ResponseVO importFriendShip(ImportFriendShipReq req) {
         // 检查批量导入数量限制
         if (req.getFriendItem().size() > appConfig.getFriendShipMaxImportSize()) {
-            return ResponseVO.errorResponse(FriendshipErrorCode.IMPORT_SIZE_BEYOND);
+            return ResponseVO.errorResponse(FriendshipErrorCode.OP_SIZE_BEYOND);
         }
 
         // 验证发起方用户是否存在
@@ -530,11 +531,8 @@ public class ImFriendServiceImpl implements ImFriendService {
         log.info("[getFriendsInfo] fromId={}, toIds={}", req.getFromId(), req.getToIds());
 
         // 限制单次查询数量
-        if (req.getToIds() == null || req.getToIds().isEmpty()) {
-            return ResponseVO.errorResponse();
-        }
         if (req.getToIds().size() > 100) {
-            return ResponseVO.errorResponse(FriendshipErrorCode.GET_FRIEND_SHIP_SIZE_BEYOND);
+            return ResponseVO.errorResponse(FriendshipErrorCode.OP_SIZE_BEYOND);
         }
 
         // 校验发起方用户是否存在
@@ -625,122 +623,209 @@ public class ImFriendServiceImpl implements ImFriendService {
     }
 
     @Override
-    public ResponseVO addBlack(AddFriendShipBlackReq req) {
-        // 校验用户是否存在
+    public ResponseVO addBlackList(AddFriendShipBlackReq req) {
+        log.info("[addBlackList] fromId={}, toIds={}", req.getFromId(), req.getToIds());
+
+        // 限制单次操作数量
+        if (req.getToIds().size() > 100) {
+            return ResponseVO.errorResponse(FriendshipErrorCode.OP_SIZE_BEYOND);
+        }
+
+        // 校验发起方用户是否存在
         ResponseVO<ImUserDataEntity> fromInfo = imUserService.getSingleUserInfo(req.getFromId(), req.getAppId());
         if (!fromInfo.isSuccess()) {
             return fromInfo;
         }
-        ResponseVO<ImUserDataEntity> toInfo = imUserService.getSingleUserInfo(req.getToId(), req.getAppId());
-        if (!toInfo.isSuccess()) {
-            return toInfo;
+
+        // 批量处理每个用户
+        List<BlackListOperationResp> results = new ArrayList<>();
+
+        for (String toId : req.getToIds()) {
+            BlackListOperationResp result = new BlackListOperationResp();
+            result.setToId(toId);
+
+            try {
+                // 校验目标用户是否存在
+                ResponseVO<ImUserDataEntity> toInfo = imUserService.getSingleUserInfo(toId, req.getAppId());
+                if (!toInfo.isSuccess()) {
+                    result.setResultCode(toInfo.getCode());
+                    result.setResultInfo(toInfo.getMsg());
+                    results.add(result);
+                    continue;
+                }
+
+                LambdaQueryWrapper<ImFriendShipEntity> query = buildFriendshipQuery(req.getAppId(), req.getFromId(),
+                        toId);
+                ImFriendShipEntity fromItem = imFriendShipMapper.selectOne(query);
+                long seq;
+
+                if (fromItem == null) {
+                    // 不存在关系,新增并设置为拉黑
+                    seq = redisSequence.doGetSeq(req.getAppId() + ":" + Constants.SeqConstants.FRIENDSHIP);
+                    fromItem = new ImFriendShipEntity();
+                    fromItem.setFromId(req.getFromId());
+                    fromItem.setToId(toId);
+                    fromItem.setFriendSequence(seq);
+                    fromItem.setAppId(req.getAppId());
+                    fromItem.setBlack(FriendshipStatus.BLACK_STATUS_BLACKED.getCode());
+                    fromItem.setCreateTime(System.currentTimeMillis());
+                    int insert = imFriendShipMapper.insert(fromItem);
+                    if (insert != 1) {
+                        result.setResultCode(FriendshipErrorCode.ADD_FRIEND_ERROR.getCode());
+                        result.setResultInfo(FriendshipErrorCode.ADD_FRIEND_ERROR.getError());
+                        results.add(result);
+                        continue;
+                    }
+                    userSequenceRepository.writeUserSeq(req.getAppId(), req.getFromId(),
+                            Constants.SeqConstants.FRIENDSHIP, seq);
+                } else {
+                    // 已存在关系,检查黑名单状态
+                    if (fromItem.getBlack() != null
+                            && fromItem.getBlack().equals(FriendshipStatus.BLACK_STATUS_BLACKED.getCode())) {
+                        result.setResultCode(FriendshipErrorCode.FRIEND_IS_BLACK.getCode());
+                        result.setResultInfo(FriendshipErrorCode.FRIEND_IS_BLACK.getError());
+                        results.add(result);
+                        continue;
+                    }
+                    seq = redisSequence.doGetSeq(req.getAppId() + ":" + Constants.SeqConstants.FRIENDSHIP);
+                    ImFriendShipEntity update = new ImFriendShipEntity();
+                    update.setFriendSequence(seq);
+                    update.setBlack(FriendshipStatus.BLACK_STATUS_BLACKED.getCode());
+                    int updateResult = imFriendShipMapper.update(update, query);
+                    if (updateResult != 1) {
+                        result.setResultCode(FriendshipErrorCode.ADD_BLACK_ERROR.getCode());
+                        result.setResultInfo(FriendshipErrorCode.ADD_BLACK_ERROR.getError());
+                        results.add(result);
+                        continue;
+                    }
+                    userSequenceRepository.writeUserSeq(req.getAppId(), req.getFromId(),
+                            Constants.SeqConstants.FRIENDSHIP, seq);
+                }
+
+                // 发送TCP通知
+                AddFriendBlackPack pack = new AddFriendBlackPack();
+                pack.setFromId(req.getFromId());
+                pack.setSequence(seq);
+                pack.setToId(toId);
+                messageProducer.sendToClients(req.getFromId(), FriendshipEventCommand.FRIEND_BLACK_ADD, pack,
+                        req.getAppId(), req.getClientType(), req.getImei());
+
+                // 添加黑名单后回调
+                if (appConfig.isAddFriendShipBlackAfterCallback()) {
+                    AddFriendBlackAfterCallbackDto callbackDto = new AddFriendBlackAfterCallbackDto();
+                    callbackDto.setFromId(req.getFromId());
+                    callbackDto.setToId(toId);
+                    callbackService.afterCallback(req.getAppId(), Constants.CallbackCommand.ADD_BLACK_AFTER,
+                            JSONObject.toJSONString(callbackDto));
+                }
+
+                result.setResultCode(0);
+                result.setResultInfo("成功");
+            } catch (Exception e) {
+                log.error("[addBlackList] 添加黑名单失败 toId={}", toId, e);
+                result.setResultCode(-1);
+                result.setResultInfo("操作失败: " + e.getMessage());
+            }
+
+            results.add(result);
         }
 
-        LambdaQueryWrapper<ImFriendShipEntity> query = buildFriendshipQuery(req.getAppId(), req.getFromId(),
-                req.getToId());
-        ImFriendShipEntity fromItem = imFriendShipMapper.selectOne(query);
-        long seq;
+        log.info("[addBlackList] 完成 - 成功: {}/{}",
+                results.stream().filter(r -> r.getResultCode() == 0).count(),
+                results.size());
 
-        if (fromItem == null) {
-            // 不存在关系,新增并设置为拉黑
-            seq = redisSequence.doGetSeq(req.getAppId() + ":" + Constants.SeqConstants.FRIENDSHIP);
-            fromItem = new ImFriendShipEntity();
-            fromItem.setFromId(req.getFromId());
-            fromItem.setToId(req.getToId());
-            fromItem.setFriendSequence(seq);
-            fromItem.setAppId(req.getAppId());
-            fromItem.setBlack(FriendshipStatus.BLACK_STATUS_BLACKED.getCode());
-            fromItem.setCreateTime(System.currentTimeMillis());
-            int insert = imFriendShipMapper.insert(fromItem);
-            if (insert != 1) {
-                return ResponseVO.errorResponse(FriendshipErrorCode.ADD_FRIEND_ERROR);
-            }
-            userSequenceRepository.writeUserSeq(req.getAppId(), req.getFromId(), Constants.SeqConstants.FRIENDSHIP,
-                    seq);
-        } else {
-            // 已存在关系,检查黑名单状态
-            if (fromItem.getBlack() != null
-                    && fromItem.getBlack().equals(FriendshipStatus.BLACK_STATUS_BLACKED.getCode())) {
-                return ResponseVO.errorResponse(FriendshipErrorCode.FRIEND_IS_BLACK);
-            }
-            seq = redisSequence.doGetSeq(req.getAppId() + ":" + Constants.SeqConstants.FRIENDSHIP);
-            ImFriendShipEntity update = new ImFriendShipEntity();
-            update.setFriendSequence(seq);
-            update.setBlack(FriendshipStatus.BLACK_STATUS_BLACKED.getCode());
-            int result = imFriendShipMapper.update(update, query);
-            if (result != 1) {
-                return ResponseVO.errorResponse(FriendshipErrorCode.ADD_BLACK_ERROR);
-            }
-            userSequenceRepository.writeUserSeq(req.getAppId(), req.getFromId(), Constants.SeqConstants.FRIENDSHIP,
-                    seq);
-        }
-
-        // 发送TCP通知
-        AddFriendBlackPack pack = new AddFriendBlackPack();
-        pack.setFromId(req.getFromId());
-        pack.setSequence(seq);
-        pack.setToId(req.getToId());
-        messageProducer.sendToClients(req.getFromId(), FriendshipEventCommand.FRIEND_BLACK_ADD, pack,
-                req.getAppId(), req.getClientType(), req.getImei());
-
-        // 添加黑名单后回调
-        if (appConfig.isAddFriendShipBlackAfterCallback()) {
-            AddFriendBlackAfterCallbackDto callbackDto = new AddFriendBlackAfterCallbackDto();
-            callbackDto.setFromId(req.getFromId());
-            callbackDto.setToId(req.getToId());
-            callbackService.afterCallback(req.getAppId(), Constants.CallbackCommand.ADD_BLACK_AFTER,
-                    JSONObject.toJSONString(callbackDto));
-        }
-
-        return ResponseVO.successResponse();
+        return ResponseVO.successResponse(results);
     }
 
     @Override
-    public ResponseVO deleteBlack(DeleteBlackReq req) {
-        LambdaQueryWrapper<ImFriendShipEntity> query = buildFriendshipQuery(
-                req.getAppId(), req.getFromId(), req.getToId());
-        ImFriendShipEntity fromItem = imFriendShipMapper.selectOne(query);
+    public ResponseVO deleteBlackList(DeleteBlackReq req) {
+        log.info("[deleteBlackList] fromId={}, toIds={}", req.getFromId(), req.getToIds());
 
-        // 检查是否存在且是否已拉黑
-        if (fromItem == null || fromItem.getBlack() == null ||
-                !fromItem.getBlack().equals(FriendshipStatus.BLACK_STATUS_BLACKED.getCode())) {
-            throw new ApplicationException(FriendshipErrorCode.FRIEND_IS_NOT_YOUR_BLACK);
+        // 限制单次操作数量
+        if (req.getToIds().size() > 100) {
+            return ResponseVO.errorResponse(FriendshipErrorCode.OP_SIZE_BEYOND);
         }
 
-        // 移除黑名单，设置为正常状态
-        long seq = redisSequence.doGetSeq(req.getAppId() + ":" + Constants.SeqConstants.FRIENDSHIP);
-        ImFriendShipEntity update = new ImFriendShipEntity();
-        update.setFriendSequence(seq);
-        update.setBlack(FriendshipStatus.BLACK_STATUS_NORMAL.getCode());
-
-        int updateResult = imFriendShipMapper.update(update, query);
-        if (updateResult != 1) {
-            return ResponseVO.errorResponse();
-        }
-        userSequenceRepository.writeUserSeq(req.getAppId(), req.getFromId(), Constants.SeqConstants.FRIENDSHIP, seq);
-
-        // 发送TCP通知
-        DeleteBlackPack pack = new DeleteBlackPack();
-        pack.setFromId(req.getFromId());
-        pack.setSequence(seq);
-        pack.setToId(req.getToId());
-        messageProducer.sendToClients(req.getFromId(), FriendshipEventCommand.FRIEND_BLACK_DELETE, pack,
-                req.getAppId(), req.getClientType(), req.getImei());
-
-        // 删除黑名单后回调
-        if (appConfig.isAddFriendShipBlackAfterCallback()) {
-            AddFriendBlackAfterCallbackDto callbackDto = new AddFriendBlackAfterCallbackDto();
-            callbackDto.setFromId(req.getFromId());
-            callbackDto.setToId(req.getToId());
-            callbackService.afterCallback(req.getAppId(), Constants.CallbackCommand.DELETE_BLACK,
-                    JSONObject.toJSONString(callbackDto));
+        // 校验发起方用户是否存在
+        ResponseVO<ImUserDataEntity> fromInfo = imUserService.getSingleUserInfo(req.getFromId(), req.getAppId());
+        if (!fromInfo.isSuccess()) {
+            return fromInfo;
         }
 
-        return ResponseVO.successResponse();
+        // 批量处理每个用户
+        List<BlackListOperationResp> results = new ArrayList<>();
+
+        for (String toId : req.getToIds()) {
+            BlackListOperationResp result = new BlackListOperationResp();
+            result.setToId(toId);
+
+            try {
+                LambdaQueryWrapper<ImFriendShipEntity> query = buildFriendshipQuery(req.getAppId(), req.getFromId(),
+                        toId);
+                ImFriendShipEntity fromItem = imFriendShipMapper.selectOne(query);
+
+                // 检查是否存在且是否已拉黑
+                if (fromItem == null || fromItem.getBlack() == null ||
+                        !fromItem.getBlack().equals(FriendshipStatus.BLACK_STATUS_BLACKED.getCode())) {
+                    result.setResultCode(FriendshipErrorCode.FRIEND_IS_NOT_YOUR_BLACK.getCode());
+                    result.setResultInfo(FriendshipErrorCode.FRIEND_IS_NOT_YOUR_BLACK.getError());
+                    results.add(result);
+                    continue;
+                }
+
+                // 移除黑名单，设置为正常状态
+                long seq = redisSequence.doGetSeq(req.getAppId() + ":" + Constants.SeqConstants.FRIENDSHIP);
+                ImFriendShipEntity update = new ImFriendShipEntity();
+                update.setFriendSequence(seq);
+                update.setBlack(FriendshipStatus.BLACK_STATUS_NORMAL.getCode());
+
+                int updateResult = imFriendShipMapper.update(update, query);
+                if (updateResult != 1) {
+                    result.setResultCode(FriendshipErrorCode.ADD_BLACK_ERROR.getCode());
+                    result.setResultInfo(FriendshipErrorCode.ADD_BLACK_ERROR.getError());
+                    results.add(result);
+                    continue;
+                }
+                userSequenceRepository.writeUserSeq(req.getAppId(), req.getFromId(), Constants.SeqConstants.FRIENDSHIP,
+                        seq);
+
+                // 发送TCP通知
+                DeleteBlackPack pack = new DeleteBlackPack();
+                pack.setFromId(req.getFromId());
+                pack.setSequence(seq);
+                pack.setToId(toId);
+                messageProducer.sendToClients(req.getFromId(), FriendshipEventCommand.FRIEND_BLACK_DELETE, pack,
+                        req.getAppId(), req.getClientType(), req.getImei());
+
+                // 删除黑名单后回调
+                if (appConfig.isAddFriendShipBlackAfterCallback()) {
+                    AddFriendBlackAfterCallbackDto callbackDto = new AddFriendBlackAfterCallbackDto();
+                    callbackDto.setFromId(req.getFromId());
+                    callbackDto.setToId(toId);
+                    callbackService.afterCallback(req.getAppId(), Constants.CallbackCommand.DELETE_BLACK,
+                            JSONObject.toJSONString(callbackDto));
+                }
+
+                result.setResultCode(0);
+                result.setResultInfo("成功");
+            } catch (Exception e) {
+                log.error("[deleteBlackList] 移除黑名单失败 toId={}", toId, e);
+                result.setResultCode(-1);
+                result.setResultInfo("操作失败: " + e.getMessage());
+            }
+
+            results.add(result);
+        }
+
+        log.info("[deleteBlackList] 完成 - 成功: {}/{}",
+                results.stream().filter(r -> r.getResultCode() == 0).count(),
+                results.size());
+
+        return ResponseVO.successResponse(results);
     }
 
     @Override
-    public ResponseVO checkBlack(CheckFriendShipReq req) {
+    public ResponseVO checkBlackList(CheckFriendShipReq req) {
         List<CheckFriendShipResp> result;
 
         // 根据校验类型调用不同的方法
