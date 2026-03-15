@@ -32,6 +32,7 @@ public class Starter {
 
     private static ImServer imServer;
     private static ImWebSocketServer imWebSocketServer;
+    private static ZkClient zkClient;
 
     public static void main(String[] args) {
         if (args.length == 0) {
@@ -139,7 +140,7 @@ public class Starter {
                 config.getIm().getTcpPort(),
                 config.getIm().getWebSocketPort());
 
-        ZkClient zkClient = new ZkClient(
+        zkClient = new ZkClient(
                 config.getIm().getZkConfig().getZkAddr(),
                 config.getIm().getZkConfig().getZkConnectTimeOut()
         );

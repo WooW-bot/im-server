@@ -65,8 +65,8 @@ public class MessageCodecUtils {
             int command = in.readInt();
             int version = in.readInt();
             int clientType = in.readInt();
-            int messageType = in.readInt();
             int appId = in.readInt();
+            int messageType = in.readInt();
             int imeiLength = in.readInt();
             int bodyLen = in.readInt();
 

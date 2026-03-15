@@ -18,6 +18,12 @@ NC='\033[0m' # No Color
 PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
+# 自动配置 JDK 21 路径 (macOS Homebrew)
+if [ -d "/opt/homebrew/opt/openjdk@21" ]; then
+    export JAVA_HOME="/opt/homebrew/opt/openjdk@21"
+    export PATH="$JAVA_HOME/bin:$PATH"
+fi
+
 # 日志函数
 log_info() {
     echo -e "${BLUE}[INFO]${NC} $1"
