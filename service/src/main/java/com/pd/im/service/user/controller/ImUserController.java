@@ -1,22 +1,16 @@
 package com.pd.im.service.user.controller;
 
 import com.pd.im.common.ResponseVO;
-import com.pd.im.common.enums.device.ClientType;
-import com.pd.im.common.route.RouteHandler;
-import com.pd.im.common.route.RouteInfo;
-import com.pd.im.common.util.RouteInfoParser;
 import com.pd.im.service.user.model.req.*;
 import com.pd.im.service.user.service.ImUserService;
 import com.pd.im.service.user.service.ImUserStatusService;
-import com.pd.im.service.utils.ZKit;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 /**
  * @author Parker
@@ -31,13 +25,7 @@ public class ImUserController {
     ImUserService imUserService;
 
     @Autowired
-    RouteHandler routeHandler;
-
-    @Autowired
     ImUserStatusService imUserStatusService;
-
-    @Autowired
-    ZKit zKit;
 
     /**
      * 导入单个账号
@@ -48,7 +36,7 @@ public class ImUserController {
      * @return ResponseVO
      */
     @RequestMapping("importUser")
-    public ResponseVO importUser(@RequestBody ImportUserReq req, Integer appId) {
+    public ResponseVO importUser(@RequestBody ImportUserReq req, @RequestHeader("appId") Integer appId) {
         req.setAppId(appId);
         return imUserService.importUser(req);
     }
@@ -62,7 +50,7 @@ public class ImUserController {
      * @return ResponseVO
      */
     @RequestMapping("/deleteUser")
-    public ResponseVO deleteUser(@RequestBody @Validated DeleteUserReq req, Integer appId) {
+    public ResponseVO deleteUser(@RequestBody @Validated DeleteUserReq req, @RequestHeader("appId") Integer appId) {
         req.setAppId(appId);
         return imUserService.deleteUser(req);
     }
@@ -76,33 +64,20 @@ public class ImUserController {
      * @return ResponseVO
      */
     @RequestMapping("/login")
-    public ResponseVO login(@RequestBody @Validated LoginReq req, Integer appId) {
+    public ResponseVO login(@RequestBody @Validated LoginReq req, @RequestHeader("appId") Integer appId) {
         req.setAppId(appId);
-        ResponseVO login = imUserService.login(req);
-        if (login.isSuccess()) {
-            // 从 Zk 获取 im 地址，返回给 sdk
-            List<String> allNode;
-            if (ClientType.WEB.getCode().equals(req.getClientType())) {
-                allNode = zKit.getAllWebNode();
-            } else {
-                allNode = zKit.getAllTcpNode();
-            }
-            String s = routeHandler.routeServer(allNode, req.getUserId());
-            RouteInfo parse = RouteInfoParser.parse(s);
-            return ResponseVO.successResponse(parse);
-        }
-        return ResponseVO.errorResponse();
+        return imUserService.login(req);
     }
 
     @RequestMapping("/getUserSequence")
-    public ResponseVO getUserSequence(@RequestBody @Validated GetUserSequenceReq req, Integer appId) {
+    public ResponseVO getUserSequence(@RequestBody @Validated GetUserSequenceReq req, @RequestHeader("appId") Integer appId) {
         req.setAppId(appId);
         return imUserService.getUserSequence(req);
     }
 
     @RequestMapping("/subscribeUserOnlineStatus")
-    public ResponseVO subscribeUserOnlineStatus(@RequestBody @Validated SubscribeUserOnlineStatusReq req, Integer appId,
-            String identifier) {
+    public ResponseVO subscribeUserOnlineStatus(@RequestBody @Validated SubscribeUserOnlineStatusReq req, @RequestHeader("appId") Integer appId,
+            @RequestHeader("identifier") String identifier) {
         req.setAppId(appId);
         req.setOperator(identifier);
         imUserStatusService.subscribeUserOnlineStatus(req);
@@ -110,8 +85,8 @@ public class ImUserController {
     }
 
     @RequestMapping("/setUserCustomerStatus")
-    public ResponseVO setUserCustomerStatus(@RequestBody @Validated SetUserCustomerStatusReq req, Integer appId,
-            String identifier) {
+    public ResponseVO setUserCustomerStatus(@RequestBody @Validated SetUserCustomerStatusReq req, @RequestHeader("appId") Integer appId,
+            @RequestHeader("identifier") String identifier) {
         req.setAppId(appId);
         req.setOperator(identifier);
         imUserStatusService.setUserCustomerStatus(req);
@@ -128,8 +103,8 @@ public class ImUserController {
      * @return ResponseVO
      */
     @RequestMapping("/queryFriendOnlineStatus")
-    public ResponseVO queryFriendOnlineStatus(@RequestBody @Validated PullFriendOnlineStatusReq req, Integer appId,
-            String identifier) {
+    public ResponseVO queryFriendOnlineStatus(@RequestBody @Validated PullFriendOnlineStatusReq req, @RequestHeader("appId") Integer appId,
+            @RequestHeader("identifier") String identifier) {
         req.setAppId(appId);
         req.setOperator(identifier);
         return ResponseVO.successResponse(imUserStatusService.queryFriendOnlineStatus(req));
@@ -145,8 +120,8 @@ public class ImUserController {
      * @return ResponseVO
      */
     @RequestMapping("/queryUserOnlineStatus")
-    public ResponseVO queryUserOnlineStatus(@RequestBody @Validated PullUserOnlineStatusReq req, Integer appId,
-            String identifier) {
+    public ResponseVO queryUserOnlineStatus(@RequestBody @Validated PullUserOnlineStatusReq req, @RequestHeader("appId") Integer appId,
+            @RequestHeader("identifier") String identifier) {
         req.setAppId(appId);
         req.setOperator(identifier);
         return ResponseVO.successResponse(imUserStatusService.queryUserOnlineStatus(req));

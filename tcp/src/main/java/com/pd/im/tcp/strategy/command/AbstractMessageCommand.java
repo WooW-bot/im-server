@@ -1,16 +1,16 @@
 package com.pd.im.tcp.strategy.command;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
-import com.pd.im.codec.pack.message.ChatMessageAck;
 import com.pd.im.codec.proto.Message;
 import com.pd.im.codec.proto.MessagePack;
+import com.pd.im.codec.proto.generated.ChatMessageAck;
+import com.pd.im.codec.proto.generated.ChatMessagePack;
 import com.pd.im.common.ResponseVO;
 import com.pd.im.common.model.message.CheckSendMessageReq;
 import com.pd.im.tcp.feign.FeignMessageService;
 import com.pd.im.tcp.rabbitmq.publish.MqMessageProducer;
 import com.pd.im.tcp.strategy.command.model.CommandContext;
 import io.netty.channel.ChannelHandlerContext;
+import lombok.extern.slf4j.Slf4j;
 
 import static com.pd.im.common.constant.Constants.MsgPackConstants.*;
 
@@ -25,6 +25,7 @@ import static com.pd.im.common.constant.Constants.MsgPackConstants.*;
  * @author Parker
  * @date 12/4/25
  */
+@Slf4j
 public abstract class AbstractMessageCommand implements CommandStrategy {
 
     @Override
@@ -33,10 +34,20 @@ public abstract class AbstractMessageCommand implements CommandStrategy {
         Message msg = context.getMsg();
         FeignMessageService feignMessageService = context.getFeignMessageService();
 
-        // 解析消息体
-        JSONObject jsonObject = JSON.parseObject(JSONObject.toJSONString(msg.getMessagePack()));
-        String fromId = jsonObject.getString(FROM_ID);
-        String toId = extractToId(jsonObject);
+        Object pack = msg.getMessagePack();
+        String fromId = "";
+        String toId = "";
+        String messageId = "";
+
+        if (pack instanceof ChatMessagePack) {
+            ChatMessagePack chatPack = (ChatMessagePack) pack;
+            fromId = chatPack.getFromId();
+            toId = extractToIdFromProto(chatPack);
+            messageId = chatPack.getMessageId();
+        } else {
+            log.error("不支持的数据包类型，期待 ChatMessagePack");
+            return;
+        }
 
         // 构建校验请求
         CheckSendMessageReq req = CheckSendMessageReq.builder()
@@ -54,19 +65,16 @@ public abstract class AbstractMessageCommand implements CommandStrategy {
             MqMessageProducer.sendMessage(msg, msg.getMessageHeader().getCommand());
         } else {
             // 校验失败，返回ACK响应
-            sendAckResponse(ctx, jsonObject, responseVO);
+            sendAckResponse(ctx, messageId, responseVO);
         }
     }
 
+
+
     /**
-     * 从消息体中提取目标ID
-     * <p>
-     * 不同消息类型的目标ID字段不同（P2P是toId，Group是groupId）
-     *
-     * @param jsonObject 消息体JSON对象
-     * @return 目标ID
+     * 从 Protobuf 消息体中提取目标ID
      */
-    protected abstract String extractToId(JSONObject jsonObject);
+    protected abstract String extractToIdFromProto(ChatMessagePack chatPack);
 
     /**
      * 调用业务层校验接口
@@ -88,17 +96,19 @@ public abstract class AbstractMessageCommand implements CommandStrategy {
      * 发送ACK响应
      *
      * @param ctx        Channel上下文
-     * @param jsonObject 消息体JSON对象
+     * @param messageId  消息ID
      * @param responseVO 响应结果
      */
-    private void sendAckResponse(ChannelHandlerContext ctx, JSONObject jsonObject, ResponseVO responseVO) {
-        ChatMessageAck chatMessageAck = new ChatMessageAck(jsonObject.getString(MSG_ID));
+    private void sendAckResponse(ChannelHandlerContext ctx, String messageId, ResponseVO responseVO) {
+        ChatMessageAck chatMessageAck = ChatMessageAck.newBuilder()
+                .setMessageId(messageId != null ? messageId : "")
+                .build();
         responseVO.setData(chatMessageAck);
 
         MessagePack<ResponseVO> ack = new MessagePack<>();
         ack.setData(responseVO);
         ack.setCommand(getAckCommand());
-        ack.setTimestamp(System.currentTimeMillis());  // 设置消息时间戳
+        ack.setTimestamp(System.currentTimeMillis());
 
         ctx.channel().writeAndFlush(ack);
     }

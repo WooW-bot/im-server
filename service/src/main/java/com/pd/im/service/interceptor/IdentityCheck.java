@@ -2,6 +2,7 @@ package com.pd.im.service.interceptor;
 
 import com.alibaba.fastjson.JSONObject;
 import com.pd.im.common.ResponseVO;
+import com.pd.im.common.config.AppConfig;
 import com.pd.im.common.constant.Constants;
 import com.pd.im.common.enums.BaseErrorCode;
 import com.pd.im.common.enums.GatewayErrorCode;
@@ -32,13 +33,16 @@ public class IdentityCheck {
     private final ImUserService imUserService;
     private final ImAppService imAppService;
     private final StringRedisTemplate stringRedisTemplate;
+    private final AppConfig appConfig;
 
     public IdentityCheck(ImUserService imUserService,
                          ImAppService imAppService,
-                         StringRedisTemplate stringRedisTemplate) {
+                         StringRedisTemplate stringRedisTemplate,
+                         AppConfig appConfig) {
         this.imUserService = imUserService;
         this.imAppService = imAppService;
         this.stringRedisTemplate = stringRedisTemplate;
+        this.appConfig = appConfig;
     }
 
     /**
@@ -71,8 +75,17 @@ public class IdentityCheck {
             }
         }
 
-        // 从数据库获取应用私钥
-        String privateKey = imAppService.getPrivateKey(Integer.parseInt(appId));
+        // 获取应用私钥 (核心修改：优先从配置文件获取，若 appId 匹配则使用配置中的私钥)
+        String privateKey = null;
+        if (appConfig.getAppId() != null && appConfig.getAppId().toString().equals(appId)) {
+            privateKey = appConfig.getPrivateKey();
+        }
+
+        // 如果配置中没有，则从数据库获取 (兼容多租户)
+        if (StringUtils.isBlank(privateKey)) {
+            privateKey = imAppService.getPrivateKey(Integer.parseInt(appId));
+        }
+
         if (StringUtils.isBlank(privateKey)) {
             log.error("Failed to get private key for appId={}, app may not exist or is inactive", appId);
             return GatewayErrorCode.USERSIGN_IS_ERROR;
@@ -102,11 +115,13 @@ public class IdentityCheck {
         // 解析签名文档
         String decoderAppId;
         String decoderIdentifier;
+        String decoderVer;
         long time;
         long expireSec;
         long expireTime;
 
         try {
+            decoderVer = sigDoc.getString("TLS.ver");
             decoderAppId = sigDoc.getString("TLS.appId");
             decoderIdentifier = sigDoc.getString("TLS.identifier");
             time = sigDoc.getLongValue("TLS.time");
@@ -114,6 +129,12 @@ public class IdentityCheck {
             expireTime = time + expireSec;
         } catch (Exception e) {
             log.error("Failed to parse userSig fields for identifier={}, appId={}", identifier, appId, e);
+            return GatewayErrorCode.USERSIGN_IS_ERROR;
+        }
+
+        // 验证版本号
+        if (!Constants.ProtocolConstants.PROTOCOL_VERSION.equals(decoderVer)) {
+            log.warn("Version mismatch: expected={}, actual={}", Constants.ProtocolConstants.PROTOCOL_VERSION, decoderVer);
             return GatewayErrorCode.USERSIGN_IS_ERROR;
         }
 

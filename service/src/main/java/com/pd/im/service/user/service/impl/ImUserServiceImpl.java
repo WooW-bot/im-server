@@ -1,6 +1,10 @@
 package com.pd.im.service.user.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
+
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.pd.im.codec.pack.user.UserModifyPack;
 import com.pd.im.common.ResponseVO;
@@ -10,8 +14,12 @@ import com.pd.im.common.enums.DeleteFlag;
 import com.pd.im.common.enums.command.Command;
 import com.pd.im.common.enums.command.UserEventCommand;
 import com.pd.im.common.enums.user.UserErrorCode;
+import com.pd.im.common.enums.device.ClientType;
 import com.pd.im.common.exception.ApplicationException;
 import com.pd.im.common.model.ClientInfo;
+import com.pd.im.common.route.RouteHandler;
+import com.pd.im.common.util.RouteInfoParser;
+import com.pd.im.common.route.RouteInfo;
 import com.pd.im.service.callback.CallbackService;
 import com.pd.im.service.group.service.ImGroupService;
 import com.pd.im.service.user.dao.ImUserDataEntity;
@@ -20,8 +28,10 @@ import com.pd.im.service.user.model.req.*;
 import com.pd.im.service.user.model.resp.GetUserInfoResp;
 import com.pd.im.service.user.model.resp.ImportUserResp;
 import com.pd.im.service.user.model.resp.ImUserDataVO;
+import com.pd.im.service.user.model.resp.LoginResp;
 import com.pd.im.service.user.service.ImUserService;
 import com.pd.im.service.utils.MessageProducer;
+import com.pd.im.service.utils.ZKit;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -59,6 +69,12 @@ public class ImUserServiceImpl implements ImUserService {
 
     @Autowired
     ImGroupService imGroupService;
+
+    @Autowired
+    RouteHandler routeHandler;
+
+    @Autowired
+    ZKit zKit;
 
     @Override
     public ResponseVO importUser(ImportUserReq req) {
@@ -207,8 +223,32 @@ public class ImUserServiceImpl implements ImUserService {
 
     @Override
     public ResponseVO login(LoginReq req) {
-        // TODO 后期补充鉴权
-        return ResponseVO.successResponse();
+        // 1. 生成临时票据 Ticket
+        String ticket = UUID.randomUUID().toString().replace("-", "");
+
+        // 2. 存储到 Redis，设置 2 分钟过期
+        String key = req.getAppId() + Constants.RedisConstants.USER_LOGIN_TICKET
+                + req.getUserId() + ":" + req.getClientType() + ":" + req.getImei();
+        stringRedisTemplate.opsForValue().set(key, ticket, 2, TimeUnit.MINUTES);
+        log.info("Ticket 已写入 Redis: userId={}, key={}, ticket={}", req.getUserId(), key, ticket);
+
+        // 3.获取 IM 地址 (路由逻辑从 Controller 迁移至此)
+        List<String> allNode;
+        if (ClientType.WEB.getCode().equals(req.getClientType())) {
+            allNode = zKit.getAllWebNode();
+        } else {
+            allNode = zKit.getAllTcpNode();
+        }
+        String s = routeHandler.routeServer(allNode, req.getUserId());
+        RouteInfo routeInfo = RouteInfoParser.parse(s);
+
+        // 4. 返回 Ticket 和 RouteInfo 给 SDK
+        LoginResp resp = new LoginResp();
+        resp.setTicket(ticket);
+        resp.setIp(routeInfo.getIp());
+        resp.setPort(routeInfo.getPort());
+        
+        return ResponseVO.successResponse(resp);
     }
 
     @Override

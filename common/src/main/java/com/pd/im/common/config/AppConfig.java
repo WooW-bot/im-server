@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 @Component
 @ConfigurationProperties(prefix = "appconfig")
 public class AppConfig {
+    private Integer appId;
     private String privateKey;
 
     /**
@@ -107,7 +108,6 @@ public class AppConfig {
      * 删除黑名单之后回调开关
      */
     private boolean deleteFriendShipBlackAfterCallback;
-
 
     /**
      * 创建群聊之后回调开关

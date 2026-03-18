@@ -2,12 +2,10 @@ package com.pd.im.tcp.strategy.command.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.TypeReference;
-import com.pd.im.codec.pack.user.LoginAckPack;
-import com.pd.im.codec.pack.user.LoginPack;
-import com.pd.im.codec.pack.user.UserStatusChangeNotifyPack;
 import com.pd.im.codec.proto.Message;
 import com.pd.im.codec.proto.MessagePack;
+import com.pd.im.codec.proto.generated.LoginAckPack;
+import com.pd.im.codec.proto.generated.LoginPack;
 import com.pd.im.common.constant.Constants;
 import com.pd.im.common.enums.command.SystemCommand;
 import com.pd.im.common.enums.command.UserEventCommand;
@@ -23,8 +21,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RMap;
 import org.redisson.api.RTopic;
 import org.redisson.api.RedissonClient;
-
-import java.net.InetAddress;
 
 /**
  * 用户登录命令
@@ -59,6 +55,13 @@ public class LoginCommand implements CommandStrategy {
             if (loginPack == null || loginPack.getUserId() == null || loginPack.getUserId().trim().isEmpty()) {
                 log.error("登录失败：用户ID为空");
                 sendLoginFailResponse(context, "用户ID不能为空");
+                return;
+            }
+
+            // 1.1 校验 Ticket (对齐腾讯云优化)
+            if (!verifyLoginTicket(loginPack, msg)) {
+                log.error("登录失败：Ticket 校验不通过, userId={}", loginPack.getUserId());
+                sendLoginFailResponse(context, "登录票据无效或已过期");
                 return;
             }
 
@@ -101,16 +104,13 @@ public class LoginCommand implements CommandStrategy {
         }
     }
 
-    /**
-     * 解析登录数据包
-     */
     private LoginPack parseLoginPack(Message msg) {
         try {
-            return JSON.parseObject(
-                    JSONObject.toJSONString(msg.getMessagePack()),
-                    new TypeReference<LoginPack>() {
-                    }.getType()
-            );
+            Object pack = msg.getMessagePack();
+            if (pack instanceof LoginPack) {
+                return (LoginPack) pack;
+            }
+            return null;
         } catch (Exception e) {
             log.error("解析登录数据包失败", e);
             return null;
@@ -133,13 +133,15 @@ public class LoginCommand implements CommandStrategy {
      */
     private void sendLoginFailResponse(CommandContext context, String errorMsg) {
         try {
-            LoginAckPack loginAckPack = new LoginAckPack();
-            loginAckPack.setUserId("");
+            // LoginAckPack in Protobuf
+            LoginAckPack loginAckPack = LoginAckPack.newBuilder()
+                    .setUserId("")
+                    .build();
 
-            MessagePack<String> loginFail = new MessagePack<>();
+            MessagePack<LoginAckPack> loginFail = new MessagePack<>();
             loginFail.setCommand(SystemCommand.LOGINACK.getCommand());
-            loginFail.setData(errorMsg);
-            loginFail.setTimestamp(System.currentTimeMillis());  // 设置消息时间戳
+            loginFail.setData(loginAckPack);
+            loginFail.setTimestamp(System.currentTimeMillis());
 
             context.getCtx().channel().writeAndFlush(loginFail);
         } catch (Exception e) {
@@ -197,7 +199,7 @@ public class LoginCommand implements CommandStrategy {
      * 发送用户在线状态变更消息到MQ
      */
     private void sendUserStatusChangeMessage(LoginPack loginPack, Message msg) {
-        UserStatusChangeNotifyPack userStatusChangeNotifyPack = new UserStatusChangeNotifyPack();
+        com.pd.im.codec.pack.user.UserStatusChangeNotifyPack userStatusChangeNotifyPack = new com.pd.im.codec.pack.user.UserStatusChangeNotifyPack();
         userStatusChangeNotifyPack.setAppId(msg.getMessageHeader().getAppId());
         userStatusChangeNotifyPack.setUserId(loginPack.getUserId());
         userStatusChangeNotifyPack.setStatus(ConnectState.CONNECT_STATE_ONLINE.getCode());
@@ -210,16 +212,54 @@ public class LoginCommand implements CommandStrategy {
     }
 
     /**
+     * 校验登录票据
+     */
+    private boolean verifyLoginTicket(LoginPack loginPack, Message msg) {
+        String ticket = loginPack.getTicket();
+        if (ticket == null || ticket.trim().isEmpty()) {
+            log.error("登录失败：Ticket 为空, userId={}", loginPack.getUserId());
+            return false;
+        }
+
+        RedissonClient redissonClient = RedissonManager.getRedissonClient();
+        String key = msg.getMessageHeader().getAppId() 
+                + Constants.RedisConstants.USER_LOGIN_TICKET 
+                + loginPack.getUserId() + ":" 
+                + msg.getMessageHeader().getClientType() + ":" 
+                + msg.getMessageHeader().getImei();
+        
+        Object ticketObj = redissonClient.getBucket(key).get();
+        if (ticketObj == null) {
+            log.error("登录失败：Redis 中未找到 Ticket, userId={}, key={}", loginPack.getUserId(), key);
+            return false;
+        }
+        String cachedTicket = ticketObj.toString();
+        log.info("Ticket 校验详情: userId={}, key={}, inputTicket={}, cachedTicket={}", 
+                loginPack.getUserId(), key, ticket, cachedTicket);
+        
+        // 校验成功后立即删除 Ticket (一次性使用)
+        if (ticket.equals(cachedTicket)) {
+            redissonClient.getBucket(key).delete();
+            return true;
+        }
+        
+        log.error("登录失败：Ticket 不匹配, userId={}, input={}, cached={}", 
+                loginPack.getUserId(), ticket, cachedTicket);
+        return false;
+    }
+
+    /**
      * 发送登录成功响应
      */
     private void sendLoginAckResponse(CommandContext context, LoginPack loginPack, Message msg) {
-        LoginAckPack loginAckPack = new LoginAckPack();
-        loginAckPack.setUserId(loginPack.getUserId());
+        LoginAckPack loginAckPack = LoginAckPack.newBuilder()
+                .setUserId(loginPack.getUserId())
+                .build();
 
         MessagePack<LoginAckPack> loginSuccess = new MessagePack<>();
         loginSuccess.setCommand(SystemCommand.LOGINACK.getCommand());
         loginSuccess.setData(loginAckPack);
-        loginSuccess.setTimestamp(System.currentTimeMillis());  // 设置消息时间戳
+        loginSuccess.setTimestamp(System.currentTimeMillis());
         loginSuccess.setImei(msg.getMessageHeader().getImei());
         loginSuccess.setAppId(msg.getMessageHeader().getAppId());
 
