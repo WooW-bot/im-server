@@ -7,6 +7,7 @@ import com.pd.im.service.friendship.service.ImFriendService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -32,7 +33,7 @@ public class ImFriendShipController {
      * @return ResponseVO
      */
     @RequestMapping("/importFriendShip")
-    public ResponseVO importFriendShip(@RequestBody @Validated ImportFriendShipReq req, Integer appId) {
+    public ResponseVO importFriendShip(@RequestBody @Validated ImportFriendShipReq req, @RequestHeader("appId") Integer appId) {
         req.setAppId(appId);
         return imFriendShipService.importFriendShip(req);
     }
@@ -46,7 +47,7 @@ public class ImFriendShipController {
      * @return ResponseVO
      */
     @RequestMapping("/addFriend")
-    public ResponseVO addFriend(@RequestBody @Validated AddFriendReq req, Integer appId) {
+    public ResponseVO addFriend(@RequestBody @Validated AddFriendReq req, @RequestHeader("appId") Integer appId) {
         req.setAppId(appId);
         return imFriendShipService.addFriend(req);
     }
@@ -60,7 +61,7 @@ public class ImFriendShipController {
      * @return ResponseVO
      */
     @RequestMapping("/updateFriend")
-    public ResponseVO updateFriend(@RequestBody @Validated UpdateFriendReq req, Integer appId) {
+    public ResponseVO updateFriend(@RequestBody @Validated UpdateFriendReq req, @RequestHeader("appId") Integer appId) {
         req.setAppId(appId);
         return imFriendShipService.updateFriend(req);
     }
@@ -74,7 +75,7 @@ public class ImFriendShipController {
      * @return ResponseVO
      */
     @RequestMapping("/deleteFriend")
-    public ResponseVO deleteFriend(@RequestBody @Validated DeleteFriendReq req, Integer appId) {
+    public ResponseVO deleteFriend(@RequestBody @Validated DeleteFriendReq req, @RequestHeader("appId") Integer appId) {
         req.setAppId(appId);
         return imFriendShipService.deleteFriend(req);
     }
@@ -88,7 +89,7 @@ public class ImFriendShipController {
      * @return ResponseVO
      */
     @RequestMapping("/deleteAllFriend")
-    public ResponseVO deleteAllFriend(@RequestBody @Validated DeleteFriendReq req, Integer appId) {
+    public ResponseVO deleteAllFriend(@RequestBody @Validated DeleteFriendReq req, @RequestHeader("appId") Integer appId) {
         req.setAppId(appId);
         return imFriendShipService.deleteAllFriend(req);
     }
@@ -102,7 +103,7 @@ public class ImFriendShipController {
      * @return ResponseVO
      */
     @RequestMapping("/getAllFriendShip")
-    public ResponseVO getAllFriendShip(@RequestBody @Validated GetAllFriendShipReq req, Integer appId) {
+    public ResponseVO getAllFriendShip(@RequestBody @Validated GetAllFriendShipReq req, @RequestHeader("appId") Integer appId) {
         req.setAppId(appId);
         return imFriendShipService.getAllFriendShip(req);
     }
@@ -116,7 +117,7 @@ public class ImFriendShipController {
      * @return ResponseVO
      */
     @RequestMapping("/getFriendsInfo")
-    public ResponseVO getFriendsInfo(@RequestBody @Validated GetFriendsInfoReq req, Integer appId) {
+    public ResponseVO getFriendsInfo(@RequestBody @Validated GetFriendsInfoReq req, @RequestHeader("appId") Integer appId) {
         req.setAppId(appId);
         return imFriendShipService.getFriendsInfo(req);
     }
@@ -130,7 +131,7 @@ public class ImFriendShipController {
      * @return ResponseVO
      */
     @RequestMapping("/getRelation")
-    public ResponseVO getRelation(@RequestBody @Validated GetRelationReq req, Integer appId) {
+    public ResponseVO getRelation(@RequestBody @Validated GetRelationReq req, @RequestHeader("appId") Integer appId) {
         req.setAppId(appId);
         return imFriendShipService.getRelation(req);
     }
@@ -166,7 +167,7 @@ public class ImFriendShipController {
      * @return ResponseVO
      */
     @RequestMapping("/checkFriend")
-    public ResponseVO checkFriend(@RequestBody @Validated CheckFriendShipReq req, Integer appId) {
+    public ResponseVO checkFriend(@RequestBody @Validated CheckFriendShipReq req, @RequestHeader("appId") Integer appId) {
         req.setAppId(appId);
         return imFriendShipService.checkFriendship(req);
     }
@@ -180,7 +181,7 @@ public class ImFriendShipController {
      * @return ResponseVO
      */
     @RequestMapping("/addBlackList")
-    public ResponseVO addBlackList(@RequestBody @Validated AddFriendShipBlackReq req, Integer appId) {
+    public ResponseVO addBlackList(@RequestBody @Validated AddFriendShipBlackReq req, @RequestHeader("appId") Integer appId) {
         req.setAppId(appId);
         return imFriendShipService.addBlackList(req);
     }
@@ -194,7 +195,7 @@ public class ImFriendShipController {
      * @return ResponseVO
      */
     @RequestMapping("/deleteBlackList")
-    public ResponseVO deleteBlackList(@RequestBody @Validated DeleteBlackReq req, Integer appId) {
+    public ResponseVO deleteBlackList(@RequestBody @Validated DeleteBlackReq req, @RequestHeader("appId") Integer appId) {
         req.setAppId(appId);
         return imFriendShipService.deleteBlackList(req);
     }
@@ -208,7 +209,7 @@ public class ImFriendShipController {
      * @return ResponseVO
      */
     @RequestMapping("/checkBlackList")
-    public ResponseVO checkBlackList(@RequestBody @Validated CheckFriendShipReq req, Integer appId) {
+    public ResponseVO checkBlackList(@RequestBody @Validated CheckFriendShipReq req, @RequestHeader("appId") Integer appId) {
         req.setAppId(appId);
         return imFriendShipService.checkBlackList(req);
     }
@@ -222,7 +223,7 @@ public class ImFriendShipController {
      * @return ResponseVO
      */
     @RequestMapping("/syncFriendshipList")
-    public ResponseVO syncFriendshipList(@RequestBody @Validated SyncRequest req, Integer appId) {
+    public ResponseVO syncFriendshipList(@RequestBody @Validated SyncRequest req, @RequestHeader("appId") Integer appId) {
         req.setAppId(appId);
         return imFriendShipService.syncFriendshipList(req);
     }

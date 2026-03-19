@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -32,7 +33,7 @@ public class ImUserDataController {
      * @return ResponseVO
      */
     @RequestMapping("/getUserInfo")
-    public ResponseVO getUserInfo(@RequestBody GetUserInfoReq req, Integer appId) {
+    public ResponseVO getUserInfo(@RequestBody GetUserInfoReq req, @RequestHeader("appId") Integer appId) {
         req.setAppId(appId);
         return imUserService.getUserInfo(req);
     }
@@ -46,7 +47,7 @@ public class ImUserDataController {
      * @return ResponseVO
      */
     @RequestMapping("/getSingleUserInfo")
-    public ResponseVO getSingleUserInfo(@RequestBody @Validated UserId req, Integer appId) {
+    public ResponseVO getSingleUserInfo(@RequestBody @Validated UserId req, @RequestHeader("appId") Integer appId) {
         req.setAppId(appId);
         return imUserService.getSingleUserInfo(req.getUserId(), req.getAppId());
     }
@@ -60,7 +61,7 @@ public class ImUserDataController {
      * @return ResponseVO
      */
     @RequestMapping("/modifyUserInfo")
-    public ResponseVO modifyUserInfo(@RequestBody @Validated ModifyUserInfoReq req, Integer appId) {
+    public ResponseVO modifyUserInfo(@RequestBody @Validated ModifyUserInfoReq req, @RequestHeader("appId") Integer appId) {
         req.setAppId(appId);
         return imUserService.modifyUserInfo(req);
     }
