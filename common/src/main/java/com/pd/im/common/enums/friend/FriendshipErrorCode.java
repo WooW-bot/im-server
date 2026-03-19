@@ -38,6 +38,8 @@ public enum FriendshipErrorCode implements ApplicationExceptionEnum {
     FRIEND_SHIP_GROUP_IS_EXIST(30015, "好友分组已存在"),
 
     FRIEND_SHIP_GROUP_IS_NOT_EXIST(30016, "好友分组不存在"),
+
+    FRIEND_SHIP_REQUEST_REFUSED(30516, "请求被拒绝"),
     ;
 
     private int code;

@@ -258,7 +258,7 @@ CREATE TABLE `im_user_data`
     `birthday`           VARCHAR(20)          DEFAULT NULL COMMENT '生日(格式: YYYY-MM-DD)',
     `location`           VARCHAR(100)         DEFAULT NULL COMMENT '地址',
     `self_signature`     VARCHAR(500)         DEFAULT NULL COMMENT '个性签名',
-    `friend_allow_type`  TINYINT     NOT NULL DEFAULT 1 COMMENT '加好友验证类型: 1-无需验证 2-需要验证',
+    `allow_type`         TINYINT     NOT NULL DEFAULT 0 COMMENT '加好友验证类型: 0-无需验证 1-需要验证 2-拒绝添加',
     `forbidden_flag`     TINYINT     NOT NULL DEFAULT 0 COMMENT '禁用标识: 0-正常 1-已禁用',
     `disable_add_friend` TINYINT     NOT NULL DEFAULT 0 COMMENT '禁止添加好友: 0-允许 1-禁止',
     `silent_flag`        TINYINT     NOT NULL DEFAULT 0 COMMENT '禁言标识: 0-正常 1-已禁言',
@@ -278,7 +278,7 @@ CREATE TABLE `im_user_data`
 
 -- 用户数据
 INSERT INTO `im_user_data` (`app_id`, `user_id`, `nick_name`, `password`, `face_url`, `gender`, `birthday`, `location`,
-                            `self_signature`, `friend_allow_type`, `forbidden_flag`, `disable_add_friend`,
+                            `self_signature`, `allow_type`, `forbidden_flag`, `disable_add_friend`,
                             `silent_flag`,
                             `user_type`, `del_flag`, `extra`, `create_time`, `update_time`)
 VALUES (10001, '10001', '段勇', 'encrypted_password_hash', 'http://example.com/avatar/10001.jpg', 1, '2004-01-28',

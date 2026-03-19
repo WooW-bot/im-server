@@ -49,7 +49,7 @@ public class ImFriendShipGroupServiceImpl implements ImFriendShipGroupService {
 
     @Override
     @Transactional
-    public ResponseVO addGroup(AddFriendShipGroupReq req) {
+    public ResponseVO<?> addGroup(AddFriendShipGroupReq req) {
 
         LambdaQueryWrapper<ImFriendShipGroupEntity> query = new LambdaQueryWrapper<>();
         query.eq(ImFriendShipGroupEntity::getGroupName, req.getGroupName())
@@ -87,7 +87,7 @@ public class ImFriendShipGroupServiceImpl implements ImFriendShipGroupService {
                 imFriendShipGroupMemberService.addGroupMember(addFriendShipGroupMemberReq);
             }
         } catch (DuplicateKeyException e) {
-            log.error("Failed to add friend group: duplicate key for groupName={}, fromId={}, appId={}", 
+            log.error("Failed to add friend group: duplicate key for groupName={}, fromId={}, appId={}",
                     req.getGroupName(), req.getFromId(), req.getAppId(), e);
             return ResponseVO.errorResponse(FriendshipErrorCode.FRIEND_SHIP_GROUP_IS_EXIST);
         }
@@ -106,7 +106,7 @@ public class ImFriendShipGroupServiceImpl implements ImFriendShipGroupService {
 
     @Override
     @Transactional
-    public ResponseVO deleteGroup(DeleteFriendShipGroupReq req) {
+    public ResponseVO<?> deleteGroup(DeleteFriendShipGroupReq req) {
 
         for (String groupName : req.getGroupName()) {
             LambdaQueryWrapper<ImFriendShipGroupEntity> query = new LambdaQueryWrapper<>();

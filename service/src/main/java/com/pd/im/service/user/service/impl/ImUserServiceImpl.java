@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.pd.im.codec.pack.user.UserModifyPack;
@@ -11,12 +12,10 @@ import com.pd.im.common.ResponseVO;
 import com.pd.im.common.config.AppConfig;
 import com.pd.im.common.constant.Constants;
 import com.pd.im.common.enums.DeleteFlag;
-import com.pd.im.common.enums.command.Command;
 import com.pd.im.common.enums.command.UserEventCommand;
 import com.pd.im.common.enums.user.UserErrorCode;
 import com.pd.im.common.enums.device.ClientType;
 import com.pd.im.common.exception.ApplicationException;
-import com.pd.im.common.model.ClientInfo;
 import com.pd.im.common.route.RouteHandler;
 import com.pd.im.common.util.RouteInfoParser;
 import com.pd.im.common.route.RouteInfo;
@@ -33,14 +32,12 @@ import com.pd.im.service.user.service.ImUserService;
 import com.pd.im.service.utils.MessageProducer;
 import com.pd.im.service.utils.ZKit;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -81,17 +78,19 @@ public class ImUserServiceImpl implements ImUserService {
         if (req.getUserData().size() > 100) {
             return ResponseVO.errorResponse(UserErrorCode.IMPORT_SIZE_BEYOND);
         }
+
         ImportUserResp resp = new ImportUserResp();
         List<String> successId = new ArrayList<>();
         List<String> errorId = new ArrayList<>();
 
         for (ImUserDataEntity data : req.getUserData()) {
-            data.setAppId(req.getAppId());
             try {
                 data.setAppId(req.getAppId());
                 int insert = imUserDataMapper.insert(data);
                 if (insert == 1) {
                     successId.add(data.getUserId());
+                } else {
+                    errorId.add(data.getUserId());
                 }
             } catch (Exception e) {
                 log.error("Import User failed: {}", data.getUserId(), e);
@@ -106,31 +105,34 @@ public class ImUserServiceImpl implements ImUserService {
 
     @Override
     public ResponseVO<GetUserInfoResp> getUserInfo(GetUserInfoReq req) {
+        if (req.getUserIds() == null || req.getUserIds().isEmpty()) {
+            return ResponseVO.successResponse(new GetUserInfoResp());
+        }
+
         LambdaQueryWrapper<ImUserDataEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(ImUserDataEntity::getAppId, req.getAppId())
                 .in(ImUserDataEntity::getUserId, req.getUserIds())
                 .eq(ImUserDataEntity::getDelFlag, DeleteFlag.NORMAL.getCode());
 
         List<ImUserDataEntity> userDataEntities = imUserDataMapper.selectList(queryWrapper);
-        HashMap<String, ImUserDataEntity> map = new HashMap<>();
 
-        for (ImUserDataEntity data : userDataEntities) {
-            map.put(data.getUserId(), data);
-        }
+        // 提取已查询到的用户ID集合，用于后续找出查询失败的用户
+        Map<String, ImUserDataEntity> userMap = userDataEntities.stream()
+                .collect(Collectors.toMap(ImUserDataEntity::getUserId, entity -> entity));
 
-        List<String> failUser = new ArrayList<>();
-        for (String uid : req.getUserIds()) {
-            if (!map.containsKey(uid)) {
-                failUser.add(uid);
-            }
-        }
+        // 找出原始请求中不在结果集中的用户ID
+        List<String> failUser = req.getUserIds().stream()
+                .filter(uid -> !userMap.containsKey(uid))
+                .toList();
 
-        List<ImUserDataVO> voList = new ArrayList<>();
-        for (ImUserDataEntity entity : userDataEntities) {
-            ImUserDataVO vo = new ImUserDataVO();
-            BeanUtils.copyProperties(entity, vo);
-            voList.add(vo);
-        }
+        // 实体转 VO
+        List<ImUserDataVO> voList = userDataEntities.stream()
+                .map(entity -> {
+                    ImUserDataVO vo = new ImUserDataVO();
+                    BeanUtils.copyProperties(entity, vo);
+                    return vo;
+                })
+                .toList();
 
         GetUserInfoResp resp = new GetUserInfoResp();
         resp.setUserDataItem(voList);
@@ -140,32 +142,36 @@ public class ImUserServiceImpl implements ImUserService {
 
     @Override
     public ResponseVO deleteUser(DeleteUserReq req) {
-        ImUserDataEntity entity = new ImUserDataEntity();
-        entity.setDelFlag(DeleteFlag.DELETE.getCode());
+        if (req.getUserId() == null || req.getUserId().isEmpty()) {
+            return ResponseVO.successResponse();
+        }
 
-        List<String> errorId = new ArrayList<>();
+        ImportUserResp resp = new ImportUserResp();
         List<String> successId = new ArrayList<>();
+        List<String> errorId = new ArrayList<>();
 
         for (String userId : req.getUserId()) {
             LambdaQueryWrapper<ImUserDataEntity> wrapper = new LambdaQueryWrapper<>();
             wrapper.eq(ImUserDataEntity::getAppId, req.getAppId())
                     .eq(ImUserDataEntity::getUserId, userId)
                     .eq(ImUserDataEntity::getDelFlag, DeleteFlag.NORMAL.getCode());
-            int update = 0;
+
+            ImUserDataEntity entity = new ImUserDataEntity();
+            entity.setDelFlag(DeleteFlag.DELETE.getCode());
+
             try {
-                update = imUserDataMapper.update(entity, wrapper);
+                int update = imUserDataMapper.update(entity, wrapper);
                 if (update > 0) {
                     successId.add(userId);
                 } else {
                     errorId.add(userId);
                 }
             } catch (Exception e) {
-                log.error("Delete User failed: {}", userId, e);
+                log.error("Delete User failed: {}, appId: {}", userId, req.getAppId(), e);
                 errorId.add(userId);
             }
         }
 
-        ImportUserResp resp = new ImportUserResp();
         resp.setSuccessId(successId);
         resp.setErrorId(errorId);
         return ResponseVO.successResponse(resp);
@@ -247,7 +253,7 @@ public class ImUserServiceImpl implements ImUserService {
         resp.setTicket(ticket);
         resp.setIp(routeInfo.getIp());
         resp.setPort(routeInfo.getPort());
-        
+
         return ResponseVO.successResponse(resp);
     }
 

@@ -51,9 +51,9 @@ public class ModifyUserInfoReq extends RequestBase {
 
     /**
      * 加好友验证类型
-     * 1: 需要验证
+     * 0-无需验证 1-需要验证 2-拒绝添加
      */
-    private Integer friendAllowType;
+    private Integer allowType;
 
     /**
      * 扩展字段 (JSON)
