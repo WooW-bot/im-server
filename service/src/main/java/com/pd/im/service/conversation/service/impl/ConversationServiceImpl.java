@@ -60,6 +60,9 @@ public class ConversationServiceImpl implements ConversationService {
         imConversationSetEntity.setToId(req.getToId());
         imConversationSetEntity.setConversationId(conversationId);
         imConversationSetEntity.setConversationType(conversationType);
+        long now = System.currentTimeMillis();
+        imConversationSetEntity.setCreateTime(now);
+        imConversationSetEntity.setUpdateTime(now);
         int insert = imConversationSetMapper.insert(imConversationSetEntity);
         if (insert != 1) {
             return ResponseVO.errorResponse(ConversationErrorCode.CONVERSATION_CREATE_FAIL);
@@ -94,12 +97,16 @@ public class ConversationServiceImpl implements ConversationService {
             imConversationSetEntity.setReadSequence(messageReadContent.getMessageSequence());
             imConversationSetEntity.setToId(toId);
             imConversationSetEntity.setSequence(seq);
+            long now = System.currentTimeMillis();
+            imConversationSetEntity.setCreateTime(now);
+            imConversationSetEntity.setUpdateTime(now);
             imConversationSetMapper.insert(imConversationSetEntity);
             userSequenceRepository.writeUserSeq(messageReadContent.getAppId(),
                     messageReadContent.getFromId(), Constants.SeqConstants.CONVERSATION_SEQ, seq);
         } else {
             imConversationSetEntity.setSequence(seq);
             imConversationSetEntity.setReadSequence(messageReadContent.getMessageSequence());
+            imConversationSetEntity.setUpdateTime(System.currentTimeMillis());
             imConversationSetMapper.readMark(imConversationSetEntity);
             userSequenceRepository.writeUserSeq(messageReadContent.getAppId(),
                     messageReadContent.getFromId(), Constants.SeqConstants.CONVERSATION_SEQ, seq);
@@ -146,6 +153,7 @@ public class ConversationServiceImpl implements ConversationService {
                 imConversationSetEntity.setIsMute(req.getIsMute());
             }
             imConversationSetEntity.setSequence(seq);
+            imConversationSetEntity.setUpdateTime(System.currentTimeMillis());
             imConversationSetMapper.update(imConversationSetEntity, queryWrapper);
             userSequenceRepository.writeUserSeq(req.getAppId(), req.getFromId(),
                     Constants.SeqConstants.CONVERSATION_SEQ, seq);

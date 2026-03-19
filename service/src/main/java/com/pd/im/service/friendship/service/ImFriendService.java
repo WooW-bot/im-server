@@ -4,6 +4,8 @@ import com.pd.im.common.ResponseVO;
 import com.pd.im.common.model.RequestBase;
 import com.pd.im.common.model.SyncRequest;
 import com.pd.im.service.friendship.model.req.*;
+import com.pd.im.service.friendship.dao.ImFriendShipEntity;
+import com.pd.im.service.friendship.model.resp.GetFriendInfoResp;
 
 import java.util.List;
 
@@ -31,7 +33,7 @@ public interface ImFriendService {
      * @param req 导入请求,包含批量好友数据
      * @return 导入结果, 包含成功和失败的ID列表
      */
-    ResponseVO importFriendShip(ImportFriendShipReq req);
+    ResponseVO<?> importFriendShip(ImportFriendShipReq req);
 
     /**
      * 添加好友
@@ -43,7 +45,7 @@ public interface ImFriendService {
      * @param req 添加好友请求
      * @return 操作结果
      */
-    ResponseVO addFriend(AddFriendReq req);
+    ResponseVO<?> addFriend(AddFriendReq req);
 
     /**
      * 更新好友信息
@@ -53,7 +55,7 @@ public interface ImFriendService {
      * @param req 更新请求
      * @return 操作结果
      */
-    ResponseVO updateFriend(UpdateFriendReq req);
+    ResponseVO<?> updateFriend(UpdateFriendReq req);
 
     /**
      * 删除好友
@@ -63,7 +65,7 @@ public interface ImFriendService {
      * @param req 删除请求,包含fromId和toId
      * @return 操作结果
      */
-    ResponseVO deleteFriend(DeleteFriendReq req);
+    ResponseVO<?> deleteFriend(DeleteFriendReq req);
 
     /**
      * 删除所有好友 (仅管理员调用)
@@ -73,7 +75,7 @@ public interface ImFriendService {
      * @param req 删除请求,包含fromId
      * @return 操作结果
      */
-    ResponseVO deleteAllFriend(DeleteFriendReq req);
+    ResponseVO<?> deleteAllFriend(DeleteFriendReq req);
 
     /**
      * 获取用户的所有好友关系
@@ -82,7 +84,7 @@ public interface ImFriendService {
      * @param req 查询请求,包含fromId
      * @return 好友关系列表
      */
-    ResponseVO getAllFriendShip(GetAllFriendShipReq req);
+    ResponseVO<List<ImFriendShipEntity>> getAllFriendShip(GetAllFriendShipReq req);
 
     /**
      * 拉取指定好友信息
@@ -92,7 +94,7 @@ public interface ImFriendService {
      * @param req 请求参数,包含fromId和toIds列表
      * @return 好友信息结果列表
      */
-    ResponseVO getFriendsInfo(GetFriendsInfoReq req);
+    ResponseVO<List<GetFriendInfoResp>> getFriendsInfo(GetFriendsInfoReq req);
 
     /**
      * 查询指定的好友关系
@@ -101,7 +103,7 @@ public interface ImFriendService {
      * @param req 查询请求,包含fromId和toId
      * @return 好友关系实体
      */
-    ResponseVO getRelation(GetRelationReq req);
+    ResponseVO<ImFriendShipEntity> getRelation(GetRelationReq req);
 
     /**
      * 执行添加好友操作
@@ -113,7 +115,7 @@ public interface ImFriendService {
      * @param appId       应用ID
      * @return 操作结果
      */
-    ResponseVO doAddFriend(RequestBase requestBase, String fromId, FriendDto dto, Integer appId);
+    ResponseVO<?> doAddFriend(RequestBase requestBase, String fromId, FriendDto dto, Integer appId);
 
     /**
      * 校验好友关系
@@ -123,7 +125,7 @@ public interface ImFriendService {
      * @param req 校验请求,包含checkType、fromId、toIds
      * @return 校验结果列表
      */
-    ResponseVO checkFriendship(CheckFriendShipReq req);
+    ResponseVO<?> checkFriendship(CheckFriendShipReq req);
 
     /**
      * 添加黑名单
@@ -133,7 +135,7 @@ public interface ImFriendService {
      * @param req 添加黑名单请求
      * @return 操作结果
      */
-    ResponseVO addBlackList(AddFriendShipBlackReq req);
+    ResponseVO<?> addBlackList(AddFriendShipBlackReq req);
 
     /**
      * 移除黑名单
@@ -143,7 +145,7 @@ public interface ImFriendService {
      * @param req 删除黑名单请求
      * @return 操作结果
      */
-    ResponseVO deleteBlackList(DeleteBlackReq req);
+    ResponseVO<?> deleteBlackList(DeleteBlackReq req);
 
     /**
      * 校验黑名单关系
@@ -153,7 +155,7 @@ public interface ImFriendService {
      * @param req 校验请求,包含checkType、fromId、toIds
      * @return 校验结果列表
      */
-    ResponseVO checkBlackList(CheckFriendShipReq req);
+    ResponseVO<?> checkBlackList(CheckFriendShipReq req);
 
     /**
      * 增量同步好友列表
@@ -163,7 +165,7 @@ public interface ImFriendService {
      * @param req 同步请求,包含lastSequence和maxLimit
      * @return 同步响应, 包含数据列表和是否完成标志
      */
-    ResponseVO syncFriendshipList(SyncRequest req);
+    ResponseVO<?> syncFriendshipList(SyncRequest req);
 
     /**
      * 获取用户的好友ID列表

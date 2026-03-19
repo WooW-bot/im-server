@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+package com.pd.im.codec.proto;
+
+option java_package = "com.pd.im.codec.proto.generated";
+option java_multiple_files = true;
+option java_outer_classname = "ImMessageProto";
+
+// 用户登录
+message LoginPack {
+    string userId = 1;
+    string ticket = 2;
+}
+
+// 登录响应
+message LoginAckPack {
+    string userId = 1;
+}
+
+// 消息体
+message ChatMessagePack {
+    string messageId = 1;
+    string fromId = 2;
+    string toId = 3;
+    string messageBody = 4;
+    int64 messageTime = 5;
+    int32 messageType = 6;
+    int32 appId = 7;
+    int32 clientType = 8;
+    string imei = 9;
+}
+
+// 消息确认
+message ChatMessageAck {
+    string messageId = 1;
+    int64 messageSequence = 2;
+}
+
+// 消息送达确认
+message MessageReceiveServerAckPack {
+    string messageId = 1;
+    int64 serverTime = 2;
+}
+
+// 消息已读确认
+message MessageReadPack {
+    string fromId = 1;
+    string toId = 2;
+    int64 messageSequence = 3;
+    int32 appId = 4;
+}
+
+// 撤回消息通知
+message RecallMessageNotifyPack {
+    string fromId = 1;
+    string toId = 2;
+    string messageId = 3;
+    int32 appId = 4;
+}

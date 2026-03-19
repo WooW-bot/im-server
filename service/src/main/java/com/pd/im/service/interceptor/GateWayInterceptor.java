@@ -13,6 +13,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.PrintWriter;
 
 /**
@@ -29,20 +30,20 @@ public class GateWayInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        // 获取appId 操作人 userSign
-        String appIdStr = request.getParameter("appId");
+        // 获取 appId 操作人 userSign (仅从 Header 获取)
+        String appIdStr = request.getHeader("appId");
         if (StringUtils.isBlank(appIdStr)) {
             resp(ResponseVO.errorResponse(GatewayErrorCode.APPID_NOT_EXIST), response);
             return false;
         }
 
-        String identifier = request.getParameter("identifier");
+        String identifier = request.getHeader("identifier");
         if (StringUtils.isBlank(identifier)) {
             resp(ResponseVO.errorResponse(GatewayErrorCode.OPERATER_NOT_EXIST), response);
             return false;
         }
 
-        String userSign = request.getParameter("userSign");
+        String userSign = request.getHeader("userSign");
         if (StringUtils.isBlank(userSign)) {
             resp(ResponseVO.errorResponse(GatewayErrorCode.USERSIGN_NOT_EXIST), response);
             return false;

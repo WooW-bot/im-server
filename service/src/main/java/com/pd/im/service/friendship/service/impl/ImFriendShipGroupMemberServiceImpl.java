@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.pd.im.codec.pack.friendship.AddFriendGroupMemberPack;
 import com.pd.im.codec.pack.friendship.DeleteFriendGroupMemberPack;
 import com.pd.im.common.ResponseVO;
+import com.pd.im.common.constant.Constants;
 import com.pd.im.common.enums.command.FriendshipEventCommand;
 import com.pd.im.common.model.ClientInfo;
 import com.pd.im.service.friendship.dao.ImFriendShipGroupEntity;
@@ -15,6 +16,7 @@ import com.pd.im.service.friendship.service.ImFriendShipGroupService;
 import com.pd.im.service.user.dao.ImUserDataEntity;
 import com.pd.im.service.user.service.ImUserService;
 import com.pd.im.service.utils.MessageProducer;
+import com.pd.im.service.utils.UserSequenceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,14 +42,17 @@ public class ImFriendShipGroupMemberServiceImpl implements ImFriendShipGroupMemb
     @Autowired
     MessageProducer messageProducer;
 
+    @Autowired
+    UserSequenceRepository userSequenceRepository;
+
     @Override
     @Transactional
-    public ResponseVO addGroupMember(AddFriendShipGroupMemberReq req) {
+    public ResponseVO<List<String>> addGroupMember(AddFriendShipGroupMemberReq req) {
 
         ResponseVO<ImFriendShipGroupEntity> group = imFriendShipGroupService
                 .getGroup(req.getFromId(), req.getGroupName(), req.getAppId());
         if (!group.isSuccess()) {
-            return group;
+            return ResponseVO.errorResponse(group.getCode(), group.getMsg());
         }
 
         List<String> successId = new ArrayList<>();
@@ -62,6 +67,9 @@ public class ImFriendShipGroupMemberServiceImpl implements ImFriendShipGroupMemb
         }
 
         Long seq = imFriendShipGroupService.updateSeq(req.getFromId(), req.getGroupName(), req.getAppId());
+        // 确保多端同步：写入用户 Timeline 序列号
+        userSequenceRepository.writeUserSeq(req.getAppId(), req.getFromId(), Constants.SeqConstants.FRIENDSHIP_GROUP, seq);
+
         AddFriendGroupMemberPack pack = new AddFriendGroupMemberPack();
         pack.setFromId(req.getFromId());
         pack.setGroupName(req.getGroupName());
@@ -74,11 +82,12 @@ public class ImFriendShipGroupMemberServiceImpl implements ImFriendShipGroupMemb
     }
 
     @Override
-    public ResponseVO delGroupMember(DeleteFriendShipGroupMemberReq req) {
+    @Transactional
+    public ResponseVO<List<String>> delGroupMember(DeleteFriendShipGroupMemberReq req) {
         ResponseVO<ImFriendShipGroupEntity> group = imFriendShipGroupService
                 .getGroup(req.getFromId(), req.getGroupName(), req.getAppId());
         if (!group.isSuccess()) {
-            return group;
+            return ResponseVO.errorResponse(group.getCode(), group.getMsg());
         }
 
         List<String> successId = new ArrayList<>();
@@ -93,6 +102,9 @@ public class ImFriendShipGroupMemberServiceImpl implements ImFriendShipGroupMemb
         }
 
         Long seq = imFriendShipGroupService.updateSeq(req.getFromId(), req.getGroupName(), req.getAppId());
+        // 确保多端同步：写入用户 Timeline 序列号
+        userSequenceRepository.writeUserSeq(req.getAppId(), req.getFromId(), Constants.SeqConstants.FRIENDSHIP_GROUP, seq);
+
         DeleteFriendGroupMemberPack pack = new DeleteFriendGroupMemberPack();
         pack.setFromId(req.getFromId());
         pack.setGroupName(req.getGroupName());

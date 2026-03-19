@@ -1,9 +1,14 @@
 package com.pd.im.codec.util;
 
 import com.alibaba.fastjson.JSONObject;
+import com.google.protobuf.MessageLite;
 import com.pd.im.codec.proto.Message;
 import com.pd.im.codec.proto.MessageHeader;
 import com.pd.im.codec.proto.MessagePack;
+import com.pd.im.codec.proto.generated.*;
+import com.pd.im.common.constant.Constants;
+import com.pd.im.common.enums.command.MessageCommand;
+import com.pd.im.common.enums.command.SystemCommand;
 import com.pd.im.common.enums.MessageType;
 import io.netty.buffer.ByteBuf;
 import lombok.extern.slf4j.Slf4j;
@@ -65,8 +70,8 @@ public class MessageCodecUtils {
             int command = in.readInt();
             int version = in.readInt();
             int clientType = in.readInt();
-            int messageType = in.readInt();
             int appId = in.readInt();
+            int messageType = in.readInt();
             int imeiLength = in.readInt();
             int bodyLen = in.readInt();
 
@@ -130,11 +135,23 @@ public class MessageCodecUtils {
      */
     public static void encode(MessagePack msg, ByteBuf out) {
         try {
-            // 序列化消息体数据（统一使用 JSON 格式）
-            String bodyJson = JSONObject.toJSONString(msg.getData());
-            byte[] bodyBytes = bodyJson.getBytes(StandardCharsets.UTF_8);
+            byte[] bodyBytes;
+            int messageType = MessageType.DATA_TYPE_PROTOBUF.getCode();
+
+            if (msg.getData() instanceof MessageLite) {
+                // 如果是 Protobuf 对象
+                bodyBytes = ((MessageLite) msg.getData()).toByteArray();
+            } else {
+                log.error("不支持的消息体类型，期待 MessageLite，实际为: {}", msg.getData() != null ? msg.getData().getClass().getName() : "null");
+                bodyBytes = new byte[0];
+            }
 
             // 写入超轻量协议头（8字节）
+            // 注意：这里为了兼容，暂不改变协议头长度，但可以通过 command 或其他逻辑标记消息类型
+            // 实际上，服务端发往客户端的 8 字节头里没有 messageType，
+            // 我们可以考虑扩展协议头或通过特定的 command 范围来区分。
+            // 但如果客户端知道某个 command 必须是 Protobuf，也可以。
+            
             out.writeInt(msg.getCommand());        // command (4字节)
             out.writeInt(bodyBytes.length);        // bodyLen (4字节)
 
@@ -142,8 +159,8 @@ public class MessageCodecUtils {
             out.writeBytes(bodyBytes);
 
             if (log.isDebugEnabled()) {
-                log.debug("Encoded message: command={}, bodyLen={}",
-                        msg.getCommand(), bodyBytes.length);
+                log.debug("Encoded message: command={}, bodyLen={}, type={}",
+                        msg.getCommand(), bodyBytes.length, messageType);
             }
         } catch (Exception e) {
             log.error("Failed to encode message: command={}", msg.getCommand(), e);
@@ -159,11 +176,12 @@ public class MessageCodecUtils {
      */
     public static int calculateEncodedSize(MessagePack msg) {
         try {
-            String bodyJson = JSONObject.toJSONString(msg.getData());
-            byte[] bodyBytes = bodyJson.getBytes(StandardCharsets.UTF_8);
-
+            int bodyLen = 0;
+            if (msg.getData() instanceof MessageLite) {
+                bodyLen = ((MessageLite) msg.getData()).getSerializedSize();
+            }
             // 协议头(8字节) + body长度
-            return ENCODE_HEADER_LENGTH + bodyBytes.length;
+            return ENCODE_HEADER_LENGTH + bodyLen;
         } catch (Exception e) {
             log.error("Failed to calculate encoded size", e);
             return 512; // 返回一个默认值
@@ -182,26 +200,29 @@ public class MessageCodecUtils {
      * @param bodyLen     消息体长度
      */
     private static void parseMessageBody(Message message, int messageType, byte[] bodyData, String imei, int bodyLen) {
-        if (messageType == MessageType.DATA_TYPE_JSON.getCode()) {
+        if (messageType == MessageType.DATA_TYPE_PROTOBUF.getCode()) {
             try {
-                String body = new String(bodyData, StandardCharsets.UTF_8);
-                JSONObject parse = (JSONObject) JSONObject.parse(body);
-                message.setMessagePack(parse);
+                int command = message.getMessageHeader().getCommand();
+                Object pack = null;
+                // 根据命令号选择对应的 Protobuf 类进行解析
+                if (command == SystemCommand.LOGIN.getCommand()) {
+                    pack = LoginPack.parseFrom(bodyData);
+                } else if (command == MessageCommand.MSG_P2P.getCommand()) {
+                    pack = ChatMessagePack.parseFrom(bodyData);
+                } else if (command == MessageCommand.MSG_READ.getCommand()) {
+                    pack = MessageReadPack.parseFrom(bodyData);
+                } else if (command == MessageCommand.MSG_RECALL_NOTIFY.getCommand()) {
+                    pack = RecallMessageNotifyPack.parseFrom(bodyData);
+                } else {
+                    log.warn("Unknown command for Protobuf decoding: {}", command);
+                    pack = bodyData;
+                }
+                message.setMessagePack(pack);
             } catch (Exception e) {
-                log.error("Failed to parse JSON message body, imei={}, bodyLen={}", imei, bodyLen, e);
-                // JSON 解析失败，仍然返回消息对象，但 messagePack 为 null
+                log.error("Failed to parse Protobuf message body, imei={}, bodyLen={}", imei, bodyLen, e);
             }
-        } else if (messageType == MessageType.DATA_TYPE_PROTOBUF.getCode()) {
-            log.warn("ProtoBuf message type is not supported yet, imei={}", imei);
-            // TODO: 实现 ProtoBuf 解码
-            message.setMessagePack(bodyData);
-        } else if (messageType == MessageType.DATA_TYPE_XML.getCode()) {
-            log.warn("XML message type is not supported yet, imei={}", imei);
-            // TODO: 实现 XML 解码
-            String body = new String(bodyData, StandardCharsets.UTF_8);
-            message.setMessagePack(body);
         } else {
-            log.warn("Unknown message type: {}, imei={}", messageType, imei);
+            log.warn("Unknown message type: {}, expected Protobuf=1, imei={}", messageType, imei);
             message.setMessagePack(bodyData);
         }
     }

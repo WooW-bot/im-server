@@ -40,7 +40,7 @@ public class UserModifyPack {
 
     /**
      * 加好友验证类型
-     * 1: 需要验证
+     * 0-无需验证 1-需要验证 2-拒绝添加
      */
-    private Integer friendAllowType;
+    private Integer allowType;
 }

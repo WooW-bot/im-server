@@ -83,6 +83,10 @@ public class Constants {
          * 用户自定义在线状态，格式 ：appId + :userCustomerStatus: + userId。set，value为用户id
          */
         public static final String USER_CUSTOMER_STATUS = ":userCustomerStatus:";
+        /**
+         * 用户登录临时票据，格式 ：appId + :userLoginTicket: + userId + ":" + clientType + ":" + imei
+         */
+        public static final String USER_LOGIN_TICKET = ":userLoginTicket:";
     }
 
     public static class RabbitmqConstants {
@@ -183,5 +187,9 @@ public class Constants {
          * 消息撤回超时时间（毫秒），默认2分钟
          */
         public static final long MSG_RECALL_TIME_OUT = 120000L;
+    }
+
+    public static class ProtocolConstants {
+        public static final String PROTOCOL_VERSION = "2.0";
     }
 }

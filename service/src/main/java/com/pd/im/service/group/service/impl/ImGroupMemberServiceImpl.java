@@ -73,16 +73,16 @@ public class ImGroupMemberServiceImpl implements ImGroupMemberService {
         if (!groupResp.isSuccess()) {
             return groupResp;
         }
-        for (GroupMemberDto memberId : req.getMembers()) {
+        for (GroupMemberDto memberDto : req.getMembers()) {
             ResponseVO responseVO = null;
             try {
-                responseVO = addGroupMember(req.getGroupId(), req.getAppId(), memberId);
+                responseVO = addGroupMember(req.getGroupId(), req.getAppId(), memberDto);
             } catch (Exception e) {
-                log.error("Import GroupMember failed: {}", memberId.getMemberId(), e);
+                log.error("Import GroupMember failed: {}", memberDto.getMemberId(), e);
                 responseVO = ResponseVO.errorResponse();
             }
             AddMemberResp addMemberResp = new AddMemberResp();
-            addMemberResp.setMemberId(memberId.getMemberId());
+            addMemberResp.setMemberId(memberDto.getMemberId());
             if (responseVO.isSuccess()) {
                 addMemberResp.setResult(0);
             } else if (responseVO.getCode() == GroupErrorCode.USER_IS_JOINED_GROUP.getCode()) {
@@ -490,7 +490,7 @@ public class ImGroupMemberServiceImpl implements ImGroupMemberService {
             // 私有群不能设置管理员
             if (groupData.getGroupType() == GroupType.PRIVATE.getCode() &&
                     req.getRole() != null && (req.getRole().equals(GroupMemberRole.MANAGER.getCode()) ||
-                            req.getRole().equals(GroupMemberRole.OWNER.getCode()))) {
+                    req.getRole().equals(GroupMemberRole.OWNER.getCode()))) {
                 return ResponseVO.errorResponse(GroupErrorCode.THIS_OPERATE_NEED_MANAGER_ROLE);
             }
             // 如果要修改权限相关的则走下面的逻辑

@@ -1,6 +1,7 @@
 package com.pd.im.common.util;
 
 import com.alibaba.fastjson.JSONObject;
+import com.pd.im.common.constant.Constants;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.crypto.Mac;
@@ -117,6 +118,7 @@ public class SigAPI {
      */
     private String hmacsha256(String identifier, long currTime, long expire, String base64Userbuf) {
         StringBuilder contentToBeSigned = new StringBuilder()
+                .append("TLS.ver:").append(Constants.ProtocolConstants.PROTOCOL_VERSION).append("\n")
                 .append("TLS.identifier:").append(identifier).append("\n")
                 .append("TLS.appId:").append(appId).append("\n")
                 .append("TLS.time:").append(currTime).append("\n")
@@ -163,6 +165,7 @@ public class SigAPI {
      */
     public String genUserSig(String userid, long expire, long time, byte[] userbuf) {
         JSONObject sigDoc = new JSONObject();
+        sigDoc.put("TLS.ver", Constants.ProtocolConstants.PROTOCOL_VERSION);
         sigDoc.put("TLS.identifier", userid);
         sigDoc.put("TLS.appId", appId);
         sigDoc.put("TLS.expire", expire);

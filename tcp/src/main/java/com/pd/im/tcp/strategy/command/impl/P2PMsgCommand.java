@@ -1,6 +1,6 @@
 package com.pd.im.tcp.strategy.command.impl;
 
-import com.alibaba.fastjson.JSONObject;
+import com.pd.im.codec.proto.generated.ChatMessagePack;
 import com.pd.im.common.ResponseVO;
 import com.pd.im.common.enums.command.MessageCommand;
 import com.pd.im.common.model.message.CheckSendMessageReq;
@@ -19,9 +19,10 @@ import static com.pd.im.common.constant.Constants.MsgPackConstants.TO_ID;
  */
 public class P2PMsgCommand extends AbstractMessageCommand {
 
+
     @Override
-    protected String extractToId(JSONObject jsonObject) {
-        return jsonObject.getString(TO_ID);
+    protected String extractToIdFromProto(ChatMessagePack chatPack) {
+        return chatPack.getToId();
     }
 
     @Override

@@ -22,24 +22,24 @@ public class ResponseVO<T> {
 
     private T data;
 
-    public static ResponseVO successResponse(Object data) {
-        return new ResponseVO(200, "success", data);
+    public static <T> ResponseVO<T> successResponse(T data) {
+        return new ResponseVO<>(200, "success", data);
     }
 
-    public static ResponseVO successResponse() {
-        return new ResponseVO(200, "success");
+    public static <T> ResponseVO<T> successResponse() {
+        return new ResponseVO<>(200, "success");
     }
 
-    public static ResponseVO errorResponse() {
-        return new ResponseVO(500, "系统繁忙，请稍后重试");
+    public static <T> ResponseVO<T> errorResponse() {
+        return new ResponseVO<>(500, "系统繁忙，请稍后重试");
     }
 
-    public static ResponseVO errorResponse(int code, String msg) {
-        return new ResponseVO(code, msg);
+    public static <T> ResponseVO<T> errorResponse(int code, String msg) {
+        return new ResponseVO<>(code, msg);
     }
 
-    public static ResponseVO errorResponse(ApplicationExceptionEnum enums) {
-        return new ResponseVO(enums.getCode(), enums.getError());
+    public static <T> ResponseVO<T> errorResponse(ApplicationExceptionEnum enums) {
+        return new ResponseVO<>(enums.getCode(), enums.getError());
     }
 
     public boolean isSuccess() {

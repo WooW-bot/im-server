@@ -13,7 +13,7 @@ import org.springframework.stereotype.Repository;
  */
 @Mapper
 public interface ImConversationSetMapper extends BaseMapper<ImConversationSetEntity> {
-    @Update(" update im_conversation_set set read_sequence = #{readSequence}, sequence = #{sequence} " +
+    @Update(" update im_conversation_set set read_sequence = #{readSequence}, sequence = #{sequence}, update_time = #{updateTime} " +
             " where conversation_id = #{conversationId} and app_id = #{appId} AND read_sequence < #{readSequence}")
     void readMark(ImConversationSetEntity imConversationSetEntity);
 
