@@ -124,7 +124,6 @@ CREATE TABLE `im_friendship_request`
     `remark`         VARCHAR(100)         DEFAULT NULL COMMENT '备注',
     `add_source`     VARCHAR(50)          DEFAULT NULL COMMENT '添加来源',
     `add_wording`    VARCHAR(200)         DEFAULT NULL COMMENT '好友验证信息',
-    `read_status`    TINYINT     NOT NULL DEFAULT 0 COMMENT '已读状态: 0-未读 1-已读',
     `approve_status` TINYINT     NOT NULL DEFAULT 0 COMMENT '审批状态: 0-待审批 1-已同意 2-已拒绝',
     `sequence`       BIGINT               DEFAULT NULL COMMENT '序列号(用于增量同步)',
     `create_time`    BIGINT      NOT NULL COMMENT '创建时间(毫秒时间戳)',
@@ -315,5 +314,5 @@ VALUES (1, 10001, '27a35ff2f9be4cc9a8d3db1ad3322804', 'bantanger', 2, '群主', 
 
 -- 好友申请数据
 INSERT INTO `im_friendship_request` (`id`, `app_id`, `from_id`, `to_id`, `remark`, `add_source`, `add_wording`,
-                                     `read_status`, `approve_status`, `sequence`, `create_time`, `update_time`)
-VALUES (1, 10001, '10003', 'bantanger', '想加你好友', 'search', '你好，我是10003', 0, 0, 1, 1681025483768, NULL);
+                                     `approve_status`, `sequence`, `create_time`, `update_time`)
+VALUES (1, 10001, '10003', 'bantanger', '想加你好友', 'search', '你好，我是10003', 0, 1, 1681025483768, NULL);

@@ -27,6 +27,9 @@ import com.pd.im.service.user.model.resp.GetUserInfoResp;
 import com.pd.im.service.user.model.resp.ImUserDataVO;
 import com.pd.im.service.user.service.ImUserService;
 import com.pd.im.service.friendship.model.resp.ImFriendShipRequestDto;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -109,7 +112,6 @@ public class ImFriendShipRequestServiceImpl implements ImFriendShipRequestServic
         // 如果建立好友成功，则同步更新对方的申请状态为“已同意”
         reverseRequest.setApproveStatus(FriendRequestApprovalStatus.AGREE.getCode());
         reverseRequest.setUpdateTime(System.currentTimeMillis());
-        reverseRequest.setReadStatus(1);
         reverseRequest.setSequence(seq);
         imFriendShipRequestMapper.updateById(reverseRequest);
 
@@ -151,8 +153,7 @@ public class ImFriendShipRequestServiceImpl implements ImFriendShipRequestServic
       request.setAppId(appId);
       request.setFromId(fromId);
       request.setToId(dto.getToId());
-      request.setReadStatus(0);
-      request.setApproveStatus(0);
+      request.setApproveStatus(FriendRequestApprovalStatus.NORMAL.getCode());
       request.setCreateTime(System.currentTimeMillis());
     }
 
@@ -167,8 +168,7 @@ public class ImFriendShipRequestServiceImpl implements ImFriendShipRequestServic
       request.setAddWording(dto.getAddWording());
     }
     request.setSequence(seq);
-    request.setReadStatus(0);
-    request.setApproveStatus(0);
+    request.setApproveStatus(FriendRequestApprovalStatus.NORMAL.getCode());
     request.setUpdateTime(System.currentTimeMillis());
 
     if (request.getId() == null) {
@@ -238,7 +238,6 @@ public class ImFriendShipRequestServiceImpl implements ImFriendShipRequestServic
     // 执行到这里说明：要么是拒绝，要么是同意且添加好友成功
     imFriendShipRequestEntity.setApproveStatus(req.getStatus());
     imFriendShipRequestEntity.setUpdateTime(System.currentTimeMillis());
-    imFriendShipRequestEntity.setReadStatus(1); // 审批动作隐含已读
     imFriendShipRequestEntity.setSequence(seq);
     imFriendShipRequestMapper.updateById(imFriendShipRequestEntity);
 
@@ -275,26 +274,30 @@ public class ImFriendShipRequestServiceImpl implements ImFriendShipRequestServic
   @Override
   @Transactional
   public ResponseVO<?> readFriendShipRequestReq(ReadFriendShipRequestReq req) {
-    LambdaQueryWrapper<ImFriendShipRequestEntity> query = new LambdaQueryWrapper<>();
-    query.eq(ImFriendShipRequestEntity::getAppId, req.getAppId());
-    query.eq(ImFriendShipRequestEntity::getToId, req.getFromId());
+    // 1. 确定本次要标记的“已读水位线”
+    Long readSeq = req.getSequence();
+    if (readSeq == null || readSeq <= 0) {
+      // 兜底：如果客户端没传，则取当前模块的最大序列号（这是全读模式）
+      readSeq = imFriendShipRequestMapper.getFriendShipRequestMaxSeq(req.getAppId(),
+          req.getFromId());
+    }
 
-    long seq = redisSequence.doGetSeq(
-        req.getAppId() + ":" + Constants.SeqConstants.FRIENDSHIP_REQUEST);
-    ImFriendShipRequestEntity update = new ImFriendShipRequestEntity();
-    update.setReadStatus(1);
-    update.setSequence(seq);
-    imFriendShipRequestMapper.update(update, query);
+    // 2. 获取旧水位线，防止水位线倒退
+    Long oldSeq = userSequenceRepository.getUserSeq(req.getAppId(), req.getFromId(),
+        Constants.SeqConstants.FRIENDSHIP_REQUEST_READ);
+    if (readSeq <= oldSeq) {
+      return ResponseVO.successResponse(); // 已经是读过的位置，直接返回
+    }
 
-    // 更新接收方的序列号
-    userSequenceRepository.writeUserSeq(req.getAppId(), req.getOperator(),
-        Constants.SeqConstants.FRIENDSHIP_REQUEST,
-        seq);
+    // 3. 更新用户的“已读水位线”
+    userSequenceRepository.writeUserSeq(req.getAppId(), req.getFromId(),
+        Constants.SeqConstants.FRIENDSHIP_REQUEST_READ,
+        readSeq);
 
-    // TCP 通知：告知其它端申请已读（多端同步）
+    // 4. TCP 通知：告知其它端水位线已更新（多端同步）
     ReadAllFriendRequestNotifyPack readPack = ReadAllFriendRequestNotifyPack.builder()
         .fromId(req.getFromId())
-        .sequence(seq)
+        .sequence(readSeq)
         .build();
 
     messageProducer.sendToOtherClients(req.getFromId(), FriendshipEventCommand.FRIEND_REQUEST_READ,
@@ -339,7 +342,7 @@ public class ImFriendShipRequestServiceImpl implements ImFriendShipRequestServic
 
     if (isSnapshotMode) {
       // --- 快照模式 (Snapshot Mode) ---
-      // 解决新登录或长期不下线导致的拉取积压
+      // 解决新登录或长期下线导致的拉取积压
 
       // 1. 获取所有待处理 (业务核心待办，不可遗漏)
       LambdaQueryWrapper<ImFriendShipRequestEntity> pendingQuery = new LambdaQueryWrapper<>();
@@ -347,7 +350,8 @@ public class ImFriendShipRequestServiceImpl implements ImFriendShipRequestServic
           .and(wq -> wq.eq(ImFriendShipRequestEntity::getToId, req.getOperator())
               .or()
               .eq(ImFriendShipRequestEntity::getFromId, req.getOperator()))
-          .eq(ImFriendShipRequestEntity::getApproveStatus, 0); // 严格等于 0
+          .eq(ImFriendShipRequestEntity::getApproveStatus,
+              FriendRequestApprovalStatus.NORMAL.getCode()); // 严格等于 0
       List<ImFriendShipRequestEntity> pendingList = imFriendShipRequestMapper.selectList(
           pendingQuery);
 
@@ -357,22 +361,22 @@ public class ImFriendShipRequestServiceImpl implements ImFriendShipRequestServic
           .and(wq -> wq.eq(ImFriendShipRequestEntity::getToId, req.getOperator())
               .or()
               .eq(ImFriendShipRequestEntity::getFromId, req.getOperator()))
-          .ne(ImFriendShipRequestEntity::getApproveStatus, 0) // 严格不等于 0
+          .ne(ImFriendShipRequestEntity::getApproveStatus,
+              FriendRequestApprovalStatus.NORMAL.getCode()) // 严格不等于 0
           .orderByDesc(ImFriendShipRequestEntity::getSequence)
           .last("limit " + req.getMaxLimit());
       List<ImFriendShipRequestEntity> handledList = imFriendShipRequestMapper.selectList(
           handledQuery);
       // 3. 聚合并去重
-      java.util.LinkedHashSet<ImFriendShipRequestEntity> combinedSet = new java.util.LinkedHashSet<>(
-          pendingList);
+      LinkedHashSet<ImFriendShipRequestEntity> combinedSet = new LinkedHashSet<>(pendingList);
       combinedSet.addAll(handledList);
 
       // 4. 对快照结果进行最终排序 (统一按 sequence 正序 ASC 返回)
       // 理由：增量同步和快照同步在协议层保持一致的“正序”流，更方便 SDK 进行游标更新和去重处理。
       // 提示：客户端 UI 展示时，请自行在本地使用 ORDER BY sequence DESC 进行倒序展示。
       list = combinedSet.stream()
-          .sorted(java.util.Comparator.comparing(ImFriendShipRequestEntity::getSequence))
-          .collect(java.util.stream.Collectors.toList());
+          .sorted(Comparator.comparing(ImFriendShipRequestEntity::getSequence))
+          .collect(Collectors.toList());
     } else {
       // --- 增量模式 (Incremental Mode) ---
       // 标准 Timeline 补齐逻辑: sequence > lastSequence ASC
@@ -431,8 +435,17 @@ public class ImFriendShipRequestServiceImpl implements ImFriendShipRequestServic
       Long maxSeq = imFriendShipRequestMapper.getFriendShipRequestMaxSeq(req.getAppId(),
           req.getOperator());
 
+      // 获取用户已读的水位线
+      Long readSeq = userSequenceRepository.getUserSeq(req.getAppId(), req.getOperator(),
+          Constants.SeqConstants.FRIENDSHIP_REQUEST_READ);
+
       resp.setDataList(dtoList);
       resp.setMaxSequence(maxSeq);
+
+      // 使用 extras 扩展字段下发游标，保持 SyncResponse 的通用性
+      Map<String, Object> extras = new HashMap<>();
+      extras.put(Constants.SeqConstants.FRIENDSHIP_REQUEST_READ, readSeq);
+      resp.setExtras(extras);
 
       // 5. 判定同步是否“完成” (数据已覆盖到最新游标)
       // 无论是快照同步（取最新 N 条）还是增量补齐（按 sequence 截取），
@@ -456,7 +469,6 @@ public class ImFriendShipRequestServiceImpl implements ImFriendShipRequestServic
         .id(request.getId())
         .fromId(request.getFromId())
         .toId(request.getToId())
-        .readStatus(request.getReadStatus())
         .addSource(request.getAddSource() != null ? request.getAddSource() : "")
         .addWording(request.getAddWording() != null ? request.getAddWording() : "")
         .approveStatus(request.getApproveStatus())

@@ -14,7 +14,6 @@ public class FriendRequestNotifyPack {
   private Long id;
   private String fromId;
   private String toId;
-  private Integer readStatus;
   // 来源（如：手机号搜索、群聊等）
   private String addSource;
   // 申请附加语（如：我是阿强，通过一下）

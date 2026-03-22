@@ -31,4 +31,27 @@ public class UserSequenceRepository {
     String key = appId + Constants.RedisConstants.SEQ_PREFIX + userId;
     redisTemplate.opsForHash().put(key, type, seq);
   }
+
+  /**
+   * 获取用户特定模块的序列号
+   *
+   * @param appId
+   * @param userId
+   * @param type
+   * @return
+   */
+  public Long getUserSeq(Integer appId, String userId, String type) {
+    String key = appId + Constants.RedisConstants.SEQ_PREFIX + userId;
+    Object seq = redisTemplate.opsForHash().get(key, type);
+    if (seq == null) {
+      return 0L;
+    }
+    if (seq instanceof Integer) {
+      return ((Integer) seq).longValue();
+    }
+    if (seq instanceof Long) {
+      return (Long) seq;
+    }
+    return Long.parseLong(seq.toString());
+  }
 }

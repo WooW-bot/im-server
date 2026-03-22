@@ -23,9 +23,9 @@ public class ImFriendShipRequestDto {
   private String fromId;
 
   /**
-   * 是否已读 (0: 未读, 1: 已读)
+   * 接收人 ID
    */
-  private Integer readStatus;
+  private String toId;
 
   /**
    * 好友来源 (例如: "搜索", "扫码")

@@ -45,10 +45,6 @@ public class ImFriendShipRequestEntity {
    */
   private Integer approveStatus;
   /**
-   * 0: 未读, 1: 已读
-   */
-  private Integer readStatus;
-  /**
    * 增量同步序列号
    */
   private Long sequence;
