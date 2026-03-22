@@ -18,41 +18,49 @@ import java.util.List;
 @Slf4j
 public class MessageDecoderHandler extends ByteToMessageDecoder {
 
-    @Override
-    protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
-        // TCP 流处理：检查协议头长度是否足够
-        if (in.readableBytes() < MessageCodecUtils.DECODE_HEADER_LENGTH) {
-            // 数据不足，等待更多数据到达
-            // ByteToMessageDecoder 会自动保留数据，等待下次 decode 调用
-            return;
-        }
-
-        // 标记读取位置，如果解析失败可以重置
-        in.markReaderIndex();
-
-        // 解析消息
-        Message message = MessageCodecUtils.decode(in);
-        if (message == null) {
-            // 消息解析失败，可能是数据不完整或格式错误
-            // 重置读取位置，等待更多数据
-            in.resetReaderIndex();
-            return;
-        }
-
-        // 解析成功，添加到输出列表
-        out.add(message);
-
-        if (log.isDebugEnabled()) {
-            log.debug("Decoded TCP message from channel {}: command={}, imei={}",
-                    ctx.channel().id(),
-                    message.getMessageHeader().getCommand(),
-                    message.getMessageHeader().getImei());
-        }
+  @Override
+  protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
+    // TCP 流处理：检查协议头长度是否足够
+    if (in.readableBytes() < MessageCodecUtils.DECODE_HEADER_LENGTH) {
+      // 数据不足，等待更多数据到达
+      // ByteToMessageDecoder 会自动保留数据，等待下次 decode 调用
+      return;
     }
 
-    @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        log.error("Error occurred in MessageDecoderHandler, channel: {}", ctx.channel().id(), cause);
-        ctx.close();
+    // 标记读取位置，如果解析失败可以重置
+    in.markReaderIndex();
+
+    // 解析消息
+    Message message;
+    try {
+      message = MessageCodecUtils.decode(in);
+    } catch (Exception e) {
+      // 协议非法（如长度越界），记录并关闭连接，防止死循环
+      log.error("Protocol error from channel {}, closing: {}", ctx.channel().id(), e.getMessage());
+      ctx.close();
+      return;
     }
+
+    if (message == null) {
+      // 数据不足，重置读取位置，等待更多数据
+      in.resetReaderIndex();
+      return;
+    }
+
+    // 解析成功，添加到输出列表
+    out.add(message);
+
+    if (log.isDebugEnabled()) {
+      log.debug("Decoded TCP message from channel {}: command={}, imei={}",
+          ctx.channel().id(),
+          message.getMessageHeader().getCommand(),
+          message.getMessageHeader().getImei());
+    }
+  }
+
+  @Override
+  public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+    log.error("Error occurred in MessageDecoderHandler, channel: {}", ctx.channel().id(), cause);
+    ctx.close();
+  }
 }

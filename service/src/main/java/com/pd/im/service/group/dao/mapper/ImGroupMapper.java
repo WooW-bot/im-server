@@ -15,15 +15,21 @@ import java.util.Collection;
 @Mapper
 public interface ImGroupMapper extends BaseMapper<ImGroupEntity> {
 
-    /**
-     * @description 获取加入的群的最大seq
-     * @author Parker
-     */
-    @Select(" <script> " +
-            " select max(sequence) from im_group where app_id = #{appId} and group_id in " +
-            "<foreach collection='groupIds' index='index' item='id' separator=',' close=')' open='('>" +
-            " #{id} " +
-            "</foreach>" +
-            " </script> ")
-    Long getJoinGroupMaxSeq(Collection<String> groupIds, Integer appId);
+  /**
+   * @description 获取加入的群的最大seq
+   * @author Parker
+   */
+  @Select(" <script> " +
+      " select IFNULL(max(sequence), 0) from im_group where app_id = #{appId} " +
+      " <if test='groupIds != null and groupIds.size() > 0'> " +
+      " and group_id in " +
+      " <foreach collection='groupIds' index='index' item='id' separator=',' close=')' open='('>" +
+      " #{id} " +
+      " </foreach> " +
+      " </if> " +
+      " <if test='groupIds == null or groupIds.size() == 0'> " +
+      " and 1 = 0 " +
+      " </if> " +
+      " </script> ")
+  Long getJoinGroupMaxSeq(Collection<String> groupIds, Integer appId);
 }

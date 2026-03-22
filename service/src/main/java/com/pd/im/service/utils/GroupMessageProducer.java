@@ -1,6 +1,7 @@
 package com.pd.im.service.utils;
 
 import com.alibaba.fastjson.JSONObject;
+import com.pd.im.common.utils.JsonUtils;
 import com.pd.im.codec.pack.group.AddGroupMemberPack;
 import com.pd.im.codec.pack.group.RemoveGroupMemberPack;
 import com.pd.im.codec.pack.group.UpdateGroupMemberPack;
@@ -21,78 +22,87 @@ import java.util.List;
  */
 @Component
 public class GroupMessageProducer {
-    @Autowired
-    MessageProducer messageProducer;
 
-    @Autowired
-    ImGroupMemberService imGroupMemberService;
+  @Autowired
+  MessageProducer messageProducer;
 
-    public void producer(String userId, Command command, Object data, ClientInfo clientInfo) {
-        JSONObject o = (JSONObject) JSONObject.toJSON(data);
-        String groupId = o.getString("groupId");
+  @Autowired
+  ImGroupMemberService imGroupMemberService;
 
-        // 获取所有群成员
-        List<String> groupMemberIds = imGroupMemberService.getGroupMemberIds(groupId, clientInfo.getAppId());
+  public void producer(String userId, Command command, Object data, ClientInfo clientInfo) {
+    JSONObject o = JsonUtils.toJSONObject(data);
+    String groupId = o.getString("groupId");
 
-        if (command.equals(GroupEventCommand.ADDED_MEMBER)) {
-            //发送给管理员和被加入人本身
-            List<GroupMemberDto> groupManagers = imGroupMemberService.getGroupManagers(groupId, clientInfo.getAppId());
-            AddGroupMemberPack addGroupMemberPack = o.toJavaObject(AddGroupMemberPack.class);
-            List<String> members = addGroupMemberPack.getMembers();
-            for (GroupMemberDto groupMemberDto : groupManagers) {
-                if (!clientInfo.getClientType().equals(ClientType.WEBAPI.getCode())
-                        && groupMemberDto.getMemberId().equals(userId)) {
-                    messageProducer.sendToOtherClients(groupMemberDto.getMemberId(), command, data, clientInfo);
-                } else {
-                    messageProducer.sendToAllClients(groupMemberDto.getMemberId(), command, data, clientInfo.getAppId());
-                }
-            }
-            for (String member : members) {
-                if (!clientInfo.getClientType().equals(ClientType.WEBAPI.getCode()) && member.equals(userId)) {
-                    messageProducer.sendToOtherClients(member, command, data, clientInfo);
-                } else {
-                    messageProducer.sendToAllClients(member, command, data, clientInfo.getAppId());
-                }
-            }
-        } else if (command.equals(GroupEventCommand.DELETED_MEMBER)) {
-            RemoveGroupMemberPack pack = o.toJavaObject(RemoveGroupMemberPack.class);
-            String member = pack.getMember();
-            List<String> members = imGroupMemberService.getGroupMemberIds(groupId, clientInfo.getAppId());
-            members.add(member);
-            for (String memberId : members) {
-                if (!clientInfo.getClientType().equals(ClientType.WEBAPI.getCode()) && member.equals(userId)) {
-                    messageProducer.sendToOtherClients(memberId, command, data, clientInfo);
-                } else {
-                    messageProducer.sendToAllClients(memberId, command, data, clientInfo.getAppId());
-                }
-            }
-        } else if (command.equals(GroupEventCommand.UPDATED_MEMBER)) {
-            UpdateGroupMemberPack pack = o.toJavaObject(UpdateGroupMemberPack.class);
-            String memberId = pack.getMemberId();
+    // 获取所有群成员
+    List<String> groupMemberIds = imGroupMemberService.getGroupMemberIds(groupId,
+        clientInfo.getAppId());
 
-            List<GroupMemberDto> groupManagers = imGroupMemberService.getGroupManagers(groupId, clientInfo.getAppId());
-            GroupMemberDto groupMemberDto = new GroupMemberDto();
-            groupMemberDto.setMemberId(memberId);
-            groupManagers.add(groupMemberDto);
-            // 只通知管理员跟被更新的人？
-            for (GroupMemberDto member : groupManagers) {
-                if (!clientInfo.getClientType().equals(ClientType.WEBAPI.getCode())
-                        && member.getMemberId().equals(userId)) {
-                    messageProducer.sendToOtherClients(member.getMemberId(), command, data, clientInfo);
-                } else {
-                    messageProducer.sendToAllClients(member.getMemberId(), command, data, clientInfo.getAppId());
-                }
-            }
+    if (command.equals(GroupEventCommand.ADDED_MEMBER)) {
+      //发送给管理员和被加入人本身
+      List<GroupMemberDto> groupManagers = imGroupMemberService.getGroupManagers(groupId,
+          clientInfo.getAppId());
+      AddGroupMemberPack addGroupMemberPack = o.toJavaObject(AddGroupMemberPack.class);
+      List<String> members = addGroupMemberPack.getMembers();
+      for (GroupMemberDto groupMemberDto : groupManagers) {
+        if (!clientInfo.getClientType().equals(ClientType.WEBAPI.getCode())
+            && groupMemberDto.getMemberId().equals(userId)) {
+          messageProducer.sendToOtherClients(groupMemberDto.getMemberId(), command, data,
+              clientInfo);
         } else {
-            for (String memberId : groupMemberIds) {
-                if (clientInfo.getClientType() != null
-                        && !clientInfo.getClientType().equals(ClientType.WEBAPI.getCode())
-                        && memberId.equals(userId)) {
-                    messageProducer.sendToOtherClients(memberId, command, data, clientInfo);
-                } else {
-                    messageProducer.sendToAllClients(memberId, command, data, clientInfo.getAppId());
-                }
-            }
+          messageProducer.sendToAllClients(groupMemberDto.getMemberId(), command, data,
+              clientInfo.getAppId());
         }
+      }
+      for (String member : members) {
+        if (!clientInfo.getClientType().equals(ClientType.WEBAPI.getCode()) && member.equals(
+            userId)) {
+          messageProducer.sendToOtherClients(member, command, data, clientInfo);
+        } else {
+          messageProducer.sendToAllClients(member, command, data, clientInfo.getAppId());
+        }
+      }
+    } else if (command.equals(GroupEventCommand.DELETED_MEMBER)) {
+      RemoveGroupMemberPack pack = o.toJavaObject(RemoveGroupMemberPack.class);
+      String member = pack.getMember();
+      List<String> members = imGroupMemberService.getGroupMemberIds(groupId, clientInfo.getAppId());
+      members.add(member);
+      for (String memberId : members) {
+        if (!clientInfo.getClientType().equals(ClientType.WEBAPI.getCode()) && member.equals(
+            userId)) {
+          messageProducer.sendToOtherClients(memberId, command, data, clientInfo);
+        } else {
+          messageProducer.sendToAllClients(memberId, command, data, clientInfo.getAppId());
+        }
+      }
+    } else if (command.equals(GroupEventCommand.UPDATED_MEMBER)) {
+      UpdateGroupMemberPack pack = o.toJavaObject(UpdateGroupMemberPack.class);
+      String memberId = pack.getMemberId();
+
+      List<GroupMemberDto> groupManagers = imGroupMemberService.getGroupManagers(groupId,
+          clientInfo.getAppId());
+      GroupMemberDto groupMemberDto = new GroupMemberDto();
+      groupMemberDto.setMemberId(memberId);
+      groupManagers.add(groupMemberDto);
+      // 只通知管理员跟被更新的人？
+      for (GroupMemberDto member : groupManagers) {
+        if (!clientInfo.getClientType().equals(ClientType.WEBAPI.getCode())
+            && member.getMemberId().equals(userId)) {
+          messageProducer.sendToOtherClients(member.getMemberId(), command, data, clientInfo);
+        } else {
+          messageProducer.sendToAllClients(member.getMemberId(), command, data,
+              clientInfo.getAppId());
+        }
+      }
+    } else {
+      for (String memberId : groupMemberIds) {
+        if (clientInfo.getClientType() != null
+            && !clientInfo.getClientType().equals(ClientType.WEBAPI.getCode())
+            && memberId.equals(userId)) {
+          messageProducer.sendToOtherClients(memberId, command, data, clientInfo);
+        } else {
+          messageProducer.sendToAllClients(memberId, command, data, clientInfo.getAppId());
+        }
+      }
     }
+  }
 }

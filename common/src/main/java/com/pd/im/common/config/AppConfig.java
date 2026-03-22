@@ -12,145 +12,151 @@ import org.springframework.stereotype.Component;
 @Component
 @ConfigurationProperties(prefix = "appconfig")
 public class AppConfig {
-    private Integer appId;
-    private String privateKey;
 
-    /**
-     * zk连接地址
-     */
-    private String zkAddr;
-    /**
-     * zk连接超时时间
-     */
-    private Integer zkConnectTimeOut;
+  private Integer appId;
+  private String privateKey;
 
-    /**
-     * im 管道路由策略
-     */
-    private Integer imRouteModel;
+  /**
+   * zk连接地址
+   */
+  private String zkAddr;
+  /**
+   * zk连接超时时间
+   */
+  private Integer zkConnectTimeOut;
 
-    /**
-     * 一致性哈希所使用的底层数据结构
-     */
-    private Integer consistentHashModel;
+  /**
+   * im 管道路由策略
+   */
+  private Integer imRouteModel;
 
-    /**
-     * 回调地址
-     */
-    private String callbackUrl;
+  /**
+   * 一致性哈希所使用的底层数据结构
+   */
+  private Integer consistentHashModel;
 
-    /**
-     * 删除会话同步模式
-     */
-    private Integer deleteConversationSyncMode;
+  /**
+   * 回调地址
+   */
+  private String callbackUrl;
 
-    /**
-     * 离线消息最大条数
-     */
-    private Integer offlineMessageCount = 100;
+  /**
+   * 删除会话同步模式
+   */
+  private Integer deleteConversationSyncMode;
 
-    /**
-     * 一次导入好友关系最大上限
-     */
-    private Integer friendShipMaxImportSize = 100;
+  /**
+   * 离线消息最大条数
+   */
+  private Integer offlineMessageCount = 100;
 
-    /**
-     * 好友关系每次增量拉取最大条目数
-     */
-    private Integer friendShipMaxCount = 50;
+  /**
+   * 一次导入好友关系最大上限
+   */
+  private Integer friendShipMaxImportSize = 100;
 
-    /**
-     * 会话消息每次递增拉取最大条目数
-     */
-    private Integer conversationMaxCount = 100;
+  /**
+   * 好友关系每次增量拉取最大条目数
+   */
+  private Integer friendShipMaxCount = 50;
 
-    /**
-     * 用户被拉入群通知每次递增拉取最大条目数
-     */
-    private Integer joinGroupMaxCount = 100;
+  /**
+   * 会话消息每次递增拉取最大条目数
+   */
+  private Integer conversationMaxCount = 100;
 
-    /**
-     * 发送消息是否校验关系链 TODO 需要持久化到数据库表
-     */
-    private boolean sendMessageCheckFriend;
+  /**
+   * 好友申请每次增量拉取最大条目数
+   */
+  private Integer friendShipRequestMaxCount = 50;
 
-    /**
-     * 发送消息是否校验黑名单 TODO 需要持久化到数据库表
-     */
-    private boolean sendMessageCheckBlack;
+  /**
+   * 用户被拉入群通知每次递增拉取最大条目数
+   */
+  private Integer joinGroupMaxCount = 100;
 
-    /**
-     * 添加好友之前回调开关
-     */
-    private boolean addFriendBeforeCallback;
+  /**
+   * 发送消息是否校验关系链 TODO 需要持久化到数据库表
+   */
+  private boolean sendMessageCheckFriend;
 
-    /**
-     * 添加好友之后回调开关
-     */
-    private boolean addFriendAfterCallback;
+  /**
+   * 发送消息是否校验黑名单 TODO 需要持久化到数据库表
+   */
+  private boolean sendMessageCheckBlack;
 
-    /**
-     * 修改好友之后回调开关
-     */
-    private boolean modifyFriendAfterCallback;
+  /**
+   * 添加好友之前回调开关
+   */
+  private boolean addFriendBeforeCallback;
 
-    /**
-     * 删除好友之后回调开关
-     */
-    private boolean deleteFriendAfterCallback;
+  /**
+   * 添加好友之后回调开关
+   */
+  private boolean addFriendAfterCallback;
 
-    /**
-     * 添加黑名单之后回调开关
-     */
-    private boolean addFriendShipBlackAfterCallback;
+  /**
+   * 修改好友之后回调开关
+   */
+  private boolean modifyFriendAfterCallback;
 
-    /**
-     * 删除黑名单之后回调开关
-     */
-    private boolean deleteFriendShipBlackAfterCallback;
+  /**
+   * 删除好友之后回调开关
+   */
+  private boolean deleteFriendAfterCallback;
 
-    /**
-     * 创建群聊之后回调开关
-     */
-    private boolean createGroupAfterCallback;
+  /**
+   * 添加黑名单之后回调开关
+   */
+  private boolean addFriendShipBlackAfterCallback;
 
-    /**
-     * 修改群聊之后回调开关
-     */
-    private boolean modifyGroupAfterCallback;
+  /**
+   * 删除黑名单之后回调开关
+   */
+  private boolean deleteFriendShipBlackAfterCallback;
 
-    /**
-     * 解散群聊之后回调开关
-     */
-    private boolean destroyGroupAfterCallback;
+  /**
+   * 创建群聊之后回调开关
+   */
+  private boolean createGroupAfterCallback;
 
-    /**
-     * 删除群成员之后回调
-     */
-    private boolean deleteGroupMemberAfterCallback;
+  /**
+   * 修改群聊之后回调开关
+   */
+  private boolean modifyGroupAfterCallback;
 
-    /**
-     * 拉人入群之前回调
-     */
-    private boolean addGroupMemberBeforeCallback;
+  /**
+   * 解散群聊之后回调开关
+   */
+  private boolean destroyGroupAfterCallback;
 
-    /**
-     * 拉人入群之后回调
-     */
-    private boolean addGroupMemberAfterCallback;
+  /**
+   * 删除群成员之后回调
+   */
+  private boolean deleteGroupMemberAfterCallback;
 
-    /**
-     * 用户资料变更之后回调开关
-     */
-    private boolean modifyUserAfterCallback;
+  /**
+   * 拉人入群之前回调
+   */
+  private boolean addGroupMemberBeforeCallback;
 
-    /**
-     * 发送单/群聊消息之前
-     */
-    private boolean sendMessageBeforeCallback;
+  /**
+   * 拉人入群之后回调
+   */
+  private boolean addGroupMemberAfterCallback;
 
-    /**
-     * 发送单/群聊消息之后
-     */
-    private boolean sendMessageAfterCallback;
+  /**
+   * 用户资料变更之后回调开关
+   */
+  private boolean modifyUserAfterCallback;
+
+  /**
+   * 发送单/群聊消息之前
+   */
+  private boolean sendMessageBeforeCallback;
+
+  /**
+   * 发送单/群聊消息之后
+   */
+  private boolean sendMessageAfterCallback;
 }
